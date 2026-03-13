@@ -508,12 +508,46 @@ export default function App() {
       const { prompt, maxTokens } = PROMPTS.WRITE_SECTION(sectionName, data.outline, activeInfo, activePlan);
       const initialResult = await callGeminiAI(prompt, undefined, undefined, maxTokens);
       if (initialResult) {
-        const finalResult = {
+        let finalResult = {
           content: initialResult,
           wordCount: estimateWordCount(initialResult),
           adjusted: false,
           plan: activePlan,
         };
+
+        // Quota-safe auto-expand: at most one extra AI request when still too short.
+        if (activePlan) {
+          const hardMinWords = getHardMinWords(activePlan);
+          if (finalResult.wordCount < hardMinWords) {
+            const expandPrompt = `${PROMPTS.REWRITE_SECTION_LENGTH(
+              sectionName,
+              finalResult.content,
+              activeInfo,
+              activePlan,
+              'expand',
+            )}
+
+=== CHẾ ĐỘ TIẾT KIỆM REQUEST ===
+- Đây là lần mở rộng tự động duy nhất cho mục này.
+- BẮT BUỘC đảm bảo nội dung cuối cùng từ ${hardMinWords} đến ${activePlan.maxWords} từ.
+- Ưu tiên gần ${activePlan.targetWords} từ.
+- Không giải thích thêm, chỉ trả về nội dung hoàn chỉnh.
+================================`;
+
+            const expandedResult = await callGeminiAI(expandPrompt, undefined, undefined, activePlan.maxTokens);
+            if (expandedResult) {
+              const expandedWordCount = estimateWordCount(expandedResult);
+              if (expandedWordCount > finalResult.wordCount) {
+                finalResult = {
+                  content: expandedResult,
+                  wordCount: expandedWordCount,
+                  adjusted: true,
+                  plan: activePlan,
+                };
+              }
+            }
+          }
+        }
 
         setData(prev => ({
           ...prev,
