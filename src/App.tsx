@@ -508,51 +508,12 @@ export default function App() {
       const { prompt, maxTokens } = PROMPTS.WRITE_SECTION(sectionName, data.outline, activeInfo, activePlan);
       const initialResult = await callGeminiAI(prompt, undefined, undefined, maxTokens);
       if (initialResult) {
-        let finalResult = await fitSectionToLength(sectionName, initialResult, data.outline);
-
-        // Final retry guard for very short output.
-        if (activePlan) {
-          const hardMinWords = getHardMinWords(activePlan);
-          if (finalResult.wordCount < hardMinWords) {
-            const retryPrompt = `${prompt}
-
-=== YÊU CẦU CỨNG BẮT BUỘC ===
-- Nội dung trả về tối thiểu ${activePlan.minWords} từ.
-- Nếu thiếu độ dài, tiếp tục viết chi tiết thực tế cho đến khi đủ.
-================================`;
-
-            const retryResult = await callGeminiAI(retryPrompt, undefined, undefined, maxTokens);
-            if (retryResult) {
-              const retried = await fitSectionToLength(sectionName, retryResult, data.outline);
-              if (retried.wordCount > finalResult.wordCount) {
-                finalResult = retried;
-              }
-            }
-
-            if (finalResult.wordCount < hardMinWords) {
-              const expandPrompt = `${PROMPTS.REWRITE_SECTION_LENGTH(
-                sectionName,
-                finalResult.content,
-                activeInfo,
-                activePlan,
-                'expand',
-              )}
-
-=== YÊU CẦU CỨNG BẮT BUỘC ===
-- Bản cuối phải đạt tối thiểu ${activePlan.minWords} từ.
-- Không đổi ý chính, chỉ bổ sung ví dụ/diễn giải để tăng độ dài đúng yêu cầu.
-================================`;
-
-              const expandedResult = await callGeminiAI(expandPrompt, undefined, undefined, activePlan.maxTokens);
-              if (expandedResult) {
-                const expanded = await fitSectionToLength(sectionName, expandedResult, data.outline);
-                if (expanded.wordCount > finalResult.wordCount) {
-                  finalResult = expanded;
-                }
-              }
-            }
-          }
-        }
+        const finalResult = {
+          content: initialResult,
+          wordCount: estimateWordCount(initialResult),
+          adjusted: false,
+          plan: activePlan,
+        };
 
         setData(prev => ({
           ...prev,
@@ -2051,6 +2012,7 @@ ${bodyHtml}
     </div>
   );
 }
+
 
 
 
