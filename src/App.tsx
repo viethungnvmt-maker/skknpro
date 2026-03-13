@@ -55,6 +55,13 @@ const SECTION_MAP: { [key: number]: string } = {
   12: 'III. Kết quả',
 };
 
+const MEASURE_SECTION_NAME = 'II.3. Các biện pháp thực hiện sáng kiến';
+const MEASURE_SUBSECTIONS = [
+  '3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động',
+  '3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang)',
+  '3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng',
+];
+
 // Step 13 is export/review of all sections// Step 13 is export/review of all sections
 const REVIEW_MAP: { [key: number]: number } = {};
 const SECTION_ORDER = Object.values(SECTION_MAP);
@@ -154,7 +161,7 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-13-r6';
+const APP_BUILD_TAG = '2026-03-13-r7';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   const normalizedSections = remapSectionKeys(candidate.sections || {});
 
@@ -344,6 +351,37 @@ export default function App() {
 
     return addition.trim();
   };
+
+  const splitPlanForSubsections = (plan: SectionLengthPlan, count: number): SectionLengthPlan[] => {
+    const safeCount = Math.max(1, count);
+    const baseTarget = Math.floor(plan.targetWords / safeCount);
+    let remaining = plan.targetWords - (baseTarget * safeCount);
+
+    return Array.from({ length: safeCount }, (_, index) => {
+      const targetWords = baseTarget + (remaining > 0 ? 1 : 0);
+      if (remaining > 0) remaining -= 1;
+
+      const minWords = Math.max(1, Math.round(targetWords * 0.5));
+      const maxWords = Math.max(minWords, Math.round(targetWords * 1.2));
+      const targetPagesLabel = (targetWords / 420).toFixed(1);
+
+      return {
+        ...plan,
+        sectionName: `${plan.sectionName}#${index + 1}`,
+        targetWords,
+        minWords,
+        maxWords,
+        targetPages: Number(targetPagesLabel),
+        targetPagesLabel,
+        maxTokens: Math.min(8192, Math.max(512, Math.round((maxWords + 60) * 2.4))),
+      };
+    });
+  };
+
+  const stripMeasureSubsectionHeading = (content: string) => content
+    .replace(/^#{1,6}\s*3\.[123].*$/gim, '')
+    .replace(/^3\.[123][^\n]*$/gim, '')
+    .trim();
 
   useEffect(() => {
     localStorage.setItem('skkn_data_v3', JSON.stringify(data));
@@ -561,6 +599,63 @@ export default function App() {
     try {
       const rawActivePlan = resolveSectionLengthPlan(sectionName);
       const activePlan = toRuntimePlan(rawActivePlan);
+
+      if (sectionName === MEASURE_SECTION_NAME && activePlan) {
+        const subPlans = splitPlanForSubsections(activePlan, MEASURE_SUBSECTIONS.length);
+        const subChunks: string[] = [];
+
+        for (let index = 0; index < MEASURE_SUBSECTIONS.length; index += 1) {
+          const subsectionTitle = MEASURE_SUBSECTIONS[index];
+          const subPlan = subPlans[index];
+          const { prompt: subPrompt, maxTokens: subMaxTokens } = PROMPTS.WRITE_MEASURE_SUBSECTION(
+            sectionName,
+            subsectionTitle,
+            data.outline,
+            activeInfo,
+            subPlan,
+          );
+
+          const subResult = await callGeminiAI(subPrompt, undefined, undefined, subMaxTokens);
+          let subContent = stripMeasureSubsectionHeading((subResult || '').trim());
+
+          if (!subContent) {
+            subContent = buildLengthFallbackContent(`${sectionName} - ${subsectionTitle}`, activeInfo, subPlan.targetWords);
+          }
+
+          const subHardMinWords = getHardMinWords(subPlan);
+          const subWordCount = estimateWordCount(subContent);
+
+          if (subWordCount < subHardMinWords) {
+            const missingWords = subHardMinWords - subWordCount;
+            const fallbackAddition = buildLengthFallbackContent(`${sectionName} - ${subsectionTitle}`, activeInfo, missingWords);
+            subContent = `${subContent.trim()}\n\n${fallbackAddition}`.trim();
+          }
+
+          subChunks.push(`### ${subsectionTitle}\n\n${subContent}`);
+        }
+
+        let mergedContent = subChunks.join('\n\n');
+        let mergedWordCount = estimateWordCount(mergedContent);
+        const sectionHardMinWords = getHardMinWords(activePlan);
+
+        if (mergedWordCount < sectionHardMinWords) {
+          const missingWords = sectionHardMinWords - mergedWordCount;
+          const fallbackAddition = buildLengthFallbackContent(sectionName, activeInfo, missingWords);
+          mergedContent = `${mergedContent.trim()}\n\n${fallbackAddition}`.trim();
+          mergedWordCount = estimateWordCount(mergedContent);
+        }
+
+        setData(prev => ({
+          ...prev,
+          sections: { ...prev.sections, [sectionName]: mergedContent },
+        }));
+
+        const stillShort = mergedWordCount < sectionHardMinWords;
+        const message = `Đã viết xong "${sectionName}" với khoảng ${mergedWordCount} từ (mục tiêu ${activePlan.targetWords} từ, tối thiểu ${sectionHardMinWords} từ). App đã chia riêng dung lượng cho 3.1, 3.2, 3.3 để tránh bỏ sót biện pháp. [build ${APP_BUILD_TAG}]`;
+        Swal.fire(stillShort ? 'Cần mở rộng thêm' : 'Thành công', message, stillShort ? 'warning' : 'success');
+        return;
+      }
+
       const { prompt, maxTokens } = PROMPTS.WRITE_SECTION(sectionName, data.outline, activeInfo, activePlan);
       const initialResult = await callGeminiAI(prompt, undefined, undefined, maxTokens);
       if (initialResult) {
@@ -1178,15 +1273,28 @@ ${finalResult.content}`;
                     : `Phân bổ độ dài dự kiến theo giới hạn ${activePageLimitLabel} trang`}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                  {sectionLengthPlans.map((plan) => (
-                    <div
-                      key={plan.sectionName}
-                      className="flex items-start justify-between gap-3 rounded-lg bg-white/70 dark:bg-slate-900/30 px-3 py-2"
-                    >
-                      <span className="leading-relaxed">{plan.sectionName}</span>
-                      <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} từ)</span>
-                    </div>
-                  ))}
+                  {sectionLengthPlans.map((plan) => {
+                    const measureSubPlans = plan.sectionName === MEASURE_SECTION_NAME
+                      ? splitPlanForSubsections(plan as SectionLengthPlan, MEASURE_SUBSECTIONS.length)
+                      : null;
+
+                    return (
+                      <div
+                        key={plan.sectionName}
+                        className="rounded-lg bg-white/70 dark:bg-slate-900/30 px-3 py-2"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <span className="leading-relaxed">{plan.sectionName}</span>
+                          <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} từ)</span>
+                        </div>
+                        {measureSubPlans && (
+                          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                            3.1 ~{measureSubPlans[0].targetPagesLabel} trang ({measureSubPlans[0].targetWords} từ) • 3.2 ~{measureSubPlans[1].targetPagesLabel} trang ({measureSubPlans[1].targetWords} từ) • 3.3 ~{measureSubPlans[2].targetPagesLabel} trang ({measureSubPlans[2].targetWords} từ)
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 <p className="text-xs opacity-80">
                   {hasLockedSession
@@ -1670,9 +1778,6 @@ ${finalResult.content}`;
 <div style="margin-bottom:12pt;">${getSectionHtml(9)}</div>
 
 <h3 style="font-size:13pt; font-weight:bold;">3. Các biện pháp thực hiện sáng kiến</h3>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động</h4>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang)</h4>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng</h4>
 <div style="margin-bottom:12pt;">${getSectionHtml(10)}</div>
 
 <h3 style="font-size:13pt; font-weight:bold;">4. Hiệu quả đạt được sau khi áp dụng sáng kiến</h3>
@@ -2177,6 +2282,14 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
+
+
+
+
+
 
 
 

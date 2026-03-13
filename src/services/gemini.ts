@@ -496,6 +496,47 @@ export const PROMPTS = {
     };
   },
 
+  WRITE_MEASURE_SUBSECTION: (
+    sectionName: string,
+    subsectionTitle: string,
+    outline: string,
+    info: any,
+    plan: SectionLengthPlan,
+  ) => ({
+    prompt: `
+    Bạn đang viết DUY NHẤT một mục con trong SKKN.
+
+    Dàn ý tổng thể:
+    ${outline}
+
+    Mục lớn: ${sectionName}
+    Mục con cần viết: ${subsectionTitle}
+
+    Thông tin chung:
+    - Tên đề tài: ${info.title}
+    - Môn học: ${info.subject || 'Chưa xác định'}
+    - Khối lớp: ${info.grade || 'Chưa xác định'}
+    - Tên trường: ${info.school || 'Chưa xác định'}
+    - Địa điểm: ${info.location || 'Chưa xác định'}
+    ${info.extraExamples ? '- Ưu tiên thêm ví dụ thực tế lớp học.' : ''}
+    ${info.extraTables ? '- Có thể chèn bảng số liệu ngắn nếu phù hợp.' : ''}
+    ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
+
+    RÀNG BUỘC ĐỘ DÀI CHO RIÊNG MỤC CON NÀY:
+    - Mục tiêu: khoảng ${plan.targetWords} từ.
+    - Khoảng chấp nhận: ${plan.minWords}-${plan.maxWords} từ.
+    - BẮT BUỘC không dưới ${plan.minWords} từ.
+
+    YÊU CẦU CỐ ĐỊNH:
+    - Chỉ viết đúng nội dung của mục con "${subsectionTitle}".
+    - Không viết sang 2 mục con còn lại.
+    - Không viết lời dẫn nhập kiểu "Dưới đây là...".
+    - Viết cụ thể cách triển khai, minh chứng thực tế, tiêu chí đánh giá.
+    - Trả về bằng Markdown, nội dung hoàn chỉnh cuối cùng.
+    `,
+    maxTokens: plan.maxTokens,
+  }),
+
   REWRITE_SECTION_LENGTH: (
     sectionName: string,
     content: string,
@@ -516,6 +557,9 @@ export const PROMPTS = {
     Nhiệm vụ:
     - ${mode === 'shorten' ? 'Rút gọn bớt nội dung thừa, bỏ lặp ý, giữ lại ý quan trọng nhất.' : 'Mở rộng vừa đủ bằng ví dụ, chi tiết triển khai, minh họa thực tế nhưng không lan man.'}
     - BẮT BUỘC đảm bảo bản cuối cùng nằm trong khoảng ${plan.minWords}-${plan.maxWords} từ, ưu tiên gần ${plan.targetWords} từ.
+    ${sectionName.includes('II.3. Các biện pháp thực hiện sáng kiến')
+      ? '- BẮT BUỘC giữ đủ 3 mục con 3.1, 3.2, 3.3; không được bỏ mục nào dù phải rút gọn.'
+      : ''}
     - Nếu còn ngắn hơn ${plan.minWords} từ thì tiếp tục bổ sung ý, ví dụ, minh họa để đủ độ dài.
     - Nếu còn dài hơn ${plan.maxWords} từ thì tiếp tục rút gọn cho đến khi đạt yêu cầu.
     - Không thêm lời giải thích về việc chỉnh sửa.
@@ -597,6 +641,8 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
+
+
 
 
 
