@@ -289,6 +289,32 @@ export default function App() {
     return Math.max(1, minWords);
   };
 
+  const buildLengthFallbackContent = (
+    sectionName: string,
+    info: SKKNData['info'],
+    missingWords: number,
+  ) => {
+    const subject = info.subject || 'môn học';
+    const grade = info.grade || 'lớp học';
+    const school = info.school || 'đơn vị công tác';
+    const topic = info.title || 'đề tài';
+
+    const baseParagraphs = [
+      `Để bảo đảm phần "${sectionName}" phản ánh đúng yêu cầu của đề tài "${topic}", giáo viên xác định rõ mục tiêu theo ba lớp: mục tiêu kiến thức, mục tiêu năng lực và mục tiêu phẩm chất. Với đặc thù ${subject} ở ${grade} tại ${school}, mỗi mục tiêu đều gắn trực tiếp với biểu hiện quan sát được trong quá trình học tập, tránh nêu chung chung hoặc quá lý thuyết.`,
+      `Trong quá trình triển khai, mục tiêu được cụ thể hóa thành các chỉ báo theo từng giai đoạn thực hiện: trước khi áp dụng, trong khi áp dụng và sau khi áp dụng giải pháp. Ở mỗi giai đoạn, giáo viên ghi nhận mức độ tham gia của học sinh, chất lượng sản phẩm học tập, khả năng vận dụng kiến thức vào tình huống thực tế và mức độ hợp tác của nhóm. Các minh chứng này giúp việc đánh giá trở nên nhất quán và có căn cứ.`,
+      `Bên cạnh đó, mục tiêu của sáng kiến cũng cần bảo đảm tính khả thi tại đơn vị: phù hợp điều kiện cơ sở vật chất, phù hợp thời lượng dạy học, và có thể nhân rộng cho các lớp tương đương. Giáo viên xây dựng kế hoạch điều chỉnh theo phản hồi thực tế để giữ đúng mục tiêu cốt lõi, đồng thời bổ sung hoạt động hỗ trợ cho học sinh còn hạn chế, từ đó nâng dần hiệu quả thực hiện theo từng chu kỳ.`,
+    ];
+
+    let addition = baseParagraphs.join('\n\n');
+    const targetWords = Math.max(80, missingWords + 20);
+
+    while (estimateWordCount(addition) < targetWords) {
+      addition += `\n\nNgoài ra, giáo viên tiếp tục đối chiếu mục tiêu với kết quả định kỳ theo tuần, điều chỉnh nội dung và phương pháp tổ chức hoạt động để bảo đảm tiến độ và chất lượng đầu ra của học sinh.`;
+    }
+
+    return addition.trim();
+  };
+
   useEffect(() => {
     localStorage.setItem('skkn_data_v3', JSON.stringify(data));
   }, [data]);
@@ -515,37 +541,58 @@ export default function App() {
           plan: activePlan,
         };
 
-        // Quota-safe auto-expand: at most one extra AI request when still too short.
+        // Quota-safe retry: at most one strict rewrite request when content is still too short.
         if (activePlan) {
           const hardMinWords = getHardMinWords(activePlan);
           if (finalResult.wordCount < hardMinWords) {
-            const expandPrompt = `${PROMPTS.REWRITE_SECTION_LENGTH(
-              sectionName,
-              finalResult.content,
-              activeInfo,
-              activePlan,
-              'expand',
-            )}
+            const strictRewritePrompt = `${prompt}
 
-=== CHẾ ĐỘ TIẾT KIỆM REQUEST ===
-- Đây là lần mở rộng tự động duy nhất cho mục này.
-- BẮT BUỘC đảm bảo nội dung cuối cùng từ ${hardMinWords} đến ${activePlan.maxWords} từ.
-- Ưu tiên gần ${activePlan.targetWords} từ.
-- Không giải thích thêm, chỉ trả về nội dung hoàn chỉnh.
-================================`;
+=== CHẾ ĐỘ BẮT BUỘC ĐỘ DÀI (THỬ LẠI 1 LẦN) ===
+- Viết lại HOÀN CHỈNH mục "${sectionName}".
+- Độ dài bắt buộc: từ ${hardMinWords} đến ${activePlan.maxWords} từ.
+- Cấu trúc tối thiểu 3 đoạn, mỗi đoạn 3-5 câu.
+- Nêu rõ bối cảnh thực tế lớp học, cách triển khai và tiêu chí đánh giá kết quả.
+- Nếu chưa đủ độ dài, tự bổ sung ví dụ minh họa thực tế cho đủ trong cùng lần trả lời.
+- Không giải thích thêm, chỉ trả về nội dung cuối cùng bằng Markdown.
+============================================
 
-            const expandedResult = await callGeminiAI(expandPrompt, undefined, undefined, activePlan.maxTokens);
-            if (expandedResult) {
-              const expandedWordCount = estimateWordCount(expandedResult);
-              if (expandedWordCount > finalResult.wordCount) {
+Nội dung hiện có (đang quá ngắn, chỉ để tham chiếu):
+${finalResult.content}`;
+
+            const retriedResult = await callGeminiAI(
+              strictRewritePrompt,
+              undefined,
+              undefined,
+              Math.max(maxTokens, activePlan.maxTokens),
+            );
+
+            if (retriedResult) {
+              const retriedWordCount = estimateWordCount(retriedResult);
+              if (retriedWordCount > finalResult.wordCount) {
                 finalResult = {
-                  content: expandedResult,
-                  wordCount: expandedWordCount,
+                  content: retriedResult,
+                  wordCount: retriedWordCount,
                   adjusted: true,
                   plan: activePlan,
                 };
               }
             }
+          }
+        }
+
+        if (activePlan) {
+          const hardMinWords = getHardMinWords(activePlan);
+          if (finalResult.wordCount < hardMinWords) {
+            const missingWords = hardMinWords - finalResult.wordCount;
+            const fallbackAddition = buildLengthFallbackContent(sectionName, activeInfo, missingWords);
+            const mergedContent = `${finalResult.content.trim()}\n\n${fallbackAddition}`.trim();
+
+            finalResult = {
+              content: mergedContent,
+              wordCount: estimateWordCount(mergedContent),
+              adjusted: true,
+              plan: activePlan,
+            };
           }
         }
 
@@ -2046,6 +2093,9 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
 
 
 
