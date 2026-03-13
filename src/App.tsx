@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   FileText,
@@ -59,6 +59,23 @@ const SECTION_MAP: { [key: number]: string } = {
 };
 
 const SECTION_ORDER = Object.values(SECTION_MAP);
+const SIDEBAR_SECTION_SUBITEMS: Record<number, string[]> = {
+  8: [
+    '1. Gi?i thi?u v? ph?n m?m Logo',
+    '2. V? sao Logo ???c ??a v?o d?y trong tr??ng ti?u h?c',
+    '3. Khi h?c Logo h?c sinh ???c h?c v? c? th? l?m g?',
+  ],
+  9: [
+    '1. Thu?n l?i v? kh? kh?n (1.1 Thu?n l?i, 1.2 Kh? kh?n)',
+    '2. Th?c tr?ng d?y - h?c ph?n m?m Logo ? tr??ng ti?u h?c',
+  ],
+  10: [
+    '1. Gi?p h?c sinh ph?t hi?n v? kh?c ph?c l?i th??ng g?p',
+    '2. Gi?p h?c sinh n?m y?u c?u b?i t?p (2.1, 2.2)',
+    '3. Gi?p h?c sinh vi?t nhanh c?u l?nh l?p, th? t?c',
+    '4. Bi?u d??ng, kh?ch l? s? t?m t?i, s?ng t?o',
+  ],
+};
 
 const SECTION_NAME_MIGRATION: Record<string, string> = {
   'I.1. Tính cấp thiết phải tiến hành sáng kiến': 'PHẦN MỞ ĐẦU - I. Lý do chọn đề tài',
@@ -167,7 +184,7 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-13-r10';
+const APP_BUILD_TAG = '2026-03-13-r12';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   const normalizedSections = remapSectionKeys(candidate.sections || {});
 
@@ -262,6 +279,7 @@ export default function App() {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const exportInFlightRef = useRef(false);
   const hasLockedSession = data.confirmedRequirements && !!data.lockedInfo;
   const activeInfo = hasLockedSession ? data.lockedInfo! : data.info;
   const normalizeSectionLengthPlan = (sectionName: string, plan?: Partial<SectionLengthPlan> | null): SectionLengthPlan | null => {
@@ -1546,6 +1564,8 @@ ${finalResult.content}`;
     }
   };
   const exportMarkdown = async () => {
+    if (exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
     setIsLoading(true);
     try {
       const { sections } = await normalizeDraftForExport(true);
@@ -1561,11 +1581,14 @@ ${finalResult.content}`;
       Swal.fire('Loi', error.message || 'Khong the chuan hoa va xuat Markdown.', 'error');
     } finally {
       setIsLoading(false);
+      exportInFlightRef.current = false;
     }
   };  // ==========================================
   // Export to DOCX (Word-compatible HTML)
   // ==========================================
   const exportToDocx = async () => {
+    if (exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
     setIsLoading(true);
     try {
       const { sections: exportSections } = await normalizeDraftForExport(true);
@@ -1719,6 +1742,7 @@ ${bodyHtml}
       Swal.fire('Lỗi', error.message || 'Không thể chuẩn hóa và xuất file Word.', 'error');
     } finally {
       setIsLoading(false);
+      exportInFlightRef.current = false;
     }
   };
   const renderExportStep = () => {
@@ -1817,6 +1841,7 @@ ${bodyHtml}
           {STEPS.map((step) => {
             const isActive = data.currentStep === step.id;
             const completed = isStepCompleted(step.id);
+            const subItems = SIDEBAR_SECTION_SUBITEMS[step.id] || [];
 
             return (
               <button
@@ -1840,6 +1865,21 @@ ${bodyHtml}
                   )}
                 </div>
                 <span className="text-[11px] text-slate-400 mt-0.5">{step.desc}</span>
+                {subItems.length > 0 && (
+                  <div className="mt-1.5 space-y-0.5 pl-3 pr-1">
+                    {subItems.map((item) => (
+                      <div
+                        key={item}
+                        className={cn(
+                          'text-[10px] leading-snug',
+                          isActive ? 'text-sky-600 dark:text-sky-300' : 'text-slate-400',
+                        )}
+                      >
+                        - {item}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </button>
             );
           })}
