@@ -145,8 +145,17 @@ const MODEL_LABELS: Record<string, string> = {
   'gemini-2.5-flash': 'Gemini 2.5 Flash',
 };
 
+const MAX_RATE_LIMIT_RETRIES = 0;
 const RATE_LIMIT_WAIT_BASE_MS = 12000;
-const MAX_RATE_LIMIT_RETRIES = 2;
+const MAX_FALLBACK_MODELS = 1;
+
+const MODEL_COOLDOWN_STORAGE_KEY = 'gemini_model_cooldowns_v1';
+const RATE_LIMIT_COOLDOWN_MS = 90 * 1000;
+const QUOTA_COOLDOWN_MS = 30 * 60 * 1000;
+const MODEL_UNAVAILABLE_COOLDOWN_MS = 5 * 60 * 1000;
+const GENERIC_ERROR_COOLDOWN_MS = 2 * 60 * 1000;
+
+type ModelCooldownMap = Record<string, number>;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -191,50 +200,110 @@ const getSwitchReasonText = (text: string) => {
   return 'gặp lỗi tạm thời';
 };
 
+const getCooldownDurationMs = (text: string) => {
+  if (isQuotaError(text)) return QUOTA_COOLDOWN_MS;
+  if (isRateLimitError(text)) return RATE_LIMIT_COOLDOWN_MS;
+  if (isModelUnavailableError(text)) return MODEL_UNAVAILABLE_COOLDOWN_MS;
+  return GENERIC_ERROR_COOLDOWN_MS;
+};
+
+const readCooldownMap = (): ModelCooldownMap => {
+  if (typeof localStorage === 'undefined') return {};
+
+  try {
+    const raw = localStorage.getItem(MODEL_COOLDOWN_STORAGE_KEY);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw) as ModelCooldownMap;
+    if (!parsed || typeof parsed !== 'object') return {};
+
+    return parsed;
+  } catch {
+    return {};
+  }
+};
+
+const writeCooldownMap = (map: ModelCooldownMap) => {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem(MODEL_COOLDOWN_STORAGE_KEY, JSON.stringify(map));
+};
+
+const cleanCooldownMap = (map: ModelCooldownMap) => {
+  const now = Date.now();
+
+  return Object.entries(map).reduce<ModelCooldownMap>((acc, [modelName, until]) => {
+    if (typeof until === 'number' && until > now) {
+      acc[modelName] = until;
+    }
+
+    return acc;
+  }, {});
+};
+
+const getModelCooldownRemainingMs = (modelName: string) => {
+  const map = cleanCooldownMap(readCooldownMap());
+  writeCooldownMap(map);
+
+  const until = map[modelName];
+  if (!until) return 0;
+
+  return Math.max(0, until - Date.now());
+};
+
+const isModelCoolingDown = (modelName: string) => getModelCooldownRemainingMs(modelName) > 0;
+
+const setModelCooldownForError = (modelName: string, errorText: string) => {
+  const map = cleanCooldownMap(readCooldownMap());
+  const durationMs = getCooldownDurationMs(errorText);
+
+  map[modelName] = Date.now() + durationMs;
+  writeCooldownMap(map);
+
+  return durationMs;
+};
+
 const persistPreferredModel = (modelIndex: number) => {
   if (typeof localStorage === 'undefined') return;
+
   localStorage.setItem('gemini_model_index', String(modelIndex));
   localStorage.setItem('ai_model_index', String(modelIndex));
 };
 
 const emitModelSwitchEvent = (detail: GeminiModelSwitchDetail) => {
   if (typeof window === 'undefined') return;
+
   window.dispatchEvent(new CustomEvent<GeminiModelSwitchDetail>(GEMINI_MODEL_SWITCH_EVENT, { detail }));
 };
 
-const tryFallbackModel = async (
-  prompt: string,
-  failedModelIndex: number,
-  triedModels: Set<number>,
-  maxTokens: number | undefined,
-  errorText: string,
-): Promise<string | null> => {
-  const failedModel = MODELS[failedModelIndex];
+const getStoredModelIndex = () => {
+  const fromStorage = parseInt(localStorage.getItem('gemini_model_index') || localStorage.getItem('ai_model_index') || '0');
+  return Number.isInteger(fromStorage) && fromStorage >= 0 && fromStorage < MODELS.length ? fromStorage : 0;
+};
+
+const pickStartModelIndex = (preferredIndex: number) => {
+  const preferredModel = MODELS[preferredIndex];
+  if (!isModelCoolingDown(preferredModel)) return preferredIndex;
 
   for (let i = 0; i < MODELS.length; i++) {
-    if (triedModels.has(i)) continue;
-
-    const targetModel = MODELS[i];
-    const reason = getSwitchReasonText(errorText);
-
-    console.warn(`Switching model ${failedModel} -> ${targetModel}. Reason: ${reason}`);
-    persistPreferredModel(i);
-
-    emitModelSwitchEvent({
-      fromModel: failedModel,
-      fromLabel: getModelLabel(failedModel),
-      fromModelIndex: failedModelIndex,
-      toModel: targetModel,
-      toLabel: getModelLabel(targetModel),
-      toModelIndex: i,
-      reason,
-    });
-
-    return callGeminiAI(prompt, i, triedModels, maxTokens, 0);
+    if (i === preferredIndex) continue;
+    if (!isModelCoolingDown(MODELS[i])) return i;
   }
 
-  return null;
+  return preferredIndex;
 };
+
+const getFallbackCandidates = (failedModelIndex: number, triedModels: Set<number>) => {
+  const untriedIndexes = MODELS
+    .map((_, index) => index)
+    .filter((index) => index !== failedModelIndex && !triedModels.has(index));
+
+  const readyNow = untriedIndexes.filter((index) => !isModelCoolingDown(MODELS[index]));
+  return readyNow.length > 0 ? readyNow : untriedIndexes;
+};
+
+const shouldTryFallback = (errorText: string) => isRateLimitError(errorText)
+  || isQuotaError(errorText)
+  || isModelUnavailableError(errorText);
 
 export async function callGeminiAI(
   prompt: string,
@@ -242,10 +311,10 @@ export async function callGeminiAI(
   _triedModels?: Set<number>,
   maxTokens?: number,
   _rateLimitRetryCount = 0,
+  _fallbackCount = 0,
 ): Promise<string | null> {
   if (modelIndex === undefined) {
-    modelIndex = parseInt(localStorage.getItem('gemini_model_index') || localStorage.getItem('ai_model_index') || '0');
-    if (isNaN(modelIndex) || modelIndex < 0 || modelIndex >= MODELS.length) modelIndex = 0;
+    modelIndex = pickStartModelIndex(getStoredModelIndex());
   }
 
   const triedModels = _triedModels || new Set<number>();
@@ -279,26 +348,48 @@ export async function callGeminiAI(
     const errorText = getErrorText(error);
     console.error(`Error with model ${modelName}:`, error);
 
+    setModelCooldownForError(modelName, errorText);
+
     if (isRateLimitError(errorText) && _rateLimitRetryCount < MAX_RATE_LIMIT_RETRIES) {
       const waitMs = RATE_LIMIT_WAIT_BASE_MS * (_rateLimitRetryCount + 1);
-      console.warn(`Rate limit hit on ${modelName}. Retrying in ${waitMs}ms...`);
       await sleep(waitMs);
-      return callGeminiAI(prompt, modelIndex, triedModels, maxTokens, _rateLimitRetryCount + 1);
+      return callGeminiAI(prompt, modelIndex, triedModels, maxTokens, _rateLimitRetryCount + 1, _fallbackCount);
     }
 
-    const fallbackResult = await tryFallbackModel(prompt, modelIndex, triedModels, maxTokens, errorText);
-    if (fallbackResult !== null) return fallbackResult;
+    if (shouldTryFallback(errorText) && _fallbackCount < MAX_FALLBACK_MODELS) {
+      const candidates = getFallbackCandidates(modelIndex, triedModels);
+      const fallbackIndex = candidates[0];
+
+      if (fallbackIndex !== undefined) {
+        const fallbackModel = MODELS[fallbackIndex];
+        const reason = getSwitchReasonText(errorText);
+
+        persistPreferredModel(fallbackIndex);
+
+        emitModelSwitchEvent({
+          fromModel: modelName,
+          fromLabel: getModelLabel(modelName),
+          fromModelIndex: modelIndex,
+          toModel: fallbackModel,
+          toLabel: getModelLabel(fallbackModel),
+          toModelIndex: fallbackIndex,
+          reason,
+        });
+
+        return callGeminiAI(prompt, fallbackIndex, triedModels, maxTokens, 0, _fallbackCount + 1);
+      }
+    }
 
     if (isRateLimitError(errorText)) {
-      throw new Error('Model AI đang chạm giới hạn tốc độ (RPM/TPM). Hệ thống đã thử model khác nhưng chưa thành công, vui lòng chờ 30-60 giây rồi thử lại.');
+      throw new Error('Model AI đang chạm giới hạn tốc độ (RPM/TPM). Hệ thống đã thử thêm 1 model để tiết kiệm request, vui lòng chờ 30-60 giây rồi thử lại.');
     }
 
     if (isQuotaError(errorText)) {
-      throw new Error('Model AI đang hết lượt/quota. Hệ thống đã thử model khác nhưng đều không khả dụng, vui lòng thử lại sau.');
+      throw new Error('Model AI đang hết lượt/quota. Hệ thống đã thử thêm 1 model nhưng chưa khả dụng, vui lòng thử lại sau.');
     }
 
     if (isModelUnavailableError(errorText)) {
-      throw new Error('Các model AI đang quá tải hoặc tạm không khả dụng. Vui lòng thử lại sau vài phút.');
+      throw new Error('Model AI đang quá tải hoặc tạm không khả dụng. Hệ thống đã thử thêm 1 model, vui lòng thử lại sau ít phút.');
     }
 
     throw error;
@@ -495,6 +586,7 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
+
 
 
 
