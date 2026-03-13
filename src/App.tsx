@@ -1840,7 +1840,7 @@ ${bodyHtml}
                   </div>
                 </div>
                 <p className="text-xs italic text-amber-600 dark:text-amber-400">
-                  💡 Nếu model đang chọn hết lượt hoặc quá tải, hệ thống sẽ tự chuyển model khác và báo ngay cho bạn.
+                  💡 Nếu model đang chọn hết lượt hoặc quá tải, hệ thống sẽ tự chuyển model khác và áp dụng từ lần bấm tiếp theo để tiết kiệm quota.
                 </p>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">🔑 API Key</label>
@@ -2012,6 +2012,7 @@ ${bodyHtml}
     </div>
   );
 }
+
 
 
 

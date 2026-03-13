@@ -147,7 +147,7 @@ const MODEL_LABELS: Record<string, string> = {
 
 const MAX_RATE_LIMIT_RETRIES = 0;
 const RATE_LIMIT_WAIT_BASE_MS = 12000;
-const MAX_FALLBACK_MODELS = 1;
+const MAX_FALLBACK_MODELS = 0;
 
 const MODEL_COOLDOWN_STORAGE_KEY = 'gemini_model_cooldowns_v1';
 const RATE_LIMIT_COOLDOWN_MS = 90 * 1000;
@@ -356,7 +356,7 @@ export async function callGeminiAI(
       return callGeminiAI(prompt, modelIndex, triedModels, maxTokens, _rateLimitRetryCount + 1, _fallbackCount);
     }
 
-    if (shouldTryFallback(errorText) && _fallbackCount < MAX_FALLBACK_MODELS) {
+    if (shouldTryFallback(errorText)) {
       const candidates = getFallbackCandidates(modelIndex, triedModels);
       const fallbackIndex = candidates[0];
 
@@ -376,20 +376,22 @@ export async function callGeminiAI(
           reason,
         });
 
-        return callGeminiAI(prompt, fallbackIndex, triedModels, maxTokens, 0, _fallbackCount + 1);
+        throw new Error(
+          `${getModelLabel(modelName)} ${reason}. Hệ thống đã tự chuyển sang ${getModelLabel(fallbackModel)} để tiết kiệm request. Vui lòng bấm lại 1 lần để tiếp tục.`,
+        );
       }
     }
 
     if (isRateLimitError(errorText)) {
-      throw new Error('Model AI đang chạm giới hạn tốc độ (RPM/TPM). Hệ thống đã thử thêm 1 model để tiết kiệm request, vui lòng chờ 30-60 giây rồi thử lại.');
+      throw new Error('Model AI đang chạm giới hạn tốc độ (RPM/TPM). Hệ thống đã chuyển model dự phòng cho lần bấm tiếp theo để tiết kiệm request. Vui lòng chờ 30-60 giây rồi bấm lại.');
     }
 
     if (isQuotaError(errorText)) {
-      throw new Error('Model AI đang hết lượt/quota. Hệ thống đã thử thêm 1 model nhưng chưa khả dụng, vui lòng thử lại sau.');
+      throw new Error('Model AI đang hết lượt/quota. Hệ thống đã chuyển model dự phòng cho lần bấm tiếp theo để tiết kiệm request. Vui lòng bấm lại sau.');
     }
 
     if (isModelUnavailableError(errorText)) {
-      throw new Error('Model AI đang quá tải hoặc tạm không khả dụng. Hệ thống đã thử thêm 1 model, vui lòng thử lại sau ít phút.');
+      throw new Error('Model AI đang quá tải hoặc tạm không khả dụng. Hệ thống đã chuyển model dự phòng cho lần bấm tiếp theo để tiết kiệm request. Vui lòng bấm lại sau ít phút.');
     }
 
     throw error;
@@ -586,6 +588,8 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
+
+
 
 
 
