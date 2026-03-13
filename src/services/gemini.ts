@@ -127,6 +127,24 @@ export function estimateWordCount(markdown: string): number {
   return words?.length ?? 0;
 }
 
+export const GEMINI_MODEL_SWITCH_EVENT = 'gemini-model-auto-switched';
+
+export interface GeminiModelSwitchDetail {
+  fromModel: string;
+  fromLabel: string;
+  fromModelIndex: number;
+  toModel: string;
+  toLabel: string;
+  toModelIndex: number;
+  reason: string;
+}
+
+const MODEL_LABELS: Record<string, string> = {
+  'gemini-3-flash': 'Gemini 3 Flash',
+  'gemini-3-pro': 'Gemini 3 Pro',
+  'gemini-2.5-flash': 'Gemini 2.5 Flash',
+};
+
 const RATE_LIMIT_WAIT_BASE_MS = 12000;
 const MAX_RATE_LIMIT_RETRIES = 2;
 
@@ -139,15 +157,83 @@ const getErrorText = (error: any) => {
   return `${message} ${details} ${status}`.toLowerCase();
 };
 
-const isRateLimitError = (error: any) => {
-  const text = getErrorText(error);
-  return text.includes('resource_exhausted')
-    || text.includes('429')
-    || text.includes('too many requests')
-    || text.includes('rate limit')
-    || text.includes('rpm')
-    || text.includes('tpm')
-    || text.includes('rate_limit_exceeded');
+const getModelLabel = (modelName: string) => MODEL_LABELS[modelName] || modelName;
+
+const isRateLimitError = (text: string) => text.includes('resource_exhausted')
+  || text.includes('429')
+  || text.includes('too many requests')
+  || text.includes('rate limit')
+  || text.includes('rpm')
+  || text.includes('tpm')
+  || text.includes('rate_limit_exceeded');
+
+const isQuotaError = (text: string) => text.includes('insufficient_quota')
+  || text.includes('exceeded your current quota')
+  || text.includes('daily limit')
+  || text.includes('quota')
+  || text.includes('billing')
+  || text.includes('credit');
+
+const isModelUnavailableError = (text: string) => text.includes('model not found')
+  || text.includes('not found')
+  || text.includes('does not exist')
+  || text.includes('unsupported')
+  || text.includes('overloaded')
+  || text.includes('unavailable')
+  || text.includes('service unavailable')
+  || text.includes('503')
+  || text.includes('404');
+
+const getSwitchReasonText = (text: string) => {
+  if (isQuotaError(text)) return 'hết lượt/quota';
+  if (isRateLimitError(text)) return 'chạm giới hạn tốc độ tạm thời';
+  if (isModelUnavailableError(text)) return 'quá tải hoặc tạm không khả dụng';
+  return 'gặp lỗi tạm thời';
+};
+
+const persistPreferredModel = (modelIndex: number) => {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem('gemini_model_index', String(modelIndex));
+  localStorage.setItem('ai_model_index', String(modelIndex));
+};
+
+const emitModelSwitchEvent = (detail: GeminiModelSwitchDetail) => {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent<GeminiModelSwitchDetail>(GEMINI_MODEL_SWITCH_EVENT, { detail }));
+};
+
+const tryFallbackModel = async (
+  prompt: string,
+  failedModelIndex: number,
+  triedModels: Set<number>,
+  maxTokens: number | undefined,
+  errorText: string,
+): Promise<string | null> => {
+  const failedModel = MODELS[failedModelIndex];
+
+  for (let i = 0; i < MODELS.length; i++) {
+    if (triedModels.has(i)) continue;
+
+    const targetModel = MODELS[i];
+    const reason = getSwitchReasonText(errorText);
+
+    console.warn(`Switching model ${failedModel} -> ${targetModel}. Reason: ${reason}`);
+    persistPreferredModel(i);
+
+    emitModelSwitchEvent({
+      fromModel: failedModel,
+      fromLabel: getModelLabel(failedModel),
+      fromModelIndex: failedModelIndex,
+      toModel: targetModel,
+      toLabel: getModelLabel(targetModel),
+      toModelIndex: i,
+      reason,
+    });
+
+    return callGeminiAI(prompt, i, triedModels, maxTokens, 0);
+  }
+
+  return null;
 };
 
 export async function callGeminiAI(
@@ -190,27 +276,29 @@ export async function callGeminiAI(
 
     return payload?.text || '';
   } catch (error: any) {
+    const errorText = getErrorText(error);
     console.error(`Error with model ${modelName}:`, error);
 
-    if (isRateLimitError(error)) {
-      if (_rateLimitRetryCount < MAX_RATE_LIMIT_RETRIES) {
-        const waitMs = RATE_LIMIT_WAIT_BASE_MS * (_rateLimitRetryCount + 1);
-        console.warn(`Rate limit hit on ${modelName}. Retrying in ${waitMs}ms...`);
-        await sleep(waitMs);
-        return callGeminiAI(prompt, modelIndex, triedModels, maxTokens, _rateLimitRetryCount + 1);
-      }
-
-      throw new Error(
-        'Đang chạm giới hạn tốc độ API (RPM/TPM), không phải hết quota ngày. Vui lòng chờ 30-60 giây rồi thử lại.',
-      );
+    if (isRateLimitError(errorText) && _rateLimitRetryCount < MAX_RATE_LIMIT_RETRIES) {
+      const waitMs = RATE_LIMIT_WAIT_BASE_MS * (_rateLimitRetryCount + 1);
+      console.warn(`Rate limit hit on ${modelName}. Retrying in ${waitMs}ms...`);
+      await sleep(waitMs);
+      return callGeminiAI(prompt, modelIndex, triedModels, maxTokens, _rateLimitRetryCount + 1);
     }
 
-    for (let i = 0; i < MODELS.length; i++) {
-      if (triedModels.has(i)) continue;
-      if (MODELS[i] === modelName) continue;
+    const fallbackResult = await tryFallbackModel(prompt, modelIndex, triedModels, maxTokens, errorText);
+    if (fallbackResult !== null) return fallbackResult;
 
-      console.log(`Falling back to ${MODELS[i]}...`);
-      return callGeminiAI(prompt, i, triedModels, maxTokens, 0);
+    if (isRateLimitError(errorText)) {
+      throw new Error('Model AI đang chạm giới hạn tốc độ (RPM/TPM). Hệ thống đã thử model khác nhưng chưa thành công, vui lòng chờ 30-60 giây rồi thử lại.');
+    }
+
+    if (isQuotaError(errorText)) {
+      throw new Error('Model AI đang hết lượt/quota. Hệ thống đã thử model khác nhưng đều không khả dụng, vui lòng thử lại sau.');
+    }
+
+    if (isModelUnavailableError(errorText)) {
+      throw new Error('Các model AI đang quá tải hoặc tạm không khả dụng. Vui lòng thử lại sau vài phút.');
     }
 
     throw error;
@@ -407,6 +495,8 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
+
+
 
 
 

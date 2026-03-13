@@ -34,7 +34,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import { INITIAL_DATA, type LockedLengthPlan, type SKKNData, STEPS } from './types';
-import { callGeminiAI, estimateWordCount, getAllSectionLengthPlans, getSectionLengthPlan, PROMPTS, type SectionLengthPlan } from './services/gemini';
+import { GEMINI_MODEL_SWITCH_EVENT, callGeminiAI, estimateWordCount, getAllSectionLengthPlans, getSectionLengthPlan, PROMPTS, type GeminiModelSwitchDetail, type SectionLengthPlan } from './services/gemini';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -305,6 +305,30 @@ export default function App() {
       window.MathJax.typeset();
     }
   }, [data.sections, data.currentStep]);
+
+  useEffect(() => {
+    const onModelAutoSwitched = (event: Event) => {
+      const detail = (event as CustomEvent<GeminiModelSwitchDetail>).detail;
+      if (!detail) return;
+
+      setSelectedModel(detail.toModelIndex);
+
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: `Đã tự chuyển model: ${detail.toLabel}`,
+        text: `${detail.fromLabel} ${detail.reason}. Hệ thống đã tự chuyển để viết tiếp.`,
+        timer: 3200,
+        showConfirmButton: false,
+      });
+    };
+
+    window.addEventListener(GEMINI_MODEL_SWITCH_EVENT, onModelAutoSwitched as EventListener);
+    return () => {
+      window.removeEventListener(GEMINI_MODEL_SWITCH_EVENT, onModelAutoSwitched as EventListener);
+    };
+  }, []);
 
   const handleUpdateInfo = (field: string, value: string | boolean) => {
     setData(prev => {
@@ -707,7 +731,7 @@ export default function App() {
       if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('429') || msg.toLowerCase().includes('rpm/tpm')) {
         msg = 'Bạn đang chạm giới hạn tốc độ theo phút (RPM/TPM), không phải hết quota ngày. Vui lòng chờ 30-60 giây rồi thử lại.';
       } else if (msg.includes('NOT_FOUND') || msg.includes('404')) {
-        msg = 'Model AI không khả dụng. Vui lòng đổi model trong Cài đặt.';
+        msg = 'Model AI không khả dụng. Hệ thống đã tự thử model khác; nếu vẫn lỗi, vui lòng thử lại sau ít phút.';
       }
       Swal.fire('Lỗi', msg, 'error');
       setShowAnalysis(false);
@@ -1854,6 +1878,9 @@ ${bodyHtml}
                     ))}
                   </div>
                 </div>
+                <p className="text-xs italic text-amber-600 dark:text-amber-400">
+                  💡 Nếu model đang chọn hết lượt hoặc quá tải, hệ thống sẽ tự chuyển model khác và báo ngay cho bạn.
+                </p>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">🔑 API Key</label>
                   <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Nhập Gemini API Key (AIza...)" className="form-input" />
@@ -2024,6 +2051,11 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
+
+
 
 
 
