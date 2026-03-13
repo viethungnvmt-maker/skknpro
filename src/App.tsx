@@ -42,42 +42,48 @@ function cn(...inputs: ClassValue[]) {
 
 // Section names for writing steps
 const SECTION_MAP: { [key: number]: string } = {
-  2: 'I.1. Lí do chọn đề tài',
-  3: 'I.2. Mục đích nghiên cứu',
-  4: 'I.3. Đối tượng nghiên cứu',
-  5: 'I.4. Đối tượng khảo sát',
-  6: 'I.5. Phương pháp nghiên cứu',
-  7: 'I.6. Phạm vi triển khai',
-  8: 'II.1. Cơ sở lí luận',
-  9: 'II.2. Thực trạng',
-  10: 'II.3. Các biện pháp thực hiện sáng kiến',
-  11: 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
-  12: 'III. Kết quả',
+  2: 'PHẦN MỞ ĐẦU - I. Lý do chọn đề tài',
+  3: 'PHẦN MỞ ĐẦU - II. Mục đích nghiên cứu',
+  4: 'PHẦN MỞ ĐẦU - III. Đối tượng nghiên cứu',
+  5: 'PHẦN MỞ ĐẦU - IV. Đối tượng khảo sát thực nghiệm',
+  6: 'PHẦN MỞ ĐẦU - V. Phương pháp nghiên cứu',
+  7: 'PHẦN MỞ ĐẦU - VI. Phạm vi và kế hoạch nghiên cứu',
+  8: 'PHẦN NỘI DUNG - I. Cơ sở lý luận',
+  9: 'PHẦN NỘI DUNG - II. Thực trạng',
+  10: 'PHẦN NỘI DUNG - III. Biện pháp thực hiện',
+  11: 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+  12: 'PHẦN KẾT LUẬN - I. Kết luận chung',
+  13: 'PHẦN KẾT LUẬN - II. Bài học kinh nghiệm',
+  14: 'PHẦN KẾT LUẬN - III. Đề xuất - khuyến nghị',
+  15: 'PHỤ LỤC',
 };
 
-const MEASURE_SECTION_NAME = 'II.3. Các biện pháp thực hiện sáng kiến';
-const MEASURE_SUBSECTIONS = [
-  '3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động',
-  '3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang)',
-  '3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng',
-];
-
-// Step 13 is export/review of all sections// Step 13 is export/review of all sections
-const REVIEW_MAP: { [key: number]: number } = {};
 const SECTION_ORDER = Object.values(SECTION_MAP);
 
 const SECTION_NAME_MIGRATION: Record<string, string> = {
-  'I.1. Tính cấp thiết phải tiến hành sáng kiến': 'I.1. Lí do chọn đề tài',
-  'I.2. Mục tiêu của đề tài, sáng kiến': 'I.2. Mục đích nghiên cứu',
-  'I.3. Thời gian, đối tượng, phạm vi nghiên cứu': 'I.3. Đối tượng nghiên cứu',
-  'II.1. Hiện trạng vấn đề': 'II.2. Thực trạng',
-  'II.2. Giải pháp thực hiện sáng kiến': 'II.3. Các biện pháp thực hiện sáng kiến',
-  'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'III. Kết quả',
-  'II.4. Hiệu quả của sáng kiến': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
-  'II.5. Tính khả thi': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
-  'II.6. Thời gian thực hiện': 'I.6. Phạm vi triển khai',
-  'II.7. Kinh phí thực hiện': 'II.3. Các biện pháp thực hiện sáng kiến',
-  'III. Kiến nghị, đề xuất': 'III. Kết quả',
+  'I.1. Tính cấp thiết phải tiến hành sáng kiến': 'PHẦN MỞ ĐẦU - I. Lý do chọn đề tài',
+  'I.2. Mục tiêu của đề tài, sáng kiến': 'PHẦN MỞ ĐẦU - II. Mục đích nghiên cứu',
+  'I.3. Thời gian, đối tượng, phạm vi nghiên cứu': 'PHẦN MỞ ĐẦU - III. Đối tượng nghiên cứu',
+  'II.1. Hiện trạng vấn đề': 'PHẦN NỘI DUNG - II. Thực trạng',
+  'II.2. Giải pháp thực hiện sáng kiến': 'PHẦN NỘI DUNG - III. Biện pháp thực hiện',
+  'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+  'II.4. Hiệu quả của sáng kiến': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+  'II.5. Tính khả thi': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+  'II.6. Thời gian thực hiện': 'PHẦN MỞ ĐẦU - VI. Phạm vi và kế hoạch nghiên cứu',
+  'II.7. Kinh phí thực hiện': 'PHẦN NỘI DUNG - III. Biện pháp thực hiện',
+  'III. Kiến nghị, đề xuất': 'PHẦN KẾT LUẬN - III. Đề xuất - khuyến nghị',
+
+  'I.1. Lí do chọn đề tài': 'PHẦN MỞ ĐẦU - I. Lý do chọn đề tài',
+  'I.2. Mục đích nghiên cứu': 'PHẦN MỞ ĐẦU - II. Mục đích nghiên cứu',
+  'I.3. Đối tượng nghiên cứu': 'PHẦN MỞ ĐẦU - III. Đối tượng nghiên cứu',
+  'I.4. Đối tượng khảo sát': 'PHẦN MỞ ĐẦU - IV. Đối tượng khảo sát thực nghiệm',
+  'I.5. Phương pháp nghiên cứu': 'PHẦN MỞ ĐẦU - V. Phương pháp nghiên cứu',
+  'I.6. Phạm vi triển khai': 'PHẦN MỞ ĐẦU - VI. Phạm vi và kế hoạch nghiên cứu',
+  'II.1. Cơ sở lí luận': 'PHẦN NỘI DUNG - I. Cơ sở lý luận',
+  'II.2. Thực trạng': 'PHẦN NỘI DUNG - II. Thực trạng',
+  'II.3. Các biện pháp thực hiện sáng kiến': 'PHẦN NỘI DUNG - III. Biện pháp thực hiện',
+  'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+  'III. Kết quả': 'PHẦN KẾT LUẬN - I. Kết luận chung',
 };
 
 const remapSectionKeys = (sections: Record<string, string>) => Object.entries(sections || {}).reduce<Record<string, string>>((acc, [name, value]) => {
@@ -161,7 +167,7 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-13-r8';
+const APP_BUILD_TAG = '2026-03-13-r9';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   const normalizedSections = remapSectionKeys(candidate.sections || {});
 
@@ -205,27 +211,27 @@ export default function App() {
         const parsed = JSON.parse(oldSaved);
         // Map old section names to new section names
         const sectionMigration: { [key: string]: string } = {
-          'I. Đặt vấn đề': 'I.1. Lí do chọn đề tài',
-          'II.1. Hiện trạng vấn đề': 'II.2. Thực trạng',
-          'II.2. Giải pháp thực hiện sáng kiến': 'II.3. Các biện pháp thực hiện sáng kiến',
-          'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'III. Kết quả',
-          'II.4. Hiệu quả của sáng kiến': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
-          'II.5. Tính khả thi': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
-          'II.6-7. Thời gian & Kinh phí thực hiện': 'I.6. Phạm vi triển khai',
-          'III. Kiến nghị, đề xuất': 'III. Kết quả',
+          'I. Đặt vấn đề': 'PHẦN MỞ ĐẦU - I. Lý do chọn đề tài',
+          'II.1. Hiện trạng vấn đề': 'PHẦN NỘI DUNG - II. Thực trạng',
+          'II.2. Giải pháp thực hiện sáng kiến': 'PHẦN NỘI DUNG - III. Biện pháp thực hiện',
+          'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+          'II.4. Hiệu quả của sáng kiến': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+          'II.5. Tính khả thi': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+          'II.6-7. Thời gian & Kinh phí thực hiện': 'PHẦN MỞ ĐẦU - VI. Phạm vi và kế hoạch nghiên cứu',
+          'III. Kiến nghị, đề xuất': 'PHẦN KẾT LUẬN - III. Đề xuất - khuyến nghị',
         };
         const legacyCurrentSections: { [key: string]: string } = {
-          'I.1. T�nh c?p thi?t ph?i ti?n h�nh s�ng ki?n': 'I.1. Lí do chọn đề tài',
-          'I.2. M?c ti�u c?a d? t�i, s�ng ki?n': 'I.2. Mục đích nghiên cứu',
-          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi�n c?u': 'I.3. Đối tượng nghiên cứu',
-          'II.1. Hi?n tr?ng v?n d?': 'II.2. Thực trạng',
-          'II.2. Gi?i ph�p th?c hi?n s�ng ki?n': 'II.3. Các biện pháp thực hiện sáng kiến',
-          'II.3. K?t qu? sau khi �p d?ng gi?i ph�p s�ng ki?n': 'III. Kết quả',
-          'II.4. Hi?u qu? c?a s�ng ki?n': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
-          'II.5. T�nh kh? thi': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
-          'II.6. Th?i gian th?c hi?n': 'I.6. Phạm vi triển khai',
-          'II.7. Kinh ph� th?c hi?n': 'II.3. Các biện pháp thực hiện sáng kiến',
-          'III. Ki?n ngh?, d? xu?t': 'III. Kết quả',
+          'I.1. T�nh c?p thi?t ph?i ti?n h�nh s�ng ki?n': 'PHẦN MỞ ĐẦU - I. Lý do chọn đề tài',
+          'I.2. M?c ti�u c?a d? t�i, s�ng ki?n': 'PHẦN MỞ ĐẦU - II. Mục đích nghiên cứu',
+          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi�n c?u': 'PHẦN MỞ ĐẦU - III. Đối tượng nghiên cứu',
+          'II.1. Hi?n tr?ng v?n d?': 'PHẦN NỘI DUNG - II. Thực trạng',
+          'II.2. Gi?i ph�p th?c hi?n s�ng ki?n': 'PHẦN NỘI DUNG - III. Biện pháp thực hiện',
+          'II.3. K?t qu? sau khi �p d?ng gi?i ph�p s�ng ki?n': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+          'II.4. Hi?u qu? c?a s�ng ki?n': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+          'II.5. T�nh kh? thi': 'PHẦN NỘI DUNG - IV. Kết quả đạt được',
+          'II.6. Th?i gian th?c hi?n': 'PHẦN MỞ ĐẦU - VI. Phạm vi và kế hoạch nghiên cứu',
+          'II.7. Kinh ph� th?c hi?n': 'PHẦN NỘI DUNG - III. Biện pháp thực hiện',
+          'III. Ki?n ngh?, d? xu?t': 'PHẦN KẾT LUẬN - III. Đề xuất - khuyến nghị',
         };
         const newSections: { [key: string]: string } = {};
         if (parsed.sections) {
@@ -239,7 +245,7 @@ export default function App() {
           ...parsed,
           info: { ...INITIAL_DATA.info, ...parsed.info },
           sections: newSections,
-          currentStep: Math.min(parsed.currentStep || 0, 13),
+          currentStep: Math.min(parsed.currentStep || 0, 16),
         };
         // Save migrated data as v3
         localStorage.setItem('skkn_data_v3', JSON.stringify(migrated));
@@ -352,36 +358,6 @@ export default function App() {
     return addition.trim();
   };
 
-  const splitPlanForSubsections = (plan: SectionLengthPlan, count: number): SectionLengthPlan[] => {
-    const safeCount = Math.max(1, count);
-    const baseTarget = Math.floor(plan.targetWords / safeCount);
-    let remaining = plan.targetWords - (baseTarget * safeCount);
-
-    return Array.from({ length: safeCount }, (_, index) => {
-      const targetWords = baseTarget + (remaining > 0 ? 1 : 0);
-      if (remaining > 0) remaining -= 1;
-
-      const minWords = Math.max(1, Math.round(targetWords * 0.5));
-      const maxWords = Math.max(minWords, Math.round(targetWords * 1.2));
-      const targetPagesLabel = (targetWords / 420).toFixed(1);
-
-      return {
-        ...plan,
-        sectionName: `${plan.sectionName}#${index + 1}`,
-        targetWords,
-        minWords,
-        maxWords,
-        targetPages: Number(targetPagesLabel),
-        targetPagesLabel,
-        maxTokens: Math.min(8192, Math.max(512, Math.round((maxWords + 60) * 2.4))),
-      };
-    });
-  };
-
-  const stripMeasureSubsectionHeading = (content: string) => content
-    .replace(/^#{1,6}\s*3\.[123].*$/gim, '')
-    .replace(/^3\.[123][^\n]*$/gim, '')
-    .trim();
 
   useEffect(() => {
     localStorage.setItem('skkn_data_v3', JSON.stringify(data));
@@ -599,63 +575,6 @@ export default function App() {
     try {
       const rawActivePlan = resolveSectionLengthPlan(sectionName);
       const activePlan = toRuntimePlan(rawActivePlan);
-
-      if (sectionName === MEASURE_SECTION_NAME && activePlan) {
-        const subPlans = splitPlanForSubsections(activePlan, MEASURE_SUBSECTIONS.length);
-        const subChunks: string[] = [];
-
-        for (let index = 0; index < MEASURE_SUBSECTIONS.length; index += 1) {
-          const subsectionTitle = MEASURE_SUBSECTIONS[index];
-          const subPlan = subPlans[index];
-          const { prompt: subPrompt, maxTokens: subMaxTokens } = PROMPTS.WRITE_MEASURE_SUBSECTION(
-            sectionName,
-            subsectionTitle,
-            data.outline,
-            activeInfo,
-            subPlan,
-          );
-
-          const subResult = await callGeminiAI(subPrompt, undefined, undefined, subMaxTokens);
-          let subContent = stripMeasureSubsectionHeading((subResult || '').trim());
-
-          if (!subContent) {
-            subContent = buildLengthFallbackContent(`${sectionName} - ${subsectionTitle}`, activeInfo, subPlan.targetWords);
-          }
-
-          const subHardMinWords = getHardMinWords(subPlan);
-          const subWordCount = estimateWordCount(subContent);
-
-          if (subWordCount < subHardMinWords) {
-            const missingWords = subHardMinWords - subWordCount;
-            const fallbackAddition = buildLengthFallbackContent(`${sectionName} - ${subsectionTitle}`, activeInfo, missingWords);
-            subContent = `${subContent.trim()}\n\n${fallbackAddition}`.trim();
-          }
-
-          subChunks.push(`### ${subsectionTitle}\n\n${subContent}`);
-        }
-
-        let mergedContent = subChunks.join('\n\n');
-        let mergedWordCount = estimateWordCount(mergedContent);
-        const sectionHardMinWords = getHardMinWords(activePlan);
-
-        if (mergedWordCount < sectionHardMinWords) {
-          const missingWords = sectionHardMinWords - mergedWordCount;
-          const fallbackAddition = buildLengthFallbackContent(sectionName, activeInfo, missingWords);
-          mergedContent = `${mergedContent.trim()}\n\n${fallbackAddition}`.trim();
-          mergedWordCount = estimateWordCount(mergedContent);
-        }
-
-        setData(prev => ({
-          ...prev,
-          sections: { ...prev.sections, [sectionName]: mergedContent },
-        }));
-
-        const stillShort = mergedWordCount < sectionHardMinWords;
-        const message = `Đã viết xong "${sectionName}" với khoảng ${mergedWordCount} từ (mục tiêu ${activePlan.targetWords} từ, tối thiểu ${sectionHardMinWords} từ). App đã chia riêng dung lượng cho 3.1, 3.2, 3.3 để tránh bỏ sót biện pháp. [build ${APP_BUILD_TAG}]`;
-        Swal.fire(stillShort ? 'Cần mở rộng thêm' : 'Thành công', message, stillShort ? 'warning' : 'success');
-        return;
-      }
-
       const { prompt, maxTokens } = PROMPTS.WRITE_SECTION(sectionName, data.outline, activeInfo, activePlan);
       const initialResult = await callGeminiAI(prompt, undefined, undefined, maxTokens);
       if (initialResult) {
@@ -666,7 +585,6 @@ export default function App() {
           plan: activePlan,
         };
 
-        // Quota-safe retry: at most one strict rewrite request when content is still too short.
         if (activePlan) {
           const hardMinWords = getHardMinWords(activePlan);
           if (finalResult.wordCount < hardMinWords) {
@@ -848,49 +766,6 @@ ${finalResult.content}`;
     const withTables = convertTables(content);
     const html = marked.parse(withTables);
     return typeof html === 'string' ? html : '';
-  };
-
-  const buildReferencesSectionMarkdown = (sections: Record<string, string>) => {
-    const title = activeInfo.title?.trim() || 'đề tài sáng kiến';
-    const subject = activeInfo.subject?.trim() || 'môn học';
-    const grade = activeInfo.grade?.trim() || 'lớp học';
-    const school = activeInfo.school?.trim() || 'đơn vị công tác';
-    const textbook = activeInfo.textbook?.trim();
-    const year = new Date().getFullYear();
-
-    const urlSet = new Set<string>();
-    SECTION_ORDER.forEach((sectionName) => {
-      const sectionContent = sections[sectionName] || '';
-      const matches = sectionContent.match(/https?:\/\/[^\s)]+/g) || [];
-      matches.forEach((rawUrl) => {
-        const cleaned = rawUrl.replace(/[.,;:!?]+$/, '');
-        if (cleaned) urlSet.add(cleaned);
-      });
-    });
-
-    const references: string[] = [
-      'Bộ Giáo dục và Đào tạo (2018). Chương trình Giáo dục phổ thông tổng thể.',
-      `Bộ Giáo dục và Đào tạo (${year}). Văn bản hướng dẫn thực hiện nhiệm vụ năm học và đổi mới phương pháp dạy học.`,
-      textbook
-        ? `${textbook}. Tài liệu dạy học sử dụng tại ${school}.`
-        : `Sách giáo khoa ${subject} ${grade}. Bộ sách đang sử dụng tại ${school}.`,
-      `Kế hoạch giáo dục của ${school} liên quan đến đề tài "${title}".`,
-      'Tài liệu chuyên môn, sáng kiến kinh nghiệm và báo cáo tổng kết của tổ/nhóm chuyên môn tại đơn vị.',
-    ];
-
-    if (urlSet.size > 0) {
-      Array.from(urlSet)
-        .slice(0, 8)
-        .forEach((url, index) => {
-          references.push(`Nguồn trực tuyến ${index + 1}: ${url} (truy cập ngày ${new Date().toLocaleDateString('vi-VN')}).`);
-        });
-    }
-
-    return [
-      '## Phần IV. Tài liệu tham khảo',
-      '',
-      ...references.map((item, index) => `${index + 1}. ${item}`),
-    ].join('\n');
   };
   const resetData = () => {
     Swal.fire({
@@ -1273,28 +1148,15 @@ ${finalResult.content}`;
                     : `Phân bổ độ dài dự kiến theo giới hạn ${activePageLimitLabel} trang`}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                  {sectionLengthPlans.map((plan) => {
-                    const measureSubPlans = plan.sectionName === MEASURE_SECTION_NAME
-                      ? splitPlanForSubsections(plan as SectionLengthPlan, MEASURE_SUBSECTIONS.length)
-                      : null;
-
-                    return (
-                      <div
-                        key={plan.sectionName}
-                        className="rounded-lg bg-white/70 dark:bg-slate-900/30 px-3 py-2"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <span className="leading-relaxed">{plan.sectionName}</span>
-                          <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} từ)</span>
-                        </div>
-                        {measureSubPlans && (
-                          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-                            3.1 ~{measureSubPlans[0].targetPagesLabel} trang ({measureSubPlans[0].targetWords} từ) • 3.2 ~{measureSubPlans[1].targetPagesLabel} trang ({measureSubPlans[1].targetWords} từ) • 3.3 ~{measureSubPlans[2].targetPagesLabel} trang ({measureSubPlans[2].targetWords} từ)
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {sectionLengthPlans.map((plan) => (
+                    <div
+                      key={plan.sectionName}
+                      className="flex items-start justify-between gap-3 rounded-lg bg-white/70 dark:bg-slate-900/30 px-3 py-2"
+                    >
+                      <span className="leading-relaxed">{plan.sectionName}</span>
+                      <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} từ)</span>
+                    </div>
+                  ))}
                 </div>
                 <p className="text-xs opacity-80">
                   {hasLockedSession
@@ -1432,7 +1294,7 @@ ${finalResult.content}`;
               </div>
               <div className="flex gap-3 flex-wrap">
                 <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50"><Sparkles size={14} /> Viết lại bằng AI</button>
-                {stepId < 13 && (
+                {stepId < 16 && (
                   <button onClick={() => goToStep(stepId + 1)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Tiếp tục <ChevronRight size={14} /></button>
                 )}
               </div>
@@ -1687,20 +1549,16 @@ ${finalResult.content}`;
     setIsLoading(true);
     try {
       const { sections } = await normalizeDraftForExport(true);
-      const referencesMarkdown = buildReferencesSectionMarkdown(sections);
-      const allContent = [
-        ...SECTION_ORDER.map((sectionName) => sections[sectionName] || ''),
-        referencesMarkdown,
-      ].join('\n\n---\n\n');
+      const allContent = SECTION_ORDER.map((sectionName) => sections[sectionName] || '').join('\n\n---\n\n');
       const blob = new Blob([allContent], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SKKN_${activeInfo.title || 'export'}.md`;
+      a.download = 'SKKN_' + (activeInfo.title || 'export') + '.md';
       a.click();
       URL.revokeObjectURL(url);
     } catch (error: any) {
-      Swal.fire('Lỗi', error.message || 'Không thể chuẩn hóa và xuất Markdown.', 'error');
+      Swal.fire('Loi', error.message || 'Khong the chuan hoa va xuat Markdown.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1711,10 +1569,6 @@ ${finalResult.content}`;
     setIsLoading(true);
     try {
       const { sections: exportSections } = await normalizeDraftForExport(true);
-      const referencesMarkdown = buildReferencesSectionMarkdown(exportSections);
-      const referencesBodyHtml = renderMarkdown(
-        referencesMarkdown.replace(/^##\s*(?:Phần\s*)?IV\.\s*Tài liệu tham khảo\s*$/im, '').trim(),
-      );
 
       const getSectionHtml = (stepId: number) => {
         const sectionName = SECTION_MAP[stepId];
@@ -1749,45 +1603,53 @@ ${finalResult.content}`;
       const bodyHtml = `
 <h1 style="text-align:center; font-size:16pt; font-weight:bold;">NỘI DUNG SÁNG KIẾN KINH NGHIỆM</h1>
 
-<h2 style="font-size:14pt; font-weight:bold;">Phần I. Đặt vấn đề</h2>
+<h2 style="font-size:14pt; font-weight:bold;">PHẦN MỞ ĐẦU</h2>
 
-<h3 style="font-size:13pt; font-weight:bold;">1. Lí do chọn đề tài</h3>
+<h3 style="font-size:13pt; font-weight:bold;">I. LÝ DO CHỌN ĐỀ TÀI</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(2)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">2. Mục đích nghiên cứu</h3>
+<h3 style="font-size:13pt; font-weight:bold;">II. MỤC ĐÍCH NGHIÊN CỨU</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(3)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">3. Đối tượng nghiên cứu</h3>
+<h3 style="font-size:13pt; font-weight:bold;">III. ĐỐI TƯỢNG NGHIÊN CỨU</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(4)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">4. Đối tượng khảo sát</h3>
+<h3 style="font-size:13pt; font-weight:bold;">IV. ĐỐI TƯỢNG KHẢO SÁT THỰC NGHIỆM</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(5)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">5. Phương pháp nghiên cứu</h3>
+<h3 style="font-size:13pt; font-weight:bold;">V. PHƯƠNG PHÁP NGHIÊN CỨU</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(6)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">6. Phạm vi triển khai</h3>
+<h3 style="font-size:13pt; font-weight:bold;">VI. PHẠM VI VÀ KẾ HOẠCH NGHIÊN CỨU</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(7)}</div>
 
-<h2 style="font-size:14pt; font-weight:bold;">Phần II. Giải quyết vấn đề</h2>
+<h2 style="font-size:14pt; font-weight:bold;">PHẦN NỘI DUNG</h2>
 
-<h3 style="font-size:13pt; font-weight:bold;">1. Cơ sở lí luận</h3>
+<h3 style="font-size:13pt; font-weight:bold;">I. CƠ SỞ LÝ LUẬN</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(8)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">2. Thực trạng</h3>
+<h3 style="font-size:13pt; font-weight:bold;">II. THỰC TRẠNG</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(9)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">3. Các biện pháp thực hiện sáng kiến</h3>
+<h3 style="font-size:13pt; font-weight:bold;">III. BIỆN PHÁP THỰC HIỆN</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(10)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">4. Hiệu quả đạt được sau khi áp dụng sáng kiến</h3>
+<h3 style="font-size:13pt; font-weight:bold;">IV. KẾT QUẢ ĐẠT ĐƯỢC</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(11)}</div>
 
-<h2 style="font-size:14pt; font-weight:bold;">Phần III. Kết quả</h2>
+<h2 style="font-size:14pt; font-weight:bold;">PHẦN KẾT LUẬN</h2>
+
+<h3 style="font-size:13pt; font-weight:bold;">I. KẾT LUẬN CHUNG</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(12)}</div>
 
-<h2 style="font-size:14pt; font-weight:bold;">Phần IV. Tài liệu tham khảo</h2>
-<div style="margin-bottom:12pt;">${referencesBodyHtml}</div>
+<h3 style="font-size:13pt; font-weight:bold;">II. BÀI HỌC KINH NGHIỆM</h3>
+<div style="margin-bottom:12pt;">${getSectionHtml(13)}</div>
+
+<h3 style="font-size:13pt; font-weight:bold;">III. ĐỀ XUẤT - KHUYẾN NGHỊ</h3>
+<div style="margin-bottom:12pt;">${getSectionHtml(14)}</div>
+
+<h2 style="font-size:14pt; font-weight:bold;">PHỤ LỤC</h2>
+<div style="margin-bottom:12pt;">${getSectionHtml(15)}</div>
 `;
 
       const docHtml = `
@@ -1920,8 +1782,8 @@ ${bodyHtml}
     const stepId = data.currentStep;
     if (stepId === 0) return renderInfoStep();
     if (stepId === 1) return renderOutlineStep();
-    if (stepId >= 2 && stepId <= 12) return renderWriteStep(stepId);
-    if (stepId === 13) return renderExportStep();
+    if (SECTION_MAP[stepId]) return renderWriteStep(stepId);
+    if (stepId === 16) return renderExportStep();
     return null;
   };
 
@@ -1930,7 +1792,7 @@ ${bodyHtml}
     if (stepId === 0) return data.confirmedRequirements;
     if (stepId === 1) return !!data.outline;
     if (SECTION_MAP[stepId]) return !!data.sections[SECTION_MAP[stepId]];
-    if (stepId === 13) {
+    if (stepId === 16) {
       const allSections = Object.keys(SECTION_MAP).map(k => Number(k));
       return allSections.every(k => !!data.sections[SECTION_MAP[k]]);
     }
@@ -1955,12 +1817,6 @@ ${bodyHtml}
           {STEPS.map((step) => {
             const isActive = data.currentStep === step.id;
             const completed = isStepCompleted(step.id);
-            const measurePlan = step.id === 10
-              ? sectionLengthPlans.find((plan) => plan.sectionName === MEASURE_SECTION_NAME)
-              : undefined;
-            const measureSubPlans = measurePlan
-              ? splitPlanForSubsections(measurePlan as SectionLengthPlan, MEASURE_SUBSECTIONS.length)
-              : null;
 
             return (
               <button
@@ -1984,26 +1840,6 @@ ${bodyHtml}
                   )}
                 </div>
                 <span className="text-[11px] text-slate-400 mt-0.5">{step.desc}</span>
-                {step.id === 10 && (
-                  <div className="mt-1 space-y-0.5 pl-2 border-l border-primary/30">
-                    {MEASURE_SUBSECTIONS.map((label, index) => {
-                      const shortLabel = index === 0
-                        ? '3.1 Khởi động'
-                        : index === 1
-                          ? '3.2 Di chuyển đội hình'
-                          : '3.3 Thả lỏng';
-                      const pageLabel = measureSubPlans
-                        ? ` ~${measureSubPlans[index].targetPagesLabel} trang`
-                        : '';
-
-                      return (
-                        <div key={label} className="text-[10px] text-slate-400 leading-tight">
-                          {shortLabel}{pageLabel}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </button>
             );
           })}
@@ -2308,6 +2144,19 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

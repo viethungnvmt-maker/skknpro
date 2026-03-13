@@ -7,18 +7,39 @@ const WORDS_PER_PAGE = 420;
 const TOKENS_PER_WORD = 2.4;
 const MAX_SECTION_OUTPUT_TOKENS = 8192;
 
+const SECTION_KEYS = {
+  INTRO_REASON: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - I. L\u00fd do ch\u1ecdn \u0111\u1ec1 t\u00e0i',
+  INTRO_PURPOSE: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - II. M\u1ee5c \u0111\u00edch nghi\u00ean c\u1ee9u',
+  INTRO_OBJECT: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - III. \u0110\u1ed1i t\u01b0\u1ee3ng nghi\u00ean c\u1ee9u',
+  INTRO_SURVEY: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - IV. \u0110\u1ed1i t\u01b0\u1ee3ng kh\u1ea3o s\u00e1t th\u1ef1c nghi\u1ec7m',
+  INTRO_METHOD: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - V. Ph\u01b0\u01a1ng ph\u00e1p nghi\u00ean c\u1ee9u',
+  INTRO_SCOPE: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - VI. Ph\u1ea1m vi v\u00e0 k\u1ebf ho\u1ea1ch nghi\u00ean c\u1ee9u',
+  CONTENT_THEORY: 'PH\u1ea6N N\u1ed8I DUNG - I. C\u01a1 s\u1edf l\u00fd lu\u1eadn',
+  CONTENT_STATUS: 'PH\u1ea6N N\u1ed8I DUNG - II. Th\u1ef1c tr\u1ea1ng',
+  CONTENT_MEASURES: 'PH\u1ea6N N\u1ed8I DUNG - III. Bi\u1ec7n ph\u00e1p th\u1ef1c hi\u1ec7n',
+  CONTENT_RESULTS: 'PH\u1ea6N N\u1ed8I DUNG - IV. K\u1ebft qu\u1ea3 \u0111\u1ea1t \u0111\u01b0\u1ee3c',
+  CONCLUSION_GENERAL: 'PH\u1ea6N K\u1ebeT LU\u1eacN - I. K\u1ebft lu\u1eadn chung',
+  CONCLUSION_LESSONS: 'PH\u1ea6N K\u1ebeT LU\u1eacN - II. B\u00e0i h\u1ecdc kinh nghi\u1ec7m',
+  CONCLUSION_PROPOSALS: 'PH\u1ea6N K\u1ebeT LU\u1eacN - III. \u0110\u1ec1 xu\u1ea5t - khuy\u1ebfn ngh\u1ecb',
+  APPENDIX: 'PH\u1ee4 L\u1ee4C',
+} as const;
+
+
 const SECTION_LENGTH_WEIGHTS: Record<string, number> = {
-  'I.1. Lí do chọn đề tài': 0.07,
-  'I.2. Mục đích nghiên cứu': 0.06,
-  'I.3. Đối tượng nghiên cứu': 0.05,
-  'I.4. Đối tượng khảo sát': 0.05,
-  'I.5. Phương pháp nghiên cứu': 0.06,
-  'I.6. Phạm vi triển khai': 0.06,
-  'II.1. Cơ sở lí luận': 0.10,
-  'II.2. Thực trạng': 0.12,
-  'II.3. Các biện pháp thực hiện sáng kiến': 0.24,
-  'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến': 0.12,
-  'III. Kết quả': 0.07,
+  [SECTION_KEYS.INTRO_REASON]: 0.07,
+  [SECTION_KEYS.INTRO_PURPOSE]: 0.05,
+  [SECTION_KEYS.INTRO_OBJECT]: 0.04,
+  [SECTION_KEYS.INTRO_SURVEY]: 0.05,
+  [SECTION_KEYS.INTRO_METHOD]: 0.06,
+  [SECTION_KEYS.INTRO_SCOPE]: 0.05,
+  [SECTION_KEYS.CONTENT_THEORY]: 0.11,
+  [SECTION_KEYS.CONTENT_STATUS]: 0.14,
+  [SECTION_KEYS.CONTENT_MEASURES]: 0.20,
+  [SECTION_KEYS.CONTENT_RESULTS]: 0.10,
+  [SECTION_KEYS.CONCLUSION_GENERAL]: 0.04,
+  [SECTION_KEYS.CONCLUSION_LESSONS]: 0.03,
+  [SECTION_KEYS.CONCLUSION_PROPOSALS]: 0.03,
+  [SECTION_KEYS.APPENDIX]: 0.03,
 };
 
 const SECTION_NAMES = Object.keys(SECTION_LENGTH_WEIGHTS);
@@ -418,24 +439,40 @@ export const PROMPTS = {
     ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
     ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
 
-    Yêu cầu dàn ý phải bám sát cấu trúc chuẩn SKKN sau:
-    Phần I. Đặt vấn đề
-      1. Lí do chọn đề tài
-      2. Mục đích nghiên cứu
-      3. Đối tượng nghiên cứu
-      4. Đối tượng khảo sát
-      5. Phương pháp nghiên cứu
-      6. Phạm vi triển khai
-    Phần II. Giải quyết vấn đề
-      1. Cơ sở lí luận
-      2. Thực trạng
-      3. Các biện pháp thực hiện sáng kiến
-        3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động
-        3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang)
-        3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng
-      4. Hiệu quả đạt được sau khi áp dụng sáng kiến
-    Phần III. Kết quả
-    Phần IV. Tài liệu tham khảo
+    Yeu cau dan y phai bam sat cau truc sau:
+    PHAN MO DAU
+      I. Ly do chon de tai
+      II. Muc dich nghien cuu
+      III. Doi tuong nghien cuu
+      IV. Doi tuong khao sat thuc nghiem
+      V. Phuong phap nghien cuu
+      VI. Pham vi va ke hoach nghien cuu
+
+    PHAN NOI DUNG
+      I. Co so ly luan
+        1. Gioi thieu ve phan mem Logo
+        2. Vi sao Logo duoc dua vao day trong truong tieu hoc
+        3. Khi hoc Logo hoc sinh duoc hoc va co the lam gi
+      II. Thuc trang
+        1. Thuan loi va kho khan
+          1.1. Thuan loi
+          1.2. Kho khan
+        2. Thuc trang day - hoc phan mem Logo o truong tieu hoc
+      III. Bien phap thuc hien
+        1. Giup hoc sinh phat hien va khac phuc loi thuong gap
+        2. Giup hoc sinh nam duoc yeu cau cua bai tap
+          2.1. Tao thoi quen nghien cuu de bai, phan tich hinh mau
+          2.2. Su dung cau lenh Wait giup hoc sinh phan tich de bai
+        3. Giup hoc sinh viet nhanh cac cau lenh lap, cac thu tuc
+        4. Bieu duong, khich le su tim toi, sang tao cua hoc sinh
+      IV. Ket qua dat duoc
+
+    PHAN KET LUAN
+      I. Ket luan chung
+      II. Bai hoc kinh nghiem
+      III. De xuat - khuyen nghi
+
+    PHU LUC
 
     QUAN TRỌNG:
     - Chỉ viết dàn ý, không viết nội dung chi tiết.
@@ -485,57 +522,16 @@ export const PROMPTS = {
     - Không sử dụng LaTeX.
     - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
     ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
-        ${sectionName.includes('II.3. Các biện pháp thực hiện sáng kiến')
-      ? `- Bắt buộc chia rõ 3 mục con: 3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động; 3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang); 3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng.`
+        ${sectionName === SECTION_KEYS.CONTENT_MEASURES
+      ? `- Bat buoc trinh bay du 4 nhom bien phap theo khung: (1) phat hien va khac phuc loi thuong gap; (2) nam yeu cau bai tap voi 2.1 va 2.2; (3) viet nhanh cau lenh lap, thu tuc; (4) bieu duong, khich le sang tao.`
       : ''}
-    ${sectionName.includes('II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến')
+    ${sectionName === SECTION_KEYS.CONTENT_RESULTS
       ? `- Ưu tiên nêu rõ số liệu trước và sau áp dụng, minh chứng định lượng và định tính.`
       : ''}
   `,
       maxTokens: plan?.maxTokens || 8192,
     };
   },
-
-  WRITE_MEASURE_SUBSECTION: (
-    sectionName: string,
-    subsectionTitle: string,
-    outline: string,
-    info: any,
-    plan: SectionLengthPlan,
-  ) => ({
-    prompt: `
-    Bạn đang viết DUY NHẤT một mục con trong SKKN.
-
-    Dàn ý tổng thể:
-    ${outline}
-
-    Mục lớn: ${sectionName}
-    Mục con cần viết: ${subsectionTitle}
-
-    Thông tin chung:
-    - Tên đề tài: ${info.title}
-    - Môn học: ${info.subject || 'Chưa xác định'}
-    - Khối lớp: ${info.grade || 'Chưa xác định'}
-    - Tên trường: ${info.school || 'Chưa xác định'}
-    - Địa điểm: ${info.location || 'Chưa xác định'}
-    ${info.extraExamples ? '- Ưu tiên thêm ví dụ thực tế lớp học.' : ''}
-    ${info.extraTables ? '- Có thể chèn bảng số liệu ngắn nếu phù hợp.' : ''}
-    ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
-
-    RÀNG BUỘC ĐỘ DÀI CHO RIÊNG MỤC CON NÀY:
-    - Mục tiêu: khoảng ${plan.targetWords} từ.
-    - Khoảng chấp nhận: ${plan.minWords}-${plan.maxWords} từ.
-    - BẮT BUỘC không dưới ${plan.minWords} từ.
-
-    YÊU CẦU CỐ ĐỊNH:
-    - Chỉ viết đúng nội dung của mục con "${subsectionTitle}".
-    - Không viết sang 2 mục con còn lại.
-    - Không viết lời dẫn nhập kiểu "Dưới đây là...".
-    - Viết cụ thể cách triển khai, minh chứng thực tế, tiêu chí đánh giá.
-    - Trả về bằng Markdown, nội dung hoàn chỉnh cuối cùng.
-    `,
-    maxTokens: plan.maxTokens,
-  }),
 
   REWRITE_SECTION_LENGTH: (
     sectionName: string,
@@ -557,8 +553,8 @@ export const PROMPTS = {
     Nhiệm vụ:
     - ${mode === 'shorten' ? 'Rút gọn bớt nội dung thừa, bỏ lặp ý, giữ lại ý quan trọng nhất.' : 'Mở rộng vừa đủ bằng ví dụ, chi tiết triển khai, minh họa thực tế nhưng không lan man.'}
     - BẮT BUỘC đảm bảo bản cuối cùng nằm trong khoảng ${plan.minWords}-${plan.maxWords} từ, ưu tiên gần ${plan.targetWords} từ.
-    ${sectionName.includes('II.3. Các biện pháp thực hiện sáng kiến')
-      ? '- BẮT BUỘC giữ đủ 3 mục con 3.1, 3.2, 3.3; không được bỏ mục nào dù phải rút gọn.'
+    ${sectionName === SECTION_KEYS.CONTENT_MEASURES
+      ? '- BAT BUOC giu du cac y 1, 2 (bao gom 2.1, 2.2), 3, 4 trong phan bien phap; khong duoc bo muc nao du phai rut gon.'
       : ''}
     - Nếu còn ngắn hơn ${plan.minWords} từ thì tiếp tục bổ sung ý, ví dụ, minh họa để đủ độ dài.
     - Nếu còn dài hơn ${plan.maxWords} từ thì tiếp tục rút gọn cho đến khi đạt yêu cầu.
