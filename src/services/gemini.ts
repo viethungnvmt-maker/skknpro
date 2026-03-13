@@ -1,24 +1,24 @@
-
-const MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o-mini'];
-// Index 0: GPT-4.1 Mini (default)
-// Index 1: GPT-4.1 (strong reasoning)
-// Index 2: GPT-4o Mini (fast + low cost)
+﻿
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+// Index 0: Gemini 2.5 Flash (default)
+// Index 1: Gemini 2.0 Flash (stable + fast)
+// Index 2: Gemini 2.0 Flash Lite (lower cost)
 const WORDS_PER_PAGE = 420;
 const TOKENS_PER_WORD = 2.4;
 const MAX_SECTION_OUTPUT_TOKENS = 8192;
 
 const SECTION_LENGTH_WEIGHTS: Record<string, number> = {
-  'I.1. Tính cấp thiết phải tiến hành sáng kiến': 0.08,
-  'I.2. Mục tiêu của đề tài, sáng kiến': 0.04,
-  'I.3. Thời gian, đối tượng, phạm vi nghiên cứu': 0.03,
-  'II.1. Hiện trạng vấn đề': 0.1,
-  'II.2. Giải pháp thực hiện sáng kiến': 0.25,
-  'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 0.15,
-  'II.4. Hiệu quả của sáng kiến': 0.15,
-  'II.5. Tính khả thi': 0.06,
-  'II.6. Thời gian thực hiện': 0.03,
-  'II.7. Kinh phí thực hiện': 0.02,
-  'III. Kiến nghị, đề xuất': 0.1,
+  'I.1. TÃ­nh cáº¥p thiáº¿t pháº£i tiáº¿n hÃ nh sÃ¡ng kiáº¿n': 0.08,
+  'I.2. Má»¥c tiÃªu cá»§a Ä‘á» tÃ i, sÃ¡ng kiáº¿n': 0.04,
+  'I.3. Thá»i gian, Ä‘á»‘i tÆ°á»£ng, pháº¡m vi nghiÃªn cá»©u': 0.03,
+  'II.1. Hiá»‡n tráº¡ng váº¥n Ä‘á»': 0.1,
+  'II.2. Giáº£i phÃ¡p thá»±c hiá»‡n sÃ¡ng kiáº¿n': 0.25,
+  'II.3. Káº¿t quáº£ sau khi Ã¡p dá»¥ng giáº£i phÃ¡p sÃ¡ng kiáº¿n': 0.15,
+  'II.4. Hiá»‡u quáº£ cá»§a sÃ¡ng kiáº¿n': 0.15,
+  'II.5. TÃ­nh kháº£ thi': 0.06,
+  'II.6. Thá»i gian thá»±c hiá»‡n': 0.03,
+  'II.7. Kinh phÃ­ thá»±c hiá»‡n': 0.02,
+  'III. Kiáº¿n nghá»‹, Ä‘á» xuáº¥t': 0.1,
 };
 
 const SECTION_NAMES = Object.keys(SECTION_LENGTH_WEIGHTS);
@@ -123,7 +123,7 @@ export function estimateWordCount(markdown: string): number {
     .replace(/\s+/g, ' ')
     .trim();
 
-  const words = plainText.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu);
+  const words = plainText.match(/[\p{L}\p{N}]+(?:['â€™-][\p{L}\p{N}]+)*/gu);
   return words?.length ?? 0;
 }
 
@@ -158,22 +158,22 @@ export async function callGeminiAI(
   _rateLimitRetryCount = 0,
 ): Promise<string | null> {
   if (modelIndex === undefined) {
-    modelIndex = parseInt(localStorage.getItem('ai_model_index') || localStorage.getItem('gemini_model_index') || '0');
+    modelIndex = parseInt(localStorage.getItem('gemini_model_index') || localStorage.getItem('ai_model_index') || '0');
     if (isNaN(modelIndex) || modelIndex < 0 || modelIndex >= MODELS.length) modelIndex = 0;
   }
 
   const triedModels = _triedModels || new Set<number>();
   triedModels.add(modelIndex);
 
-  const apiKey = localStorage.getItem('openai_api_key') || localStorage.getItem('gemini_api_key');
+  const apiKey = localStorage.getItem('gemini_api_key');
   const modelName = MODELS[modelIndex];
 
   try {
-    const response = await fetch('/api/openai', {
+    const response = await fetch('/api/gemini', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(apiKey ? { 'x-openai-key': apiKey } : {}),
+        ...(apiKey ? { 'x-gemini-key': apiKey } : {}),
       },
       body: JSON.stringify({
         prompt,
@@ -201,7 +201,7 @@ export async function callGeminiAI(
       }
 
       throw new Error(
-        'Đang chạm giới hạn tốc độ API (RPM/TPM), không phải hết quota ngày. Vui lòng chờ 30-60 giây rồi thử lại.',
+        'Äang cháº¡m giá»›i háº¡n tá»‘c Ä‘á»™ API (RPM/TPM), khÃ´ng pháº£i háº¿t quota ngÃ y. Vui lÃ²ng chá» 30-60 giÃ¢y rá»“i thá»­ láº¡i.',
       );
     }
 
@@ -219,45 +219,45 @@ export async function callGeminiAI(
 
 export const PROMPTS = {
   GENERATE_OUTLINE: (info: any) => `
-    Bạn là một chuyên gia giáo dục Việt Nam. Hãy lập một dàn ý chi tiết cho Sáng kiến kinh nghiệm (SKKN) với các thông tin sau:
-    - Tên đề tài: ${info.title}
-    - Môn học: ${info.subject || 'Chưa xác định'}
-    - Khối lớp: ${info.grade || 'Chưa xác định'}
-    - Cấp học: ${info.level || 'Chưa xác định'}
-    - Tên trường: ${info.school || 'Chưa xác định'}
-    - Địa điểm: ${info.location || 'Chưa xác định'}
-    - Điều kiện CSVC: ${info.facilities || 'Chưa xác định'}
-    - Sách giáo khoa: ${info.textbook || 'Chưa xác định'}
-    - Đối tượng nghiên cứu: ${info.target || 'Chưa xác định'}
-    - Thời gian: ${info.duration || 'Chưa xác định'}
-    - Ứng dụng AI/Công nghệ: ${info.techUsed || 'Chưa xác định'}
-    - Đặc thù đề tài: ${info.focus || 'Chưa xác định'}
-    ${info.pageLimit ? `- Tổng độ dài mục tiêu: khoảng ${info.pageLimit} trang A4` : ''}
-    ${info.extraExamples ? '- Yêu cầu thêm nhiều bài toán thực tế, ví dụ minh họa' : ''}
-    ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
-    ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
+    Báº¡n lÃ  má»™t chuyÃªn gia giÃ¡o dá»¥c Viá»‡t Nam. HÃ£y láº­p má»™t dÃ n Ã½ chi tiáº¿t cho SÃ¡ng kiáº¿n kinh nghiá»‡m (SKKN) vá»›i cÃ¡c thÃ´ng tin sau:
+    - TÃªn Ä‘á» tÃ i: ${info.title}
+    - MÃ´n há»c: ${info.subject || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Khá»‘i lá»›p: ${info.grade || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Cáº¥p há»c: ${info.level || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - TÃªn trÆ°á»ng: ${info.school || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Äá»‹a Ä‘iá»ƒm: ${info.location || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Äiá»u kiá»‡n CSVC: ${info.facilities || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - SÃ¡ch giÃ¡o khoa: ${info.textbook || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Äá»‘i tÆ°á»£ng nghiÃªn cá»©u: ${info.target || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Thá»i gian: ${info.duration || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - á»¨ng dá»¥ng AI/CÃ´ng nghá»‡: ${info.techUsed || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Äáº·c thÃ¹ Ä‘á» tÃ i: ${info.focus || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    ${info.pageLimit ? `- Tá»•ng Ä‘á»™ dÃ i má»¥c tiÃªu: khoáº£ng ${info.pageLimit} trang A4` : ''}
+    ${info.extraExamples ? '- YÃªu cáº§u thÃªm nhiá»u bÃ i toÃ¡n thá»±c táº¿, vÃ­ dá»¥ minh há»a' : ''}
+    ${info.extraTables ? '- YÃªu cáº§u bá»• sung báº£ng biá»ƒu, sá»‘ liá»‡u thá»‘ng kÃª' : ''}
+    ${info.customRequirements ? `- YÃªu cáº§u bá»• sung: ${info.customRequirements}` : ''}
 
-    Yêu cầu dàn ý phải bám sát cấu trúc chuẩn SKKN:
-    I. Đặt vấn đề
-      1. Tính cấp thiết phải tiến hành sáng kiến
-      2. Mục tiêu của đề tài, sáng kiến
-      3. Thời gian, đối tượng, phạm vi nghiên cứu
-    II. Nội dung của sáng kiến
-      1. Hiện trạng vấn đề
-      2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề
-      3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị
-      4. Hiệu quả của sáng kiến
-      5. Tính khả thi
-      6. Thời gian thực hiện đề tài, sáng kiến
-      7. Kinh phí thực hiện đề tài, sáng kiến
-    III. Kiến nghị, đề xuất
+    YÃªu cáº§u dÃ n Ã½ pháº£i bÃ¡m sÃ¡t cáº¥u trÃºc chuáº©n SKKN:
+    I. Äáº·t váº¥n Ä‘á»
+      1. TÃ­nh cáº¥p thiáº¿t pháº£i tiáº¿n hÃ nh sÃ¡ng kiáº¿n
+      2. Má»¥c tiÃªu cá»§a Ä‘á» tÃ i, sÃ¡ng kiáº¿n
+      3. Thá»i gian, Ä‘á»‘i tÆ°á»£ng, pháº¡m vi nghiÃªn cá»©u
+    II. Ná»™i dung cá»§a sÃ¡ng kiáº¿n
+      1. Hiá»‡n tráº¡ng váº¥n Ä‘á»
+      2. Giáº£i phÃ¡p thá»±c hiá»‡n sÃ¡ng kiáº¿n Ä‘á»ƒ giáº£i quyáº¿t váº¥n Ä‘á»
+      3. Káº¿t quáº£ sau khi Ã¡p dá»¥ng giáº£i phÃ¡p sÃ¡ng kiáº¿n táº¡i Ä‘Æ¡n vá»‹
+      4. Hiá»‡u quáº£ cá»§a sÃ¡ng kiáº¿n
+      5. TÃ­nh kháº£ thi
+      6. Thá»i gian thá»±c hiá»‡n Ä‘á» tÃ i, sÃ¡ng kiáº¿n
+      7. Kinh phÃ­ thá»±c hiá»‡n Ä‘á» tÃ i, sÃ¡ng kiáº¿n
+    III. Kiáº¿n nghá»‹, Ä‘á» xuáº¥t
 
-    QUAN TRỌNG:
-    - Chỉ viết dàn ý, không viết nội dung chi tiết.
-    - Không ghi số trang cho từng phần trong phần trả lời.
-    - Không viết lời mở đầu hay bình luận thêm.
-    - Mỗi phần gồm 3-5 ý chính ngắn gọn, rõ ràng.
-    - Trả về bằng Markdown.
+    QUAN TRá»ŒNG:
+    - Chá»‰ viáº¿t dÃ n Ã½, khÃ´ng viáº¿t ná»™i dung chi tiáº¿t.
+    - KhÃ´ng ghi sá»‘ trang cho tá»«ng pháº§n trong pháº§n tráº£ lá»i.
+    - KhÃ´ng viáº¿t lá»i má»Ÿ Ä‘áº§u hay bÃ¬nh luáº­n thÃªm.
+    - Má»—i pháº§n gá»“m 3-5 Ã½ chÃ­nh ngáº¯n gá»n, rÃµ rÃ ng.
+    - Tráº£ vá» báº±ng Markdown.
   `,
 
   WRITE_SECTION: (sectionName: string, outline: string, info: any, planOverride?: SectionLengthPlan | null) => {
@@ -265,12 +265,12 @@ export const PROMPTS = {
 
     const lengthBlock = plan
       ? `
-    === RÀNG BUỘC ĐỘ DÀI BẮT BUỘC ===
-    - Toàn bộ SKKN chỉ được dài khoảng ${plan.totalPages} trang A4.
-    - Riêng mục "${sectionName}" chỉ được chiếm khoảng ${plan.targetPagesLabel} trang, tương đương khoảng ${plan.targetWords} từ.
-    - Khoảng chấp nhận được cho mục này là từ ${plan.minWords} đến ${plan.maxWords} từ.
-    - Trước khi trả lời, tự kiểm tra độ dài và chủ động rút gọn hoặc bổ sung để nằm trong khoảng cho phép.
-    - Không được viết dài hơn đáng kể so với mức đã phân bổ cho mục này.
+    === RÃ€NG BUá»˜C Äá»˜ DÃ€I Báº®T BUá»˜C ===
+    - ToÃ n bá»™ SKKN chá»‰ Ä‘Æ°á»£c dÃ i khoáº£ng ${plan.totalPages} trang A4.
+    - RiÃªng má»¥c "${sectionName}" chá»‰ Ä‘Æ°á»£c chiáº¿m khoáº£ng ${plan.targetPagesLabel} trang, tÆ°Æ¡ng Ä‘Æ°Æ¡ng khoáº£ng ${plan.targetWords} tá»«.
+    - Khoáº£ng cháº¥p nháº­n Ä‘Æ°á»£c cho má»¥c nÃ y lÃ  tá»« ${plan.minWords} Ä‘áº¿n ${plan.maxWords} tá»«.
+    - TrÆ°á»›c khi tráº£ lá»i, tá»± kiá»ƒm tra Ä‘á»™ dÃ i vÃ  chá»§ Ä‘á»™ng rÃºt gá»n hoáº·c bá»• sung Ä‘á»ƒ náº±m trong khoáº£ng cho phÃ©p.
+    - KhÃ´ng Ä‘Æ°á»£c viáº¿t dÃ i hÆ¡n Ä‘Ã¡ng ká»ƒ so vá»›i má»©c Ä‘Ã£ phÃ¢n bá»• cho má»¥c nÃ y.
     ==================================
     `
       : '';
@@ -278,29 +278,29 @@ export const PROMPTS = {
     return {
       prompt: `
     ${lengthBlock}
-    Dựa trên dàn ý SKKN sau:
+    Dá»±a trÃªn dÃ n Ã½ SKKN sau:
     ${outline}
 
-    Hãy viết nội dung cho phần: "${sectionName}".
-    Thông tin chung:
-    - Tên đề tài: ${info.title}
-    - Môn học: ${info.subject || 'Chưa xác định'}
-    - Khối lớp: ${info.grade || 'Chưa xác định'}
-    - Tên trường: ${info.school || 'Chưa xác định'}
-    - Địa điểm: ${info.location || 'Chưa xác định'}
-    ${info.extraExamples ? '- Yêu cầu thêm nhiều ví dụ minh họa thực tế' : ''}
-    ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
-    ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
+    HÃ£y viáº¿t ná»™i dung cho pháº§n: "${sectionName}".
+    ThÃ´ng tin chung:
+    - TÃªn Ä‘á» tÃ i: ${info.title}
+    - MÃ´n há»c: ${info.subject || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Khá»‘i lá»›p: ${info.grade || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - TÃªn trÆ°á»ng: ${info.school || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    - Äá»‹a Ä‘iá»ƒm: ${info.location || 'ChÆ°a xÃ¡c Ä‘á»‹nh'}
+    ${info.extraExamples ? '- YÃªu cáº§u thÃªm nhiá»u vÃ­ dá»¥ minh há»a thá»±c táº¿' : ''}
+    ${info.extraTables ? '- YÃªu cáº§u bá»• sung báº£ng biá»ƒu, sá»‘ liá»‡u thá»‘ng kÃª' : ''}
+    ${info.customRequirements ? `- YÃªu cáº§u bá»• sung: ${info.customRequirements}` : ''}
 
-    Yêu cầu:
-    - Không viết lời dẫn nhập kiểu "Dưới đây là...", "Phần này trình bày...".
-    - Viết đúng trọng tâm đề tài, tránh lan man và tránh mẫu câu chung chung dùng cho mọi SKKN.
-    - Văn phong sư phạm, trang trọng, cụ thể, có chi tiết thực tế lớp học khi phù hợp.
-    - Nếu có bảng biểu thì điền đầy đủ số liệu hợp lý, không để ô trống.
-    - Không sử dụng LaTeX.
-    - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
-    ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
-    ${sectionName.includes('Hiệu quả') ? `- Bắt buộc chia rõ 3 mục con: 4.1. Hiệu quả về khoa học, 4.2. Hiệu quả về kinh tế, 4.3. Hiệu quả về xã hội.` : ''}
+    YÃªu cáº§u:
+    - KhÃ´ng viáº¿t lá»i dáº«n nháº­p kiá»ƒu "DÆ°á»›i Ä‘Ã¢y lÃ ...", "Pháº§n nÃ y trÃ¬nh bÃ y...".
+    - Viáº¿t Ä‘Ãºng trá»ng tÃ¢m Ä‘á» tÃ i, trÃ¡nh lan man vÃ  trÃ¡nh máº«u cÃ¢u chung chung dÃ¹ng cho má»i SKKN.
+    - VÄƒn phong sÆ° pháº¡m, trang trá»ng, cá»¥ thá»ƒ, cÃ³ chi tiáº¿t thá»±c táº¿ lá»›p há»c khi phÃ¹ há»£p.
+    - Náº¿u cÃ³ báº£ng biá»ƒu thÃ¬ Ä‘iá»n Ä‘áº§y Ä‘á»§ sá»‘ liá»‡u há»£p lÃ½, khÃ´ng Ä‘á»ƒ Ã´ trá»‘ng.
+    - KhÃ´ng sá»­ dá»¥ng LaTeX.
+    - Tráº£ vá» Ä‘Ãºng ná»™i dung cuá»‘i cÃ¹ng báº±ng Markdown, khÃ´ng kÃ¨m giáº£i thÃ­ch.
+    ${plan ? `- Má»¥c tiÃªu Ä‘á»™ dÃ i: khoáº£ng ${plan.targetWords} tá»«, cháº¥p nháº­n trong khoáº£ng ${plan.minWords}-${plan.maxWords} tá»«.` : '- Viáº¿t chi tiáº¿t, Ä‘áº§y Ä‘á»§, khÃ´ng tÃ³m táº¯t.'}
+    ${sectionName.includes('Hiá»‡u quáº£') ? `- Báº¯t buá»™c chia rÃµ 3 má»¥c con: 4.1. Hiá»‡u quáº£ vá» khoa há»c, 4.2. Hiá»‡u quáº£ vá» kinh táº¿, 4.3. Hiá»‡u quáº£ vá» xÃ£ há»™i.` : ''}
   `,
       maxTokens: plan?.maxTokens || 8192,
     };
@@ -313,98 +313,101 @@ export const PROMPTS = {
     plan: SectionLengthPlan,
     mode: 'shorten' | 'expand',
   ) => `
-    Bạn đang biên tập lại một mục trong SKKN để khớp đúng độ dài đã phân bổ.
+    Báº¡n Ä‘ang biÃªn táº­p láº¡i má»™t má»¥c trong SKKN Ä‘á»ƒ khá»›p Ä‘Ãºng Ä‘á»™ dÃ i Ä‘Ã£ phÃ¢n bá»•.
 
-    Thông tin cố định:
-    - Tên đề tài: ${info.title}
-    - Phần cần chỉnh: ${sectionName}
-    - Tổng độ dài toàn bài: khoảng ${plan.totalPages} trang A4
-    - Mục này chỉ được chiếm khoảng ${plan.targetPagesLabel} trang
-    - Mục tiêu số từ: khoảng ${plan.targetWords} từ
-    - Khoảng chấp nhận: ${plan.minWords}-${plan.maxWords} từ
+    ThÃ´ng tin cá»‘ Ä‘á»‹nh:
+    - TÃªn Ä‘á» tÃ i: ${info.title}
+    - Pháº§n cáº§n chá»‰nh: ${sectionName}
+    - Tá»•ng Ä‘á»™ dÃ i toÃ n bÃ i: khoáº£ng ${plan.totalPages} trang A4
+    - Má»¥c nÃ y chá»‰ Ä‘Æ°á»£c chiáº¿m khoáº£ng ${plan.targetPagesLabel} trang
+    - Má»¥c tiÃªu sá»‘ tá»«: khoáº£ng ${plan.targetWords} tá»«
+    - Khoáº£ng cháº¥p nháº­n: ${plan.minWords}-${plan.maxWords} tá»«
 
-    Nhiệm vụ:
-    - ${mode === 'shorten' ? 'Rút gọn bớt nội dung thừa, bỏ lặp ý, giữ lại ý quan trọng nhất.' : 'Mở rộng vừa đủ bằng ví dụ, chi tiết triển khai, minh họa thực tế nhưng không lan man.'}
-    - BẮT BUỘC đảm bảo bản cuối cùng nằm trong khoảng ${plan.minWords}-${plan.maxWords} từ, ưu tiên gần ${plan.targetWords} từ.
-    - Nếu còn ngắn hơn ${plan.minWords} từ thì tiếp tục bổ sung ý, ví dụ, minh họa để đủ độ dài.
-    - Nếu còn dài hơn ${plan.maxWords} từ thì tiếp tục rút gọn cho đến khi đạt yêu cầu.
-    - Không thêm lời giải thích về việc chỉnh sửa.
-    - Chỉ trả về phiên bản nội dung cuối cùng bằng Markdown.
+    Nhiá»‡m vá»¥:
+    - ${mode === 'shorten' ? 'RÃºt gá»n bá»›t ná»™i dung thá»«a, bá» láº·p Ã½, giá»¯ láº¡i Ã½ quan trá»ng nháº¥t.' : 'Má»Ÿ rá»™ng vá»«a Ä‘á»§ báº±ng vÃ­ dá»¥, chi tiáº¿t triá»ƒn khai, minh há»a thá»±c táº¿ nhÆ°ng khÃ´ng lan man.'}
+    - Báº®T BUá»˜C Ä‘áº£m báº£o báº£n cuá»‘i cÃ¹ng náº±m trong khoáº£ng ${plan.minWords}-${plan.maxWords} tá»«, Æ°u tiÃªn gáº§n ${plan.targetWords} tá»«.
+    - Náº¿u cÃ²n ngáº¯n hÆ¡n ${plan.minWords} tá»« thÃ¬ tiáº¿p tá»¥c bá»• sung Ã½, vÃ­ dá»¥, minh há»a Ä‘á»ƒ Ä‘á»§ Ä‘á»™ dÃ i.
+    - Náº¿u cÃ²n dÃ i hÆ¡n ${plan.maxWords} tá»« thÃ¬ tiáº¿p tá»¥c rÃºt gá»n cho Ä‘áº¿n khi Ä‘áº¡t yÃªu cáº§u.
+    - KhÃ´ng thÃªm lá»i giáº£i thÃ­ch vá» viá»‡c chá»‰nh sá»­a.
+    - Chá»‰ tráº£ vá» phiÃªn báº£n ná»™i dung cuá»‘i cÃ¹ng báº±ng Markdown.
 
-    Nội dung hiện tại:
+    Ná»™i dung hiá»‡n táº¡i:
     ${content}
   `,
   ANALYZE_TITLE: (title: string, subject?: string) => `
-    Bạn là chuyên gia đánh giá tên đề tài Sáng kiến kinh nghiệm (SKKN) ở Việt Nam.
+    Báº¡n lÃ  chuyÃªn gia Ä‘Ã¡nh giÃ¡ tÃªn Ä‘á» tÃ i SÃ¡ng kiáº¿n kinh nghiá»‡m (SKKN) á»Ÿ Viá»‡t Nam.
 
-    Hãy phân tích tên đề tài sau: "${title}"
-    ${subject ? `Môn học: ${subject}` : ''}
+    HÃ£y phÃ¢n tÃ­ch tÃªn Ä‘á» tÃ i sau: "${title}"
+    ${subject ? `MÃ´n há»c: ${subject}` : ''}
 
-    Hãy trả về CHÍNH XÁC một JSON object (không markdown, không giải thích thêm, không bọc trong code block) với cấu trúc sau:
+    HÃ£y tráº£ vá» CHÃNH XÃC má»™t JSON object (khÃ´ng markdown, khÃ´ng giáº£i thÃ­ch thÃªm, khÃ´ng bá»c trong code block) vá»›i cáº¥u trÃºc sau:
     {
-      "totalScore": <số nguyên 0-100>,
-      "rating": "<Xuất sắc|Tốt|Khá|Trung bình|Yếu>",
+      "totalScore": <sá»‘ nguyÃªn 0-100>,
+      "rating": "<Xuáº¥t sáº¯c|Tá»‘t|KhÃ¡|Trung bÃ¬nh|Yáº¿u>",
       "overlap": {
-        "level": "<Thấp|Trung bình|Cao>",
-        "explanation": "<giải thích ngắn gọn về mức độ trùng lặp>"
+        "level": "<Tháº¥p|Trung bÃ¬nh|Cao>",
+        "explanation": "<giáº£i thÃ­ch ngáº¯n gá»n vá» má»©c Ä‘á»™ trÃ¹ng láº·p>"
       },
       "criteria": [
         {
-          "name": "Độ cụ thể",
+          "name": "Äá»™ cá»¥ thá»ƒ",
           "score": <0-25>,
           "maxScore": 25,
-          "description": "<giải thích ngắn>"
+          "description": "<giáº£i thÃ­ch ngáº¯n>"
         },
         {
-          "name": "Tính mới",
+          "name": "TÃ­nh má»›i",
           "score": <0-30>,
           "maxScore": 30,
-          "description": "<giải thích ngắn>"
+          "description": "<giáº£i thÃ­ch ngáº¯n>"
         },
         {
-          "name": "Tính khả thi",
+          "name": "TÃ­nh kháº£ thi",
           "score": <0-25>,
           "maxScore": 25,
-          "description": "<giải thích ngắn>"
+          "description": "<giáº£i thÃ­ch ngáº¯n>"
         },
         {
-          "name": "Độ rõ ràng",
+          "name": "Äá»™ rÃµ rÃ ng",
           "score": <0-20>,
           "maxScore": 20,
-          "description": "<giải thích ngắn>"
+          "description": "<giáº£i thÃ­ch ngáº¯n>"
         }
       ],
       "structure": {
-        "action": "<hành động chính>",
-        "tool": "<công cụ/phương pháp>",
-        "subject": "<môn học/chủ đề>",
-        "scope": "<phạm vi>",
-        "purpose": "<mục đích>"
+        "action": "<hÃ nh Ä‘á»™ng chÃ­nh>",
+        "tool": "<cÃ´ng cá»¥/phÆ°Æ¡ng phÃ¡p>",
+        "subject": "<mÃ´n há»c/chá»§ Ä‘á»>",
+        "scope": "<pháº¡m vi>",
+        "purpose": "<má»¥c Ä‘Ã­ch>"
       },
       "issues": [
-        "<vấn đề 1>",
-        "<vấn đề 2>"
+        "<váº¥n Ä‘á» 1>",
+        "<váº¥n Ä‘á» 2>"
       ],
       "suggestions": [
         {
-          "title": "<tên đề tài gợi ý 1>",
-          "score": <điểm dự kiến 0-100>,
-          "reason": "<lý do ngắn>"
+          "title": "<tÃªn Ä‘á» tÃ i gá»£i Ã½ 1>",
+          "score": <Ä‘iá»ƒm dá»± kiáº¿n 0-100>,
+          "reason": "<lÃ½ do ngáº¯n>"
         },
         {
-          "title": "<tên đề tài gợi ý 2>",
-          "score": <điểm dự kiến 0-100>,
-          "reason": "<lý do ngắn>"
+          "title": "<tÃªn Ä‘á» tÃ i gá»£i Ã½ 2>",
+          "score": <Ä‘iá»ƒm dá»± kiáº¿n 0-100>,
+          "reason": "<lÃ½ do ngáº¯n>"
         },
         {
-          "title": "<tên đề tài gợi ý 3>",
-          "score": <điểm dự kiến 0-100>,
-          "reason": "<lý do ngắn>"
+          "title": "<tÃªn Ä‘á» tÃ i gá»£i Ã½ 3>",
+          "score": <Ä‘iá»ƒm dá»± kiáº¿n 0-100>,
+          "reason": "<lÃ½ do ngáº¯n>"
         }
       ]
     }
 
-    Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
+    Chá»‰ tráº£ vá» JSON thuáº§n. totalScore = tá»•ng 4 criteria scores.
   `,
 };
+
+
+
 
