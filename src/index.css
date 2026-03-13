@@ -1,0 +1,192 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #0EA5E9;
+  --color-primary-dark: #0284C7;
+  --color-primary-light: #38BDF8;
+  --color-secondary: #16A34A;
+  --color-accent-amber: #F59E0B;
+  --color-accent-purple: #8B5CF6;
+  --color-bg-page: #E2E8F0;
+  --color-bg-sidebar: #F8FAFC;
+}
+
+@layer base {
+  body {
+    @apply bg-[#E2E8F0] text-slate-900 font-sans;
+  }
+}
+
+.dark body {
+  @apply bg-slate-950 text-slate-100;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-700;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  @apply bg-[#F8FAFC] border-r border-slate-200;
+}
+.dark .sidebar {
+  @apply bg-slate-900 border-slate-800;
+}
+
+/* Step Item */
+.step-item {
+  @apply relative flex flex-col px-4 py-3 cursor-pointer border-b border-slate-100 transition-all duration-200;
+}
+.step-item:hover {
+  @apply bg-slate-50;
+}
+.step-item.active {
+  @apply bg-white border-l-4 border-l-primary font-semibold;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.step-item.completed .step-check {
+  @apply text-primary;
+}
+.dark .step-item {
+  @apply border-slate-800;
+}
+.dark .step-item:hover {
+  @apply bg-slate-800;
+}
+.dark .step-item.active {
+  @apply bg-slate-800/80;
+}
+
+/* Banner Header */
+.banner-header {
+  @apply w-full rounded-2xl px-8 py-6 mb-6 text-white text-center;
+  background: linear-gradient(135deg, #457B9D 0%, #1D3557 100%);
+}
+.dark .banner-header {
+  background: linear-gradient(135deg, #1E3A5F 0%, #0F1F36 100%);
+}
+
+/* Content Card */
+.content-card {
+  @apply bg-white rounded-2xl p-6 shadow-sm border border-slate-200;
+}
+.dark .content-card {
+  @apply bg-slate-900 border-slate-800;
+}
+
+/* Form Input */
+.form-input {
+  @apply w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 
+         focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white
+         outline-none transition-all placeholder:text-slate-400;
+}
+.form-input-icon {
+  @apply w-full pl-10 pr-4 py-3 rounded-lg bg-slate-50 border border-slate-200 
+         focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white
+         outline-none transition-all placeholder:text-slate-400;
+}
+.dark .form-input, .dark .form-input-icon {
+  @apply bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-700;
+}
+
+/* Section Title */
+.section-title {
+  @apply text-lg font-bold text-primary uppercase tracking-wide mb-4;
+}
+
+/* Action Buttons */
+.btn-primary {
+  @apply w-full py-3.5 rounded-xl text-white font-bold transition-all duration-200
+         shadow-lg hover:shadow-xl active:scale-[0.98];
+  background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%);
+}
+
+.btn-confirm {
+  @apply w-full py-3.5 rounded-xl text-white font-bold transition-all duration-200
+         shadow-lg hover:shadow-xl active:scale-[0.98];
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+.btn-confirmed {
+  @apply w-full py-3.5 rounded-xl text-white font-bold transition-all duration-200;
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+}
+
+/* Document Preview */
+.doc-preview-bar {
+  @apply flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-t-xl border-b border-slate-200;
+}
+.doc-preview-bar .dot {
+  @apply w-3 h-3 rounded-full;
+}
+
+/* Info Box */
+.info-box {
+  @apply bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-700;
+}
+.dark .info-box {
+  @apply bg-blue-900/20 border-blue-900/40 text-blue-300;
+}
+
+/* Hint Box */
+.hint-box {
+  @apply bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-700;
+}
+.dark .hint-box {
+  @apply bg-amber-900/20 border-amber-900/40 text-amber-300;
+}
+
+/* General Markdown */
+.markdown-body {
+  @apply prose prose-slate max-w-none dark:prose-invert;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  @apply font-bold text-slate-900 dark:text-white mt-6 mb-4;
+}
+.markdown-body p {
+  @apply mb-4 leading-relaxed;
+}
+.markdown-body ul, .markdown-body ol {
+  @apply mb-4 pl-6;
+}
+.markdown-body li {
+  @apply mb-1;
+}
+
+/* Loading spinner */
+@keyframes pulse-ring {
+  0% { transform: scale(0.33); }
+  80%, 100% { opacity: 0; }
+}
+
+.loading-pulse {
+  @apply relative inline-flex;
+}
+.loading-pulse::before {
+  content: '';
+  @apply absolute inset-0 rounded-full;
+  animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Bottom Bar */
+.bottom-bar {
+  @apply flex items-center justify-between gap-3 px-4 py-3 bg-white/90 backdrop-blur-sm border-t border-slate-200;
+}
+.dark .bottom-bar {
+  @apply bg-slate-900/90 border-slate-800;
+}
