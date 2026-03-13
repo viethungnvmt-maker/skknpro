@@ -161,7 +161,7 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-13-r7';
+const APP_BUILD_TAG = '2026-03-13-r8';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   const normalizedSections = remapSectionKeys(candidate.sections || {});
 
@@ -1955,6 +1955,12 @@ ${bodyHtml}
           {STEPS.map((step) => {
             const isActive = data.currentStep === step.id;
             const completed = isStepCompleted(step.id);
+            const measurePlan = step.id === 10
+              ? sectionLengthPlans.find((plan) => plan.sectionName === MEASURE_SECTION_NAME)
+              : undefined;
+            const measureSubPlans = measurePlan
+              ? splitPlanForSubsections(measurePlan as SectionLengthPlan, MEASURE_SUBSECTIONS.length)
+              : null;
 
             return (
               <button
@@ -1978,6 +1984,26 @@ ${bodyHtml}
                   )}
                 </div>
                 <span className="text-[11px] text-slate-400 mt-0.5">{step.desc}</span>
+                {step.id === 10 && (
+                  <div className="mt-1 space-y-0.5 pl-2 border-l border-primary/30">
+                    {MEASURE_SUBSECTIONS.map((label, index) => {
+                      const shortLabel = index === 0
+                        ? '3.1 Khởi động'
+                        : index === 1
+                          ? '3.2 Di chuyển đội hình'
+                          : '3.3 Thả lỏng';
+                      const pageLabel = measureSubPlans
+                        ? ` ~${measureSubPlans[index].targetPagesLabel} trang`
+                        : '';
+
+                      return (
+                        <div key={label} className="text-[10px] text-slate-400 leading-tight">
+                          {shortLabel}{pageLabel}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </button>
             );
           })}
@@ -2282,6 +2308,9 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
 
 
 
