@@ -6,7 +6,7 @@
 
 This contains everything you need to run your app locally.
 
-View your app in AI Studio: https://ai.studio/apps/c324c0c2-31a0-4ece-b9f5-c1a3aaefd22c
+This app now uses OpenAI via `/api/openai` (Vercel serverless function).
 
 ## Run Locally
 
@@ -15,6 +15,6 @@ View your app in AI Studio: https://ai.studio/apps/c324c0c2-31a0-4ece-b9f5-c1a3a
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Set the `OPENAI_API_KEY` in [.env.local](.env.local) to your OpenAI API key
 3. Run the app:
    `npm run dev`

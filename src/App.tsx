@@ -212,8 +212,8 @@ export default function App() {
     return INITIAL_DATA;
   });
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
-  const [selectedModel, setSelectedModel] = useState(() => parseInt(localStorage.getItem('gemini_model_index') || '0'));
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('openai_api_key') || localStorage.getItem('gemini_api_key') || '');
+  const [selectedModel, setSelectedModel] = useState(() => parseInt(localStorage.getItem('ai_model_index') || localStorage.getItem('gemini_model_index') || '0'));
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -578,7 +578,9 @@ export default function App() {
   };
 
   const saveApiKey = () => {
+    localStorage.setItem('openai_api_key', apiKey);
     localStorage.setItem('gemini_api_key', apiKey);
+    localStorage.setItem('ai_model_index', String(selectedModel));
     localStorage.setItem('gemini_model_index', String(selectedModel));
     setShowSettings(false);
     Swal.fire('Đã lưu', 'Cấu hình đã được cập nhật!', 'success');
@@ -702,8 +704,8 @@ export default function App() {
     } catch (error: any) {
       console.error('Analysis error:', error);
       let msg = error.message || 'Vui lòng thử lại.';
-      if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('429')) {
-        msg = 'API đã hết quota miễn phí. Vui lòng chờ 1-2 phút rồi thử lại, hoặc tạo API Key mới tại aistudio.google.com';
+      if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('429') || msg.toLowerCase().includes('rpm/tpm')) {
+        msg = 'Bạn đang chạm giới hạn tốc độ theo phút (RPM/TPM), không phải hết quota ngày. Vui lòng chờ 30-60 giây rồi thử lại.';
       } else if (msg.includes('NOT_FOUND') || msg.includes('404')) {
         msg = 'Model AI không khả dụng. Vui lòng đổi model trong Cài đặt.';
       }
@@ -1825,7 +1827,7 @@ ${bodyHtml}
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Settings size={20} className="text-primary" /></div>
                 <div>
                   <h3 className="font-bold text-lg">Thiết lập Model & API Key</h3>
-                  <p className="text-xs text-slate-400">Kết nối với Google Gemini AI</p>
+                  <p className="text-xs text-slate-400">Kết nối với OpenAI (ChatGPT API)</p>
                 </div>
                 <button onClick={() => setShowSettings(false)} className="ml-auto text-slate-400 hover:text-slate-600 text-xl">&times;</button>
               </div>
@@ -1834,9 +1836,9 @@ ${bodyHtml}
                   <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">Chọn Model AI</label>
                   <div className="space-y-2">
                     {[
-                      { name: 'Gemini 3 Flash', desc: 'Nhanh, hiệu quả cho tác vụ thông thường', badge: 'Default' },
-                      { name: 'Gemini 3 Pro', desc: 'Mạnh mẽ, phù hợp tác vụ phức tạp', badge: '' },
-                      { name: 'Gemini 2.5 Flash', desc: 'Ổn định, tốc độ cao', badge: '' },
+                      { name: 'GPT-4.1 Mini', desc: 'Nhanh và cân bằng cho hầu hết tác vụ', badge: 'Default' },
+                      { name: 'GPT-4.1', desc: 'Mạnh hơn cho tác vụ dài và phức tạp', badge: '' },
+                      { name: 'GPT-4o Mini', desc: 'Nhanh, chi phí thấp', badge: '' },
                     ].map((model, i) => (
                       <div key={i} onClick={() => setSelectedModel(i)} className={cn('flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all', selectedModel === i ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700 hover:border-primary/50')}>
                         <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><Sparkles size={16} className="text-primary" /></div>
@@ -1854,17 +1856,17 @@ ${bodyHtml}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">🔑 API Key</label>
-                  <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Nhập API Key (AIza...)" className="form-input" />
+                  <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Nhập OpenAI API Key (sk-...)" className="form-input" />
                 </div>
                 <div className="hint-box space-y-1">
-                  <p className="font-semibold text-xs">📖 Hướng dẫn lấy API Key miễn phí:</p>
+                  <p className="font-semibold text-xs">📖 Hướng dẫn lấy OpenAI API Key:</p>
                   <ol className="text-xs space-y-0.5 list-decimal list-inside">
-                    <li>Truy cập Google AI Studio</li>
-                    <li>Đăng nhập bằng tài khoản Google</li>
-                    <li>Nhấn "Create API Key" hoặc "Get API Key"</li>
+                    <li>Truy cập OpenAI Platform</li>
+                    <li>Đăng nhập tài khoản OpenAI</li>
+                    <li>Vào mục API Keys và nhấn "Create new secret key"</li>
                     <li>Copy key và dán vào ô trên</li>
                   </ol>
-                  <a href="https://aistudio.google.com/app/apikey" target="_blank" className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold hover:underline mt-1">🔗 Lấy API Key tại đây</a>
+                  <a href="https://platform.openai.com/api-keys" target="_blank" className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold hover:underline mt-1">🔗 Mở trang API Keys</a>
                 </div>
                 <button onClick={saveApiKey} className="btn-primary">Lưu cấu hình</button>
               </div>

@@ -1,10 +1,8 @@
-import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
 
-const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash'];
-// Index 0: "Gemini 3 Flash" -> gemini-2.5-flash (default, confirmed available)
-// Index 1: "Gemini 3 Pro" -> gemini-2.0-flash (fallback)
-// Index 2: "Gemini 2.5 Flash" -> gemini-2.5-flash
-
+const MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o-mini'];
+// Index 0: GPT-4.1 Mini (default)
+// Index 1: GPT-4.1 (strong reasoning)
+// Index 2: GPT-4o Mini (fast + low cost)
 const WORDS_PER_PAGE = 420;
 const TOKENS_PER_WORD = 2.4;
 const MAX_SECTION_OUTPUT_TOKENS = 8192;
@@ -129,43 +127,90 @@ export function estimateWordCount(markdown: string): number {
   return words?.length ?? 0;
 }
 
-export async function callGeminiAI(prompt: string, modelIndex?: number, _triedModels?: Set<number>, maxTokens?: number): Promise<string | null> {
+const RATE_LIMIT_WAIT_BASE_MS = 12000;
+const MAX_RATE_LIMIT_RETRIES = 2;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const getErrorText = (error: any) => {
+  const message = error?.message || '';
+  const details = error?.error?.message || error?.error?.details || '';
+  const status = String(error?.status || error?.error?.status || '');
+  return `${message} ${details} ${status}`.toLowerCase();
+};
+
+const isRateLimitError = (error: any) => {
+  const text = getErrorText(error);
+  return text.includes('resource_exhausted')
+    || text.includes('429')
+    || text.includes('too many requests')
+    || text.includes('rate limit')
+    || text.includes('rpm')
+    || text.includes('tpm')
+    || text.includes('rate_limit_exceeded');
+};
+
+export async function callGeminiAI(
+  prompt: string,
+  modelIndex?: number,
+  _triedModels?: Set<number>,
+  maxTokens?: number,
+  _rateLimitRetryCount = 0,
+): Promise<string | null> {
   if (modelIndex === undefined) {
-    modelIndex = parseInt(localStorage.getItem('gemini_model_index') || '0');
+    modelIndex = parseInt(localStorage.getItem('ai_model_index') || localStorage.getItem('gemini_model_index') || '0');
     if (isNaN(modelIndex) || modelIndex < 0 || modelIndex >= MODELS.length) modelIndex = 0;
   }
 
   const triedModels = _triedModels || new Set<number>();
   triedModels.add(modelIndex);
 
-  const apiKey = localStorage.getItem('gemini_api_key') || process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Vui lòng cấu hình API Key trong phần cài đặt.');
-  }
+  const apiKey = localStorage.getItem('openai_api_key') || localStorage.getItem('gemini_api_key');
+  const modelName = MODELS[modelIndex];
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
-    const modelName = MODELS[modelIndex];
-
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model: modelName,
-      contents: [{ parts: [{ text: prompt }] }],
-      config: {
-        temperature: 0.7,
-        maxOutputTokens: maxTokens || 8192,
+    const response = await fetch('/api/openai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey ? { 'x-openai-key': apiKey } : {}),
       },
+      body: JSON.stringify({
+        prompt,
+        model: modelName,
+        maxTokens: maxTokens || 8192,
+      }),
     });
 
-    return response.text || '';
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload?.error || `HTTP ${response.status}`);
+    }
+
+    return payload?.text || '';
   } catch (error: any) {
-    console.error(`Error with model ${MODELS[modelIndex]}:`, error);
+    console.error(`Error with model ${modelName}:`, error);
+
+    if (isRateLimitError(error)) {
+      if (_rateLimitRetryCount < MAX_RATE_LIMIT_RETRIES) {
+        const waitMs = RATE_LIMIT_WAIT_BASE_MS * (_rateLimitRetryCount + 1);
+        console.warn(`Rate limit hit on ${modelName}. Retrying in ${waitMs}ms...`);
+        await sleep(waitMs);
+        return callGeminiAI(prompt, modelIndex, triedModels, maxTokens, _rateLimitRetryCount + 1);
+      }
+
+      throw new Error(
+        'Đang chạm giới hạn tốc độ API (RPM/TPM), không phải hết quota ngày. Vui lòng chờ 30-60 giây rồi thử lại.',
+      );
+    }
 
     for (let i = 0; i < MODELS.length; i++) {
-      if (!triedModels.has(i)) {
-        console.log(`Falling back to ${MODELS[i]}...`);
-        return callGeminiAI(prompt, i, triedModels, maxTokens);
-      }
+      if (triedModels.has(i)) continue;
+      if (MODELS[i] === modelName) continue;
+
+      console.log(`Falling back to ${MODELS[i]}...`);
+      return callGeminiAI(prompt, i, triedModels, maxTokens, 0);
     }
 
     throw error;
@@ -362,5 +407,4 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
-
 
