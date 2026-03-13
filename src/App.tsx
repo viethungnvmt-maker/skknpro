@@ -42,17 +42,17 @@ function cn(...inputs: ClassValue[]) {
 
 // Section names for writing steps
 const SECTION_MAP: { [key: number]: string } = {
-  2: 'I.1. TÃ­nh cáº¥p thiáº¿t pháº£i tiáº¿n hÃ nh sÃ¡ng kiáº¿n',
-  3: 'I.2. Má»¥c tiÃªu cá»§a Ä‘á» tÃ i, sÃ¡ng kiáº¿n',
-  4: 'I.3. Thá»i gian, Ä‘á»‘i tÆ°á»£ng, pháº¡m vi nghiÃªn cá»©u',
-  5: 'II.1. Hiá»‡n tráº¡ng váº¥n Ä‘á»',
-  6: 'II.2. Giáº£i phÃ¡p thá»±c hiá»‡n sÃ¡ng kiáº¿n',
-  7: 'II.3. Káº¿t quáº£ sau khi Ã¡p dá»¥ng giáº£i phÃ¡p sÃ¡ng kiáº¿n',
-  8: 'II.4. Hiá»‡u quáº£ cá»§a sÃ¡ng kiáº¿n',
-  9: 'II.5. TÃ­nh kháº£ thi',
-  10: 'II.6. Thá»i gian thá»±c hiá»‡n',
-  11: 'II.7. Kinh phÃ­ thá»±c hiá»‡n',
-  12: 'III. Kiáº¿n nghá»‹, Ä‘á» xuáº¥t',
+  2: 'I.1. Tính cấp thiết phải tiến hành sáng kiến',
+  3: 'I.2. Mục tiêu của đề tài, sáng kiến',
+  4: 'I.3. Thời gian, đối tượng, phạm vi nghiên cứu',
+  5: 'II.1. Hiện trạng vấn đề',
+  6: 'II.2. Giải pháp thực hiện sáng kiến',
+  7: 'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến',
+  8: 'II.4. Hiệu quả của sáng kiến',
+  9: 'II.5. Tính khả thi',
+  10: 'II.6. Thời gian thực hiện',
+  11: 'II.7. Kinh phí thực hiện',
+  12: 'III. Kiến nghị, đề xuất',
 };
 
 // Step 13 is export/review of all sections// Step 13 is export/review of all sections
@@ -168,27 +168,27 @@ export default function App() {
         const parsed = JSON.parse(oldSaved);
         // Map old section names to new section names
         const sectionMigration: { [key: string]: string } = {
-          'I. Äáº·t váº¥n Ä‘á»': 'I.1. TÃ­nh cáº¥p thiáº¿t pháº£i tiáº¿n hÃ nh sÃ¡ng kiáº¿n',
-          'II.1. Hiá»‡n tráº¡ng váº¥n Ä‘á»': 'II.1. Hiá»‡n tráº¡ng váº¥n Ä‘á»',
-          'II.2. Giáº£i phÃ¡p thá»±c hiá»‡n sÃ¡ng kiáº¿n': 'II.2. Giáº£i phÃ¡p thá»±c hiá»‡n sÃ¡ng kiáº¿n',
-          'II.3. Káº¿t quáº£ sau khi Ã¡p dá»¥ng giáº£i phÃ¡p sÃ¡ng kiáº¿n': 'II.3. Káº¿t quáº£ sau khi Ã¡p dá»¥ng giáº£i phÃ¡p sÃ¡ng kiáº¿n',
-          'II.4. Hiá»‡u quáº£ cá»§a sÃ¡ng kiáº¿n': 'II.4. Hiá»‡u quáº£ cá»§a sÃ¡ng kiáº¿n',
-          'II.5. TÃ­nh kháº£ thi': 'II.5. TÃ­nh kháº£ thi',
-          'II.6-7. Thá»i gian & Kinh phÃ­ thá»±c hiá»‡n': 'II.6. Thá»i gian thá»±c hiá»‡n',
-          'III. Kiáº¿n nghá»‹, Ä‘á» xuáº¥t': 'III. Kiáº¿n nghá»‹, Ä‘á» xuáº¥t',
+          'I. Đặt vấn đề': 'I.1. Tính cấp thiết phải tiến hành sáng kiến',
+          'II.1. Hiện trạng vấn đề': 'II.1. Hiện trạng vấn đề',
+          'II.2. Giải pháp thực hiện sáng kiến': 'II.2. Giải pháp thực hiện sáng kiến',
+          'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến',
+          'II.4. Hiệu quả của sáng kiến': 'II.4. Hiệu quả của sáng kiến',
+          'II.5. Tính khả thi': 'II.5. Tính khả thi',
+          'II.6-7. Thời gian & Kinh phí thực hiện': 'II.6. Thời gian thực hiện',
+          'III. Kiến nghị, đề xuất': 'III. Kiến nghị, đề xuất',
         };
         const legacyCurrentSections: { [key: string]: string } = {
-          'I.1. Tï¿½nh c?p thi?t ph?i ti?n hï¿½nh sï¿½ng ki?n': 'I.1. TÃ­nh cáº¥p thiáº¿t pháº£i tiáº¿n hÃ nh sÃ¡ng kiáº¿n',
-          'I.2. M?c tiï¿½u c?a d? tï¿½i, sï¿½ng ki?n': 'I.2. Má»¥c tiÃªu cá»§a Ä‘á» tÃ i, sÃ¡ng kiáº¿n',
-          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghiï¿½n c?u': 'I.3. Thá»i gian, Ä‘á»‘i tÆ°á»£ng, pháº¡m vi nghiÃªn cá»©u',
-          'II.1. Hi?n tr?ng v?n d?': 'II.1. Hiá»‡n tráº¡ng váº¥n Ä‘á»',
-          'II.2. Gi?i phï¿½p th?c hi?n sï¿½ng ki?n': 'II.2. Giáº£i phÃ¡p thá»±c hiá»‡n sÃ¡ng kiáº¿n',
-          'II.3. K?t qu? sau khi ï¿½p d?ng gi?i phï¿½p sï¿½ng ki?n': 'II.3. Káº¿t quáº£ sau khi Ã¡p dá»¥ng giáº£i phÃ¡p sÃ¡ng kiáº¿n',
-          'II.4. Hi?u qu? c?a sï¿½ng ki?n': 'II.4. Hiá»‡u quáº£ cá»§a sÃ¡ng kiáº¿n',
-          'II.5. Tï¿½nh kh? thi': 'II.5. TÃ­nh kháº£ thi',
-          'II.6. Th?i gian th?c hi?n': 'II.6. Thá»i gian thá»±c hiá»‡n',
-          'II.7. Kinh phï¿½ th?c hi?n': 'II.7. Kinh phÃ­ thá»±c hiá»‡n',
-          'III. Ki?n ngh?, d? xu?t': 'III. Kiáº¿n nghá»‹, Ä‘á» xuáº¥t',
+          'I.1. T�nh c?p thi?t ph?i ti?n h�nh s�ng ki?n': 'I.1. Tính cấp thiết phải tiến hành sáng kiến',
+          'I.2. M?c ti�u c?a d? t�i, s�ng ki?n': 'I.2. Mục tiêu của đề tài, sáng kiến',
+          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi�n c?u': 'I.3. Thời gian, đối tượng, phạm vi nghiên cứu',
+          'II.1. Hi?n tr?ng v?n d?': 'II.1. Hiện trạng vấn đề',
+          'II.2. Gi?i ph�p th?c hi?n s�ng ki?n': 'II.2. Giải pháp thực hiện sáng kiến',
+          'II.3. K?t qu? sau khi �p d?ng gi?i ph�p s�ng ki?n': 'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến',
+          'II.4. Hi?u qu? c?a s�ng ki?n': 'II.4. Hiệu quả của sáng kiến',
+          'II.5. T�nh kh? thi': 'II.5. Tính khả thi',
+          'II.6. Th?i gian th?c hi?n': 'II.6. Thời gian thực hiện',
+          'II.7. Kinh ph� th?c hi?n': 'II.7. Kinh phí thực hiện',
+          'III. Ki?n ngh?, d? xu?t': 'III. Kiến nghị, đề xuất',
         };
         const newSections: { [key: string]: string } = {};
         if (parsed.sections) {
@@ -323,7 +323,7 @@ export default function App() {
 
   const generateOutline = async () => {
     if (!activeInfo.title) {
-      Swal.fire('Lá»—i', 'Vui lÃ²ng nháº­p tÃªn Ä‘á» tÃ i!', 'warning');
+      Swal.fire('Lỗi', 'Vui lòng nhập tên đề tài!', 'warning');
       return;
     }
     setIsLoading(true);
@@ -332,10 +332,10 @@ export default function App() {
       const result = await callGeminiAI(prompt);
       if (result) {
         setData(prev => ({ ...prev, outline: result }));
-        Swal.fire('ThÃ nh cÃ´ng', 'ÄÃ£ táº¡o dÃ n Ã½ chi tiáº¿t báº±ng AI!', 'success');
+        Swal.fire('Thành công', 'Đã tạo dàn ý chi tiết bằng AI!', 'success');
       }
     } catch (error: any) {
-      Swal.fire('Lá»—i', error.message || 'KhÃ´ng thá»ƒ káº¿t ná»‘i vá»›i AI', 'error');
+      Swal.fire('Lỗi', error.message || 'Không thể kết nối với AI', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -387,10 +387,10 @@ export default function App() {
       const { prompt: basePrompt, maxTokens } = PROMPTS.WRITE_SECTION(sectionName, outline, activeInfo, plan);
       const strictPrompt = `${basePrompt}
 
-=== YÃŠU Cáº¦U Cá»¨NG Vá»€ Äá»˜ DÃ€I ===
-- BÃ i tráº£ vá» KHÃ”NG Ä‘Æ°á»£c dÆ°á»›i ${plan.minWords} tá»«.
-- Náº¿u chÆ°a Ä‘á»§ Ä‘á»™ dÃ i, hÃ£y tá»± viáº¿t tiáº¿p thÃªm vÃ­ dá»¥/chi tiáº¿t thá»±c táº¿ cho Ä‘áº¿n khi Ä‘áº¡t yÃªu cáº§u.
-- KhÃ´ng tráº£ vá» báº£n nhÃ¡p quÃ¡ ngáº¯n.
+=== YÊU CẦU CỨNG VỀ ĐỘ DÀI ===
+- Bài trả về KHÔNG được dưới ${plan.minWords} từ.
+- Nếu chưa đủ độ dài, hãy tự viết tiếp thêm ví dụ/chi tiết thực tế cho đến khi đạt yêu cầu.
+- Không trả về bản nháp quá ngắn.
 ==============================`;
 
       const regenerated = await callGeminiAI(strictPrompt, undefined, undefined, maxTokens);
@@ -492,9 +492,9 @@ export default function App() {
           if (finalResult.wordCount < hardMinWords) {
             const retryPrompt = `${prompt}
 
-=== YÃŠU Cáº¦U Cá»¨NG Báº®T BUá»˜C ===
-- Ná»™i dung tráº£ vá» tá»‘i thiá»ƒu ${activePlan.minWords} tá»«.
-- Náº¿u thiáº¿u Ä‘á»™ dÃ i, tiáº¿p tá»¥c viáº¿t chi tiáº¿t thá»±c táº¿ cho Ä‘áº¿n khi Ä‘á»§.
+=== YÊU CẦU CỨNG BẮT BUỘC ===
+- Nội dung trả về tối thiểu ${activePlan.minWords} từ.
+- Nếu thiếu độ dài, tiếp tục viết chi tiết thực tế cho đến khi đủ.
 ================================`;
 
             const retryResult = await callGeminiAI(retryPrompt, undefined, undefined, maxTokens);
@@ -514,9 +514,9 @@ export default function App() {
                 'expand',
               )}
 
-=== YÃŠU Cáº¦U Cá»¨NG Báº®T BUá»˜C ===
-- Báº£n cuá»‘i pháº£i Ä‘áº¡t tá»‘i thiá»ƒu ${activePlan.minWords} tá»«.
-- KhÃ´ng Ä‘á»•i Ã½ chÃ­nh, chá»‰ bá»• sung vÃ­ dá»¥/diá»…n giáº£i Ä‘á»ƒ tÄƒng Ä‘á»™ dÃ i Ä‘Ãºng yÃªu cáº§u.
+=== YÊU CẦU CỨNG BẮT BUỘC ===
+- Bản cuối phải đạt tối thiểu ${activePlan.minWords} từ.
+- Không đổi ý chính, chỉ bổ sung ví dụ/diễn giải để tăng độ dài đúng yêu cầu.
 ================================`;
 
               const expandedResult = await callGeminiAI(expandPrompt, undefined, undefined, activePlan.maxTokens);
@@ -542,13 +542,13 @@ export default function App() {
           && finalResult.wordCount < minRequiredWords);
 
         const successMessage = finalResult.plan
-          ? `ÄÃ£ viáº¿t xong "${sectionName}" vá»›i khoáº£ng ${finalResult.wordCount} tá»« (má»¥c tiÃªu ${finalResult.plan.targetWords} tá»«, tá»‘i thiá»ƒu ${minRequiredWords} tá»«).${finalResult.adjusted ? ' AI Ä‘Ã£ tá»± cÃ¢n láº¡i Ä‘á»™ dÃ i sau khi viáº¿t.' : ''}${stillShort ? ' Ná»™i dung váº«n hÆ¡i ngáº¯n, báº¡n cÃ³ thá»ƒ báº¥m "Viáº¿t láº¡i báº±ng AI" Ä‘á»ƒ má»Ÿ rá»™ng thÃªm.' : ''} [build ${APP_BUILD_TAG}]`
-          : `ÄÃ£ viáº¿t xong "${sectionName}"! [build ${APP_BUILD_TAG}]`;
+          ? `Đã viết xong "${sectionName}" với khoảng ${finalResult.wordCount} từ (mục tiêu ${finalResult.plan.targetWords} từ, tối thiểu ${minRequiredWords} từ).${finalResult.adjusted ? ' AI đã tự cân lại độ dài sau khi viết.' : ''}${stillShort ? ' Nội dung vẫn hơi ngắn, bạn có thể bấm "Viết lại bằng AI" để mở rộng thêm.' : ''} [build ${APP_BUILD_TAG}]`
+          : `Đã viết xong "${sectionName}"! [build ${APP_BUILD_TAG}]`;
 
-        Swal.fire(stillShort ? 'Cáº§n má»Ÿ rá»™ng thÃªm' : 'ThÃ nh cÃ´ng', successMessage, stillShort ? 'warning' : 'success');
+        Swal.fire(stillShort ? 'Cần mở rộng thêm' : 'Thành công', successMessage, stillShort ? 'warning' : 'success');
       }
     } catch (error: any) {
-      Swal.fire('Lá»—i', error.message, 'error');
+      Swal.fire('Lỗi', error.message, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -583,7 +583,7 @@ export default function App() {
     localStorage.setItem('gemini_model_index', String(selectedModel));
     localStorage.setItem('ai_model_index', String(selectedModel));
     setShowSettings(false);
-    Swal.fire('ÄÃ£ lÆ°u', 'Cáº¥u hÃ¬nh Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t!', 'success');
+    Swal.fire('Đã lưu', 'Cấu hình đã được cập nhật!', 'success');
   };
   const exportPDF = () => {
     const element = document.getElementById('preview-content');
@@ -661,14 +661,14 @@ export default function App() {
 
   const resetData = () => {
     Swal.fire({
-      title: 'XÃ³a dá»¯ liá»‡u?',
-      text: 'Táº¥t cáº£ ná»™i dung hiá»‡n táº¡i sáº½ bá»‹ xÃ³a!',
+      title: 'Xóa dữ liệu?',
+      text: 'Tất cả nội dung hiện tại sẽ bị xóa!',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'XÃ³a ngay',
-      cancelButtonText: 'Há»§y'
+      confirmButtonText: 'Xóa ngay',
+      cancelButtonText: 'Hủy'
     }).then((result) => {
       if (result.isConfirmed) {
         setData(INITIAL_DATA);
@@ -678,7 +678,7 @@ export default function App() {
   };
   const analyzeTitle = async () => {
     if (!activeInfo.title) {
-      Swal.fire('Lá»—i', 'Vui lÃ²ng nháº­p tÃªn Ä‘á» tÃ i trÆ°á»›c!', 'warning');
+      Swal.fire('Lỗi', 'Vui lòng nhập tên đề tài trước!', 'warning');
       return;
     }
     setIsAnalyzing(true);
@@ -699,17 +699,17 @@ export default function App() {
         const parsed = JSON.parse(jsonStr);
         setAnalysisResult(parsed);
       } else {
-        throw new Error('AI khÃ´ng tráº£ vá» káº¿t quáº£');
+        throw new Error('AI không trả về kết quả');
       }
     } catch (error: any) {
       console.error('Analysis error:', error);
-      let msg = error.message || 'Vui lÃ²ng thá»­ láº¡i.';
+      let msg = error.message || 'Vui lòng thử lại.';
       if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('429') || msg.toLowerCase().includes('rpm/tpm')) {
-        msg = 'Báº¡n Ä‘ang cháº¡m giá»›i háº¡n tá»‘c Ä‘á»™ theo phÃºt (RPM/TPM), khÃ´ng pháº£i háº¿t quota ngÃ y. Vui lÃ²ng chá» 30-60 giÃ¢y rá»“i thá»­ láº¡i.';
+        msg = 'Bạn đang chạm giới hạn tốc độ theo phút (RPM/TPM), không phải hết quota ngày. Vui lòng chờ 30-60 giây rồi thử lại.';
       } else if (msg.includes('NOT_FOUND') || msg.includes('404')) {
-        msg = 'Model AI khÃ´ng kháº£ dá»¥ng. Vui lÃ²ng Ä‘á»•i model trong CÃ i Ä‘áº·t.';
+        msg = 'Model AI không khả dụng. Vui lòng đổi model trong Cài đặt.';
       }
-      Swal.fire('Lá»—i', msg, 'error');
+      Swal.fire('Lỗi', msg, 'error');
       setShowAnalysis(false);
     } finally {
       setIsAnalyzing(false);
@@ -724,26 +724,26 @@ export default function App() {
   };
 
   const getOverlapColor = (level: string) => {
-    if (level === 'Tháº¥p') return 'bg-green-500';
-    if (level === 'Trung bÃ¬nh') return 'bg-yellow-400';
+    if (level === 'Thấp') return 'bg-green-500';
+    if (level === 'Trung bình') return 'bg-yellow-400';
     return 'bg-red-500';
   };
 
-  // RENDER: Step 0 - ThÃ´ng tin
+  // RENDER: Step 0 - Thông tin
   const renderInfoStep = () => (
     <div className="space-y-6">
       <div className="banner-header">
-        <h2 className="text-2xl font-bold">Thiáº¿t láº­p ThÃ´ng tin SÃ¡ng kiáº¿n</h2>
-        <p className="text-white/80 mt-1">Cung cáº¥p thÃ´ng tin chÃ­nh xÃ¡c Ä‘á»ƒ AI táº¡o ra báº£n tháº£o cháº¥t lÆ°á»£ng nháº¥t</p>
+        <h2 className="text-2xl font-bold">Thiết lập Thông tin Sáng kiến</h2>
+        <p className="text-white/80 mt-1">Cung cấp thông tin chính xác để AI tạo ra bản thảo chất lượng nhất</p>
       </div>
 
       <fieldset disabled={hasLockedSession} className="contents">
         <div className="content-card space-y-6">
-          <h3 className="section-title">1. ThÃ´ng tin báº¯t buá»™c</h3>
+          <h3 className="section-title">1. Thông tin bắt buộc</h3>
 
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              TÃªn Ä‘á» tÃ i SKKN <span className="text-red-500">*</span>
+              Tên đề tài SKKN <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -752,7 +752,7 @@ export default function App() {
                   type="text"
                   value={data.info.title}
                   onChange={(e) => handleUpdateInfo('title', e.target.value)}
-                  placeholder='VD: "á»¨ng dá»¥ng AI Ä‘á»ƒ nÃ¢ng cao hiá»‡u quáº£ dáº¡y há»c mÃ´n ToÃ¡n THPT"'
+                  placeholder='VD: "Ứng dụng AI để nâng cao hiệu quả dạy học môn Toán THPT"'
                   className="form-input-icon"
                 />
               </div>
@@ -761,7 +761,7 @@ export default function App() {
                 disabled={!data.info.title || isAnalyzing}
                 className="px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors whitespace-nowrap disabled:opacity-50"
               >
-                <Search size={14} /> {isAnalyzing ? 'Äang phÃ¢n tÃ­ch...' : 'PhÃ¢n tÃ­ch'}
+                <Search size={14} /> {isAnalyzing ? 'Đang phân tích...' : 'Phân tích'}
               </button>
             </div>
           </div>
@@ -769,7 +769,7 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                MÃ´n há»c/LÄ©nh vá»±c <span className="text-red-500">*</span>
+                Môn học/Lĩnh vực <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <BookOpen size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10" />
@@ -778,39 +778,39 @@ export default function App() {
                   onChange={(e) => handleUpdateInfo('subject', e.target.value)}
                   className="form-input-icon appearance-none"
                 >
-                  <option value="">-- Chá»n mÃ´n há»c --</option>
-                  <option value="ToÃ¡n">ToÃ¡n</option>
-                  <option value="Ngá»¯ vÄƒn">Ngá»¯ vÄƒn</option>
-                  <option value="Tiáº¿ng Anh">Tiáº¿ng Anh</option>
-                  <option value="Váº­t lÃ½">Váº­t lÃ½</option>
-                  <option value="HÃ³a há»c">HÃ³a há»c</option>
-                  <option value="Sinh há»c">Sinh há»c</option>
-                  <option value="Lá»‹ch sá»­">Lá»‹ch sá»­</option>
-                  <option value="Äá»‹a lÃ½">Äá»‹a lÃ½</option>
+                  <option value="">-- Chọn môn học --</option>
+                  <option value="Toán">Toán</option>
+                  <option value="Ngữ văn">Ngữ văn</option>
+                  <option value="Tiếng Anh">Tiếng Anh</option>
+                  <option value="Vật lý">Vật lý</option>
+                  <option value="Hóa học">Hóa học</option>
+                  <option value="Sinh học">Sinh học</option>
+                  <option value="Lịch sử">Lịch sử</option>
+                  <option value="Địa lý">Địa lý</option>
                   <option value="GDCD/GDKT&PL">GDCD/GDKT&amp;PL</option>
-                  <option value="Tin há»c">Tin há»c</option>
-                  <option value="CÃ´ng nghá»‡">CÃ´ng nghá»‡</option>
-                  <option value="Thá»ƒ dá»¥c">Thá»ƒ dá»¥c</option>
-                  <option value="Ã‚m nháº¡c">Ã‚m nháº¡c</option>
-                  <option value="Má»¹ thuáº­t">Má»¹ thuáº­t</option>
-                  <option value="Khoa há»c tá»± nhiÃªn">Khoa há»c tá»± nhiÃªn</option>
-                  <option value="Khoa há»c xÃ£ há»™i">Khoa há»c xÃ£ há»™i</option>
-                  <option value="Hoáº¡t Ä‘á»™ng tráº£i nghiá»‡m">Hoáº¡t Ä‘á»™ng tráº£i nghiá»‡m</option>
-                  <option value="GiÃ¡o dá»¥c quá»‘c phÃ²ng">GiÃ¡o dá»¥c quá»‘c phÃ²ng</option>
-                  <option value="Tiáº¿ng PhÃ¡p">Tiáº¿ng PhÃ¡p</option>
-                  <option value="Tiáº¿ng Trung">Tiáº¿ng Trung</option>
-                  <option value="Tiáº¿ng Nháº­t">Tiáº¿ng Nháº­t</option>
-                  <option value="Äáº¡o Ä‘á»©c">Äáº¡o Ä‘á»©c</option>
-                  <option value="Tá»± nhiÃªn vÃ  XÃ£ há»™i">Tá»± nhiÃªn vÃ  XÃ£ há»™i</option>
-                  <option value="Quáº£n lÃ½ giÃ¡o dá»¥c">Quáº£n lÃ½ giÃ¡o dá»¥c</option>
-                  <option value="GiÃ¡o dá»¥c máº§m non">GiÃ¡o dá»¥c máº§m non</option>
-                  <option value="KhÃ¡c">KhÃ¡c</option>
+                  <option value="Tin học">Tin học</option>
+                  <option value="Công nghệ">Công nghệ</option>
+                  <option value="Thể dục">Thể dục</option>
+                  <option value="Âm nhạc">Âm nhạc</option>
+                  <option value="Mỹ thuật">Mỹ thuật</option>
+                  <option value="Khoa học tự nhiên">Khoa học tự nhiên</option>
+                  <option value="Khoa học xã hội">Khoa học xã hội</option>
+                  <option value="Hoạt động trải nghiệm">Hoạt động trải nghiệm</option>
+                  <option value="Giáo dục quốc phòng">Giáo dục quốc phòng</option>
+                  <option value="Tiếng Pháp">Tiếng Pháp</option>
+                  <option value="Tiếng Trung">Tiếng Trung</option>
+                  <option value="Tiếng Nhật">Tiếng Nhật</option>
+                  <option value="Đạo đức">Đạo đức</option>
+                  <option value="Tự nhiên và Xã hội">Tự nhiên và Xã hội</option>
+                  <option value="Quản lý giáo dục">Quản lý giáo dục</option>
+                  <option value="Giáo dục mầm non">Giáo dục mầm non</option>
+                  <option value="Khác">Khác</option>
                 </select>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Cáº¥p há»c</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Cấp học</label>
               <div className="relative">
                 <GraduationCap size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10" />
                 <select
@@ -818,25 +818,25 @@ export default function App() {
                   onChange={(e) => handleUpdateInfo('level', e.target.value)}
                   className="form-input-icon appearance-none"
                 >
-                  <option value="">-- Chá»n cáº¥p há»c --</option>
-                  <option value="Tiá»ƒu há»c">Tiá»ƒu há»c</option>
+                  <option value="">-- Chọn cấp học --</option>
+                  <option value="Tiểu học">Tiểu học</option>
                   <option value="THCS">THCS</option>
                   <option value="THPT">THPT</option>
-                  <option value="Máº§m non">Máº§m non</option>
-                  <option value="LiÃªn cáº¥p">LiÃªn cáº¥p</option>
+                  <option value="Mầm non">Mầm non</option>
+                  <option value="Liên cấp">Liên cấp</option>
                 </select>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Khá»‘i lá»›p</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Khối lớp</label>
               <div className="relative">
                 <School size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.grade}
                   onChange={(e) => handleUpdateInfo('grade', e.target.value)}
-                  placeholder="VD: Lá»›p 12, Khá»‘i 6-9"
+                  placeholder="VD: Lớp 12, Khối 6-9"
                   className="form-input-icon"
                 />
               </div>
@@ -846,20 +846,20 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                TÃªn trÆ°á»ng / ÄÆ¡n vá»‹ <span className="text-red-500">*</span>
+                Tên trường / Đơn vị <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={data.info.school}
                 onChange={(e) => handleUpdateInfo('school', e.target.value)}
-                placeholder="VD: TrÆ°á»ng THPT Nguyá»…n Du"
+                placeholder="VD: Trường THPT Nguyễn Du"
                 className="form-input"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Äá»‹a Ä‘iá»ƒm (Huyá»‡n, Tá»‰nh) <span className="text-red-500">*</span>
+                Địa điểm (Huyện, Tỉnh) <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -867,7 +867,7 @@ export default function App() {
                   type="text"
                   value={data.info.location}
                   onChange={(e) => handleUpdateInfo('location', e.target.value)}
-                  placeholder="VD: Quáº­n 1, TP.HCM"
+                  placeholder="VD: Quận 1, TP.HCM"
                   className="form-input-icon"
                 />
               </div>
@@ -876,7 +876,7 @@ export default function App() {
 
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Äiá»u kiá»‡n CSVC (Tivi, MÃ¡y chiáº¿u, WiFi...) <span className="text-red-500">*</span>
+              Điều kiện CSVC (Tivi, Máy chiếu, WiFi...) <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <Monitor size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -884,7 +884,7 @@ export default function App() {
                 type="text"
                 value={data.info.facilities}
                 onChange={(e) => handleUpdateInfo('facilities', e.target.value)}
-                placeholder="VD: PhÃ²ng mÃ¡y chiáº¿u, Tivi thÃ´ng minh, Internet á»•n Ä‘á»‹nh..."
+                placeholder="VD: Phòng máy chiếu, Tivi thông minh, Internet ổn định..."
                 className="form-input-icon"
               />
             </div>
@@ -893,36 +893,36 @@ export default function App() {
 
         <div className="content-card space-y-6">
           <h3 className="section-title">
-            2. ThÃ´ng tin bá»• sung
+            2. Thông tin bổ sung
             <span className="text-xs text-amber-500 font-normal ml-2 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
-              (KhuyÃªn dÃ¹ng Ä‘á»ƒ tÄƒng chi tiáº¿t)
+              (Khuyên dùng để tăng chi tiết)
             </span>
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">SÃ¡ch giÃ¡o khoa</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Sách giáo khoa</label>
               <div className="relative">
                 <BookOpen size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.textbook}
                   onChange={(e) => handleUpdateInfo('textbook', e.target.value)}
-                  placeholder="VD: Káº¿t ná»‘i tri thá»©c, CÃ¡nh diá»u..."
+                  placeholder="VD: Kết nối tri thức, Cánh diều..."
                   className="form-input-icon"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Äá»‘i tÆ°á»£ng nghiÃªn cá»©u</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Đối tượng nghiên cứu</label>
               <div className="relative">
                 <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.target}
                   onChange={(e) => handleUpdateInfo('target', e.target.value)}
-                  placeholder="VD: 45 HS lá»›p 12A (thá»±c nghiá»‡m)..."
+                  placeholder="VD: 45 HS lớp 12A (thực nghiệm)..."
                   className="form-input-icon"
                 />
               </div>
@@ -931,28 +931,28 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Thá»i gian thá»±c hiá»‡n</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Thời gian thực hiện</label>
               <div className="relative">
                 <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.duration}
                   onChange={(e) => handleUpdateInfo('duration', e.target.value)}
-                  placeholder="VD: NÄƒm há»c 2024-2025"
+                  placeholder="VD: Năm học 2024-2025"
                   className="form-input-icon"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">á»¨ng dá»¥ng AI/CÃ´ng nghá»‡</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Ứng dụng AI/Công nghệ</label>
               <div className="relative">
                 <Cpu size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.techUsed}
                   onChange={(e) => handleUpdateInfo('techUsed', e.target.value)}
-                  placeholder="VD: Sá»­ dá»¥ng ChatGPT, Canva, Padlet..."
+                  placeholder="VD: Sử dụng ChatGPT, Canva, Padlet..."
                   className="form-input-icon"
                 />
               </div>
@@ -960,13 +960,13 @@ export default function App() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Äáº·c thÃ¹ / Trá»ng tÃ¢m Ä‘á» tÃ i</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Đặc thù / Trọng tâm đề tài</label>
             <div className="relative">
               <Target size={16} className="absolute left-3 top-3.5 text-slate-400" />
               <textarea
                 value={data.info.focus}
                 onChange={(e) => handleUpdateInfo('focus', e.target.value)}
-                placeholder="MÃ´ táº£ ngáº¯n gá»n vá» Ä‘áº·c thÃ¹ hoáº·c trá»ng tÃ¢m cá»§a Ä‘á» tÃ i..."
+                placeholder="Mô tả ngắn gọn về đặc thù hoặc trọng tâm của đề tài..."
                 rows={2}
                 className="form-input-icon resize-none"
               />
@@ -976,8 +976,8 @@ export default function App() {
 
         <div className="content-card space-y-6">
           <h3 className="section-title">
-            4. YÃªu cáº§u khÃ¡c
-            <span className="text-xs text-slate-400 font-normal ml-2">(TÃ¹y chá»n - AI sáº½ tuÃ¢n thá»§ nghiÃªm ngáº·t)</span>
+            4. Yêu cầu khác
+            <span className="text-xs text-slate-400 font-normal ml-2">(Tùy chọn - AI sẽ tuân thủ nghiêm ngặt)</span>
           </h3>
 
           <div className="space-y-4">
@@ -989,8 +989,8 @@ export default function App() {
                 className="mt-1 w-4 h-4 rounded border-amber-300 text-amber-500 focus:ring-amber-200"
               />
               <span className="text-sm">
-                <span className="font-bold text-amber-600">ðŸ“Š ThÃªm nhiá»u</span>{' '}
-                <span className="font-bold text-amber-600">bÃ i toÃ¡n thá»±c táº¿, vÃ­ dá»¥ minh há»a</span>
+                <span className="font-bold text-amber-600">📊 Thêm nhiều</span>{' '}
+                <span className="font-bold text-amber-600">bài toán thực tế, ví dụ minh họa</span>
               </span>
             </label>
 
@@ -1002,13 +1002,13 @@ export default function App() {
                 className="mt-1 w-4 h-4 rounded border-purple-300 text-purple-500 focus:ring-purple-200"
               />
               <span className="text-sm">
-                <span className="font-bold text-purple-600">ðŸ“ˆ Bá»• sung</span>{' '}
-                <span className="font-bold text-purple-600">báº£ng biá»ƒu, sá»‘ liá»‡u thá»‘ng kÃª</span>
+                <span className="font-bold text-purple-600">📈 Bổ sung</span>{' '}
+                <span className="font-bold text-purple-600">bảng biểu, số liệu thống kê</span>
               </span>
             </label>
 
             <div className="flex items-center gap-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl p-3">
-              <span className="text-sm text-purple-700 dark:text-purple-300">ðŸ“„ Sá»‘ trang SKKN cáº§n giá»›i háº¡n:</span>
+              <span className="text-sm text-purple-700 dark:text-purple-300">📄 Số trang SKKN cần giới hạn:</span>
               <input
                 type="number"
                 min="1"
@@ -1019,15 +1019,15 @@ export default function App() {
                 disabled={hasLockedSession}
                 className="w-24 px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-purple-200 disabled:opacity-60 disabled:cursor-not-allowed"
               />
-              <span className="text-xs text-slate-400">(Äá»ƒ trá»‘ng náº¿u khÃ´ng giá»›i háº¡n)</span>
+              <span className="text-xs text-slate-400">(Để trống nếu không giới hạn)</span>
             </div>
 
             {hasLockedSession && (
               <div className="hint-box">
                 <p>
-                  ÄÃ£ khÃ³a toÃ n bá»™ cáº¥u hÃ¬nh phiÃªn viáº¿t hiá»‡n táº¡i
-                  {data.lockedPageLimit ? `, trong Ä‘Ã³ sá»‘ trang Ä‘Æ°á»£c chá»‘t á»Ÿ má»©c ${data.lockedPageLimit} trang.` : '.'}
-                  {' '}CÃ¡c checkbox, yÃªu cáº§u bá»• sung vÃ  thÃ´ng tin mÃ´ táº£ sáº½ giá»¯ nguyÃªn cho Ä‘áº¿n khi báº¡n má»Ÿ khÃ³a.
+                  Đã khóa toàn bộ cấu hình phiên viết hiện tại
+                  {data.lockedPageLimit ? `, trong đó số trang được chốt ở mức ${data.lockedPageLimit} trang.` : '.'}
+                  {' '}Các checkbox, yêu cầu bổ sung và thông tin mô tả sẽ giữ nguyên cho đến khi bạn mở khóa.
                 </p>
               </div>
             )}
@@ -1036,8 +1036,8 @@ export default function App() {
               <div className="info-box space-y-2">
                 <p className="font-semibold">
                   {hasLockedSession
-                    ? `PhÃ¢n bá»• Ä‘Ã£ khÃ³a cho lÆ°á»£t viáº¿t hiá»‡n táº¡i (${activePageLimitLabel} trang)`
-                    : `PhÃ¢n bá»• Ä‘á»™ dÃ i dá»± kiáº¿n theo giá»›i háº¡n ${activePageLimitLabel} trang`}
+                    ? `Phân bổ đã khóa cho lượt viết hiện tại (${activePageLimitLabel} trang)`
+                    : `Phân bổ độ dài dự kiến theo giới hạn ${activePageLimitLabel} trang`}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                   {sectionLengthPlans.map((plan) => (
@@ -1046,28 +1046,28 @@ export default function App() {
                       className="flex items-start justify-between gap-3 rounded-lg bg-white/70 dark:bg-slate-900/30 px-3 py-2"
                     >
                       <span className="leading-relaxed">{plan.sectionName}</span>
-                      <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} tá»«)</span>
+                      <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} từ)</span>
                     </div>
                   ))}
                 </div>
                 <p className="text-xs opacity-80">
                   {hasLockedSession
-                    ? 'Má»i láº§n viáº¿t tiáº¿p theo sáº½ dÃ¹ng Ä‘Ãºng snapshot nÃ y, bao gá»“m checkbox vÃ  yÃªu cáº§u bá»• sung, cho Ä‘áº¿n khi báº¡n má»Ÿ khÃ³a.'
-                    : 'App sáº½ dÃ¹ng phÃ¢n bá»• nÃ y khi gá»i AI vÃ  tá»± biÃªn táº­p láº¡i náº¿u má»¥c nÃ o lá»‡ch quÃ¡ xa khá»i má»©c Ä‘Ã£ chia.'}
+                    ? 'Mọi lần viết tiếp theo sẽ dùng đúng snapshot này, bao gồm checkbox và yêu cầu bổ sung, cho đến khi bạn mở khóa.'
+                    : 'App sẽ dùng phân bổ này khi gọi AI và tự biên tập lại nếu mục nào lệch quá xa khỏi mức đã chia.'}
                 </p>
               </div>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">ðŸ–Šï¸ YÃªu cáº§u bá»• sung khÃ¡c (tÃ¹y Ã½):</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">🖊️ Yêu cầu bổ sung khác (tùy ý):</label>
             <textarea
               value={data.info.customRequirements}
               onChange={(e) => handleUpdateInfo('customRequirements', e.target.value)}
-              placeholder={`Nháº­p cÃ¡c yÃªu cáº§u Ä‘áº·c biá»‡t khÃ¡c cá»§a báº¡n. VÃ­ dá»¥:
-â€¢ Viáº¿t ngáº¯n gá»n pháº§n cÆ¡ sá»Ÿ lÃ½ luáº­n (khoáº£ng 3 trang)
-â€¢ Táº­p trung vÃ o giáº£i phÃ¡p á»©ng dá»¥ng AI
-â€¢ Viáº¿t theo phong cÃ¡ch há»c thuáº­t nghiÃªm tÃºc...`}
+              placeholder={`Nhập các yêu cầu đặc biệt khác của bạn. Ví dụ:
+• Viết ngắn gọn phần cơ sở lý luận (khoảng 3 trang)
+• Tập trung vào giải pháp ứng dụng AI
+• Viết theo phong cách học thuật nghiêm túc...`}
               rows={4}
               className="form-input resize-none"
             />
@@ -1078,44 +1078,44 @@ export default function App() {
       <button onClick={confirmRequirements} className={hasLockedSession ? 'btn-confirmed' : 'btn-confirm'}>
         {hasLockedSession ? (
           <span className="flex items-center justify-center gap-2">
-            <CheckCircle2 size={18} /> âœ… ÄÃ£ khÃ³a phiÃªn viáº¿t - Báº¥m Ä‘á»ƒ má»Ÿ khÃ³a vÃ  sá»­a láº¡i
+            <CheckCircle2 size={18} /> ✅ Đã khóa phiên viết - Bấm để mở khóa và sửa lại
           </span>
         ) : (
           <span className="flex items-center justify-center gap-2">
-            <Save size={18} /> ðŸ’¾ XÃ¡c nháº­n lÆ°u cÃ¡c yÃªu cáº§u nÃ y
+            <Save size={18} /> 💾 Xác nhận lưu các yêu cầu này
           </span>
         )}
       </button>
 
       {hasLockedSession && (
         <p className="text-center text-xs text-green-600 dark:text-green-400">
-          âœ… CÃ¡c yÃªu cáº§u Ä‘Ã£ Ä‘Æ°á»£c lÆ°u! AI sáº½ tuÃ¢n thá»§ NGHIÃŠM NGáº¶T khi viáº¿t SKKN.
+          ✅ Các yêu cầu đã được lưu! AI sẽ tuân thủ NGHIÊM NGẶT khi viết SKKN.
         </p>
       )}
 
       <div className="content-card space-y-5">
-        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 italic">TÃ¹y chá»n khá»Ÿi táº¡o</h3>
+        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 italic">Tùy chọn khởi tạo</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => { goToStep(1); }}
             className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary/5 transition-all"
           >
-            <Sparkles size={18} /> AI Láº­p DÃ n Ã Chi Tiáº¿t
+            <Sparkles size={18} /> AI Lập Dàn Ý Chi Tiết
           </button>
           <button className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-            <FileText size={18} /> Sá»­ Dá»¥ng DÃ n Ã CÃ³ Sáºµn
+            <FileText size={18} /> Sử Dụng Dàn Ý Có Sẵn
           </button>
         </div>
         <div className="info-box flex items-start gap-2">
           <Sparkles size={16} className="mt-0.5 flex-shrink-0" />
-          <p>Há»‡ thá»‘ng AI sáº½ tá»± Ä‘á»™ng phÃ¢n tÃ­ch Ä‘á» tÃ i vÃ  táº¡o ra dÃ n Ã½ chi tiáº¿t gá»“m 6 pháº§n chuáº©n Bá»™ GD&amp;ÄT. Báº¡n cÃ³ thá»ƒ chá»‰nh sá»­a láº¡i sau khi táº¡o xong.</p>
+          <p>Hệ thống AI sẽ tự động phân tích đề tài và tạo ra dàn ý chi tiết gồm 6 phần chuẩn Bộ GD&amp;ĐT. Bạn có thể chỉnh sửa lại sau khi tạo xong.</p>
         </div>
         <button
           onClick={() => { goToStep(1); generateOutline(); }}
           disabled={!data.info.title || isLoading}
           className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          ðŸš€ Báº¯t Ä‘áº§u láº­p dÃ n Ã½ ngay
+          🚀 Bắt đầu lập dàn ý ngay
         </button>
       </div>
     </div>
@@ -1123,8 +1123,8 @@ export default function App() {
   const renderOutlineStep = () => (
     <div className="space-y-6">
       <div className="banner-header">
-        <h2 className="text-2xl font-bold">Láº­p DÃ n Ã SKKN</h2>
-        <p className="text-white/80 mt-1">XÃ¢y dá»±ng khung sÆ°á»n chi tiáº¿t cho SÃ¡ng kiáº¿n kinh nghiá»‡m</p>
+        <h2 className="text-2xl font-bold">Lập Dàn Ý SKKN</h2>
+        <p className="text-white/80 mt-1">Xây dựng khung sườn chi tiết cho Sáng kiến kinh nghiệm</p>
       </div>
 
       {data.outline ? (
@@ -1133,17 +1133,17 @@ export default function App() {
             <div className="dot bg-red-400" />
             <div className="dot bg-amber-400" />
             <div className="dot bg-green-400" />
-            <span className="ml-2 text-xs text-slate-500">ðŸ“„ Báº£n tháº£o SKKN.docx</span>
+            <span className="ml-2 text-xs text-slate-500">📄 Bản thảo SKKN.docx</span>
           </div>
           <div className="bg-white dark:bg-slate-800 p-6 rounded-b-xl border border-slate-100 dark:border-slate-700 min-h-[400px]">
             <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(data.outline) }} />
           </div>
           <div className="flex gap-3 flex-wrap">
-            <button onClick={generateOutline} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-primary-dark transition-colors"><Sparkles size={14} /> Táº¡o láº¡i dÃ n Ã½</button>
-            <button onClick={() => goToStep(2)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Tiáº¿p tá»¥c viáº¿t ná»™i dung <ChevronRight size={14} /></button>
+            <button onClick={generateOutline} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-primary-dark transition-colors"><Sparkles size={14} /> Tạo lại dàn ý</button>
+            <button onClick={() => goToStep(2)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Tiếp tục viết nội dung <ChevronRight size={14} /></button>
           </div>
           <details className="mt-4">
-            <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary transition-colors">ðŸ“ Chá»‰nh sá»­a dÃ n Ã½ (Markdown)</summary>
+            <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary transition-colors">📝 Chỉnh sửa dàn ý (Markdown)</summary>
             <textarea value={data.outline} onChange={(e) => setData(prev => ({ ...prev, outline: e.target.value }))} className="w-full mt-2 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 outline-none font-mono text-sm resize-none min-h-[300px]" />
           </details>
         </div>
@@ -1151,10 +1151,10 @@ export default function App() {
         <div className="content-card flex flex-col items-center justify-center py-16 space-y-4 text-center">
           <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"><Layout size={40} /></div>
           <div>
-            <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">ChÆ°a cÃ³ dÃ n Ã½</p>
-            <p className="text-sm text-slate-400 mt-1">Nháº¥n nÃºt bÃªn dÆ°á»›i Ä‘á»ƒ AI táº¡o dÃ n Ã½ chi tiáº¿t</p>
+            <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">Chưa có dàn ý</p>
+            <p className="text-sm text-slate-400 mt-1">Nhấn nút bên dưới để AI tạo dàn ý chi tiết</p>
           </div>
-          <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? 'â³ Äang táº¡o dÃ n Ã½...' : 'ðŸš€ Táº¡o dÃ n Ã½ báº±ng AI'}</button>
+          <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '⏳ Đang tạo dàn ý...' : '🚀 Tạo dàn ý bằng AI'}</button>
         </div>
       )}
     </div>
@@ -1179,19 +1179,19 @@ export default function App() {
                 <div className="dot bg-red-400" />
                 <div className="dot bg-amber-400" />
                 <div className="dot bg-green-400" />
-                <span className="ml-2 text-xs text-slate-500">ðŸ“„ {sectionName}</span>
+                <span className="ml-2 text-xs text-slate-500">📄 {sectionName}</span>
               </div>
               <div className="bg-white dark:bg-slate-800 p-6 rounded-b-xl border border-slate-100 dark:border-slate-700 min-h-[300px]">
                 <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }} />
               </div>
               <div className="flex gap-3 flex-wrap">
-                <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50"><Sparkles size={14} /> Viáº¿t láº¡i báº±ng AI</button>
+                <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50"><Sparkles size={14} /> Viết lại bằng AI</button>
                 {stepId < 13 && (
-                  <button onClick={() => goToStep(stepId + 1)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Tiáº¿p tá»¥c <ChevronRight size={14} /></button>
+                  <button onClick={() => goToStep(stepId + 1)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Tiếp tục <ChevronRight size={14} /></button>
                 )}
               </div>
               <details className="mt-2">
-                <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary">ðŸ“ Chá»‰nh sá»­a ná»™i dung</summary>
+                <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary">📝 Chỉnh sửa nội dung</summary>
                 <textarea value={content} onChange={(e) => setData(prev => ({ ...prev, sections: { ...prev.sections, [sectionName]: e.target.value } }))} className="w-full mt-2 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm resize-none min-h-[300px] outline-none" />
               </details>
             </>
@@ -1199,11 +1199,11 @@ export default function App() {
             <div className="flex flex-col items-center justify-center py-16 space-y-4 text-center">
               <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"><PenTool size={40} /></div>
               <div>
-                <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">ChÆ°a cÃ³ ná»™i dung</p>
-                <p className="text-sm text-slate-400 mt-1">Nháº¥n nÃºt bÃªn dÆ°á»›i Ä‘á»ƒ AI viáº¿t pháº§n nÃ y</p>
+                <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">Chưa có nội dung</p>
+                <p className="text-sm text-slate-400 mt-1">Nhấn nút bên dưới để AI viết phần này</p>
               </div>
-              <div className="info-box max-w-md text-left"><p>ðŸ’¡ AI sáº½ dá»±a trÃªn dÃ n Ã½ Ä‘Ã£ táº¡o Ä‘á»ƒ viáº¿t ná»™i dung chi tiáº¿t cho pháº§n <strong>{sectionName}</strong>.</p></div>
-              <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? 'â³ Äang viáº¿t...' : `ðŸš€ AI viáº¿t "${STEPS[stepId].title}"`}</button>
+              <div className="info-box max-w-md text-left"><p>💡 AI sẽ dựa trên dàn ý đã tạo để viết nội dung chi tiết cho phần <strong>{sectionName}</strong>.</p></div>
+              <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '⏳ Đang viết...' : `🚀 AI viết "${STEPS[stepId].title}"`}</button>
             </div>
           )}
         </div>
@@ -1406,14 +1406,14 @@ export default function App() {
 
     if (!silent) {
       const summaryText = after.totalTargetWords
-        ? `Tá»•ng hiá»‡n táº¡i khoáº£ng ${after.totalActualWords} tá»« (~${after.totalActualPages} trang), má»¥c tiÃªu ${after.totalTargetWords} tá»« (~${after.totalTargetPages} trang).`
-        : `Tá»•ng hiá»‡n táº¡i khoáº£ng ${after.totalActualWords} tá»«.`;
+        ? `Tổng hiện tại khoảng ${after.totalActualWords} từ (~${after.totalActualPages} trang), mục tiêu ${after.totalTargetWords} từ (~${after.totalTargetPages} trang).`
+        : `Tổng hiện tại khoảng ${after.totalActualWords} từ.`;
 
       Swal.fire(
-        changed ? 'ÄÃ£ chuáº©n hÃ³a trÆ°á»›c khi xuáº¥t' : 'KhÃ´ng cáº§n chuáº©n hÃ³a thÃªm',
+        changed ? 'Đã chuẩn hóa trước khi xuất' : 'Không cần chuẩn hóa thêm',
         changed
-          ? `${summaryText} App Ä‘Ã£ cÃ¢n láº¡i ${adjustedSections} má»¥c Ä‘á»ƒ kÃ©o tá»•ng Ä‘á»™ dÃ i sÃ¡t má»¥c tiÃªu hÆ¡n.`
-          : `${summaryText} Báº£n tháº£o hiá»‡n Ä‘Ã£ khÃ¡ sÃ¡t giá»›i háº¡n báº¡n Ä‘áº·t ra.`,
+          ? `${summaryText} App đã cân lại ${adjustedSections} mục để kéo tổng độ dài sát mục tiêu hơn.`
+          : `${summaryText} Bản thảo hiện đã khá sát giới hạn bạn đặt ra.`,
         changed ? 'success' : 'info',
       );
     }
@@ -1432,7 +1432,7 @@ export default function App() {
     try {
       await normalizeDraftForExport();
     } catch (error: any) {
-      Swal.fire('Lá»—i', error.message || 'KhÃ´ng thá»ƒ chuáº©n hÃ³a toÃ n bÃ i trÆ°á»›c khi xuáº¥t.', 'error');
+      Swal.fire('Lỗi', error.message || 'Không thể chuẩn hóa toàn bài trước khi xuất.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1450,7 +1450,7 @@ export default function App() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (error: any) {
-      Swal.fire('Lá»—i', error.message || 'KhÃ´ng thá»ƒ chuáº©n hÃ³a vÃ  xuáº¥t Markdown.', 'error');
+      Swal.fire('Lỗi', error.message || 'Không thể chuẩn hóa và xuất Markdown.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1467,21 +1467,21 @@ export default function App() {
         let md = exportSections[sectionName] || '';
         if (!md) return '';
 
-        md = md.replace(/^.*[Dd]Æ°á»›i Ä‘Ã¢y.*$/gm, '');
-        md = md.replace(/^.*ná»™i dung chi tiáº¿t.*$/gm, '');
-        md = md.replace(/^.*Ä‘Æ°á»£c (viáº¿t|trÃ¬nh bÃ y) theo.*$/gm, '');
-        md = md.replace(/^.*yÃªu cáº§u vá» Ä‘á»™ dÃ i.*$/gm, '');
-        md = md.replace(/^.*vÄƒn phong vÃ  cÃ¡c nguyÃªn táº¯c.*$/gm, '');
-        md = md.replace(/^.*cÃ¡c nguyÃªn táº¯c Ä‘Ã£ Ä‘á» ra.*$/gm, '');
-        md = md.replace(/^.*[Pp]háº§n nÃ y trÃ¬nh bÃ y.*$/gm, '');
-        md = md.replace(/^.*[Ss]au Ä‘Ã¢y lÃ .*$/gm, '');
-        md = md.replace(/^.*\([Kk]hoáº£ng \d+.*\).*$/gm, '');
+        md = md.replace(/^.*[Dd]ưới đây.*$/gm, '');
+        md = md.replace(/^.*nội dung chi tiết.*$/gm, '');
+        md = md.replace(/^.*được (viết|trình bày) theo.*$/gm, '');
+        md = md.replace(/^.*yêu cầu về độ dài.*$/gm, '');
+        md = md.replace(/^.*văn phong và các nguyên tắc.*$/gm, '');
+        md = md.replace(/^.*các nguyên tắc đã đề ra.*$/gm, '');
+        md = md.replace(/^.*[Pp]hần này trình bày.*$/gm, '');
+        md = md.replace(/^.*[Ss]au đây là.*$/gm, '');
+        md = md.replace(/^.*\([Kk]hoảng \d+.*\).*$/gm, '');
 
-        md = md.replace(/^#{0,6}\s*I\.\s*(Äáº¶T Váº¤N Äá»€|Äáº·t váº¥n Ä‘á»).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*II\.\s*(Ná»˜I DUNG|Ná»™i dung).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*III\.\s*(KIáº¾N NGHá»Š|Kiáº¿n nghá»‹).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*I{1,3}[\.\d]*[\.\-\s].*?(Äáº·t váº¥n Ä‘á»|TÃ­nh cáº¥p thiáº¿t|Má»¥c tiÃªu|Thá»i gian.*Ä‘á»‘i tÆ°á»£ng|Hiá»‡n tráº¡ng|Giáº£i phÃ¡p|Káº¿t quáº£|Hiá»‡u quáº£|TÃ­nh kháº£ thi|Kinh phÃ­|Kiáº¿n nghá»‹|Äáº¶T Váº¤N Äá»€|Ná»˜I DUNG).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*\d+[\.\)]\s*(TÃ­nh cáº¥p thiáº¿t|Má»¥c tiÃªu|Thá»i gian.*Ä‘á»‘i tÆ°á»£ng|Hiá»‡n tráº¡ng|Giáº£i phÃ¡p|Káº¿t quáº£|Hiá»‡u quáº£|TÃ­nh kháº£ thi|Thá»i gian thá»±c hiá»‡n|Kinh phÃ­|Kiáº¿n nghá»‹).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*I\.\s*(ĐẶT VẤN ĐỀ|Đặt vấn đề).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*II\.\s*(NỘI DUNG|Nội dung).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*III\.\s*(KIẾN NGHỊ|Kiến nghị).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*I{1,3}[\.\d]*[\.\-\s].*?(Đặt vấn đề|Tính cấp thiết|Mục tiêu|Thời gian.*đối tượng|Hiện trạng|Giải pháp|Kết quả|Hiệu quả|Tính khả thi|Kinh phí|Kiến nghị|ĐẶT VẤN ĐỀ|NỘI DUNG).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*\d+[\.\)]\s*(Tính cấp thiết|Mục tiêu|Thời gian.*đối tượng|Hiện trạng|Giải pháp|Kết quả|Hiệu quả|Tính khả thi|Thời gian thực hiện|Kinh phí|Kiến nghị).*$/gim, '');
         md = md.replace(/\n{3,}/g, '\n\n');
         md = md.trim();
 
@@ -1492,46 +1492,46 @@ export default function App() {
       };
 
       const bodyHtml = `
-<h1 style="text-align:center; font-size:16pt; font-weight:bold;">Ná»˜I DUNG SÃNG KIáº¾N KINH NGHIá»†M</h1>
+<h1 style="text-align:center; font-size:16pt; font-weight:bold;">NỘI DUNG SÁNG KIẾN KINH NGHIỆM</h1>
 
-<h2 style="font-size:14pt; font-weight:bold;">I. Äáº·t váº¥n Ä‘á»</h2>
+<h2 style="font-size:14pt; font-weight:bold;">I. Đặt vấn đề</h2>
 
-<h3 style="font-size:13pt; font-weight:bold;">1. TÃ­nh cáº¥p thiáº¿t pháº£i tiáº¿n hÃ nh sÃ¡ng kiáº¿n</h3>
+<h3 style="font-size:13pt; font-weight:bold;">1. Tính cấp thiết phải tiến hành sáng kiến</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(2)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">2. Má»¥c tiÃªu cá»§a Ä‘á» tÃ i, sÃ¡ng kiáº¿n</h3>
+<h3 style="font-size:13pt; font-weight:bold;">2. Mục tiêu của đề tài, sáng kiến</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(3)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">3. Thá»i gian, Ä‘á»‘i tÆ°á»£ng, pháº¡m vi nghiÃªn cá»©u</h3>
+<h3 style="font-size:13pt; font-weight:bold;">3. Thời gian, đối tượng, phạm vi nghiên cứu</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(4)}</div>
 
-<h2 style="font-size:14pt; font-weight:bold;">II. Ná»™i dung cá»§a sÃ¡ng kiáº¿n</h2>
+<h2 style="font-size:14pt; font-weight:bold;">II. Nội dung của sáng kiến</h2>
 
-<h3 style="font-size:13pt; font-weight:bold;">1. Hiá»‡n tráº¡ng váº¥n Ä‘á»</h3>
+<h3 style="font-size:13pt; font-weight:bold;">1. Hiện trạng vấn đề</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(5)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">2. Giáº£i phÃ¡p thá»±c hiá»‡n sÃ¡ng kiáº¿n Ä‘á»ƒ giáº£i quyáº¿t váº¥n Ä‘á»</h3>
+<h3 style="font-size:13pt; font-weight:bold;">2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(6)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">3. Káº¿t quáº£ sau khi Ã¡p dá»¥ng giáº£i phÃ¡p sÃ¡ng kiáº¿n táº¡i Ä‘Æ¡n vá»‹</h3>
+<h3 style="font-size:13pt; font-weight:bold;">3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(7)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">4. Hiá»‡u quáº£ cá»§a sÃ¡ng kiáº¿n</h3>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.1. Hiá»‡u quáº£ vá» khoa há»c</h4>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.2. Hiá»‡u quáº£ vá» kinh táº¿</h4>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.3. Hiá»‡u quáº£ vá» xÃ£ há»™i</h4>
+<h3 style="font-size:13pt; font-weight:bold;">4. Hiệu quả của sáng kiến</h3>
+<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.1. Hiệu quả về khoa học</h4>
+<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.2. Hiệu quả về kinh tế</h4>
+<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.3. Hiệu quả về xã hội</h4>
 <div style="margin-bottom:12pt;">${getSectionHtml(8)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">5. TÃ­nh kháº£ thi (kháº£ nÄƒng Ã¡p dá»¥ng vÃ o thá»±c tiá»…n cÃ´ng tÃ¡c cá»§a Ä‘Æ¡n vá»‹, Ä‘á»‹a phÆ°Æ¡ng)</h3>
+<h3 style="font-size:13pt; font-weight:bold;">5. Tính khả thi (khả năng áp dụng vào thực tiễn công tác của đơn vị, địa phương)</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(9)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">6. Thá»i gian thá»±c hiá»‡n Ä‘á» tÃ i, sÃ¡ng kiáº¿n</h3>
+<h3 style="font-size:13pt; font-weight:bold;">6. Thời gian thực hiện đề tài, sáng kiến</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(10)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">7. Kinh phÃ­ thá»±c hiá»‡n Ä‘á» tÃ i, sÃ¡ng kiáº¿n</h3>
+<h3 style="font-size:13pt; font-weight:bold;">7. Kinh phí thực hiện đề tài, sáng kiến</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(11)}</div>
 
-<h2 style="font-size:14pt; font-weight:bold;">III. Kiáº¿n nghá»‹, Ä‘á» xuáº¥t</h2>
+<h2 style="font-size:14pt; font-weight:bold;">III. Kiến nghị, đề xuất</h2>
 <div style="margin-bottom:12pt;">${getSectionHtml(12)}</div>
 `;
 
@@ -1599,7 +1599,7 @@ ${bodyHtml}
       a.click();
       URL.revokeObjectURL(url);
     } catch (error: any) {
-      Swal.fire('Lá»—i', error.message || 'KhÃ´ng thá»ƒ chuáº©n hÃ³a vÃ  xuáº¥t file Word.', 'error');
+      Swal.fire('Lỗi', error.message || 'Không thể chuẩn hóa và xuất file Word.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1611,21 +1611,21 @@ ${bodyHtml}
     const progress = Math.round((completedSections.length / totalSections) * 100);
     const draftLengthMetrics = buildDraftLengthMetrics();
     const draftDeltaLabel = draftLengthMetrics.totalDeltaWords === 0
-      ? 'Äang khá»›p ráº¥t sÃ¡t má»¥c tiÃªu tá»•ng thá»ƒ.'
+      ? 'Đang khớp rất sát mục tiêu tổng thể.'
       : draftLengthMetrics.totalDeltaWords > 0
-        ? `ToÃ n bÃ i hiá»‡n cÃ²n thiáº¿u khoáº£ng ${draftLengthMetrics.totalDeltaWords} tá»« (~${(draftLengthMetrics.totalDeltaWords / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`
-        : `ToÃ n bÃ i hiá»‡n Ä‘ang dÃ i hÆ¡n khoáº£ng ${Math.abs(draftLengthMetrics.totalDeltaWords)} tá»« (~${(Math.abs(draftLengthMetrics.totalDeltaWords) / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`;
+        ? `Toàn bài hiện còn thiếu khoảng ${draftLengthMetrics.totalDeltaWords} từ (~${(draftLengthMetrics.totalDeltaWords / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`
+        : `Toàn bài hiện đang dài hơn khoảng ${Math.abs(draftLengthMetrics.totalDeltaWords)} từ (~${(Math.abs(draftLengthMetrics.totalDeltaWords) / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`;
 
     return (
       <div className="space-y-6">
         <div className="banner-header">
-          <h2 className="text-2xl font-bold">Xuáº¥t SKKN</h2>
-          <p className="text-white/80 mt-1">Tá»•ng há»£p vÃ  xuáº¥t file hoÃ n chá»‰nh</p>
+          <h2 className="text-2xl font-bold">Xuất SKKN</h2>
+          <p className="text-white/80 mt-1">Tổng hợp và xuất file hoàn chỉnh</p>
         </div>
         <div className="content-card space-y-5">
-          <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">ðŸ“Š Tiáº¿n Ä‘á»™ hoÃ n thÃ nh</h3>
+          <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">📊 Tiến độ hoàn thành</h3>
           <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} /></div>
-          <p className="text-sm text-slate-500">{completedSections.length}/{totalSections} pháº§n Ä‘Ã£ hoÃ n thÃ nh ({progress}%)</p>
+          <p className="text-sm text-slate-500">{completedSections.length}/{totalSections} phần đã hoàn thành ({progress}%)</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {allSections.map(k => {
               const done = !!data.sections[SECTION_MAP[k]];
@@ -1640,20 +1640,20 @@ ${bodyHtml}
         </div>
         {completedSections.length === totalSections && (
           <div className="content-card space-y-4">
-            <h3 className="font-bold text-lg text-green-600 dark:text-green-400">ðŸŽ‰ SKKN Ä‘Ã£ hoÃ n thÃ nh!</h3>
-            <p className="text-sm text-slate-500">Táº¥t cáº£ cÃ¡c pháº§n Ä‘Ã£ Ä‘Æ°á»£c viáº¿t xong. Báº¡n cÃ³ thá»ƒ xem láº¡i tá»«ng pháº§n hoáº·c xuáº¥t file.</p>
+            <h3 className="font-bold text-lg text-green-600 dark:text-green-400">🎉 SKKN đã hoàn thành!</h3>
+            <p className="text-sm text-slate-500">Tất cả các phần đã được viết xong. Bạn có thể xem lại từng phần hoặc xuất file.</p>
             {draftLengthMetrics.totalTargetWords > 0 && (
               <div className="info-box space-y-2">
-                <p className="font-semibold">Chuáº©n hÃ³a tá»•ng Ä‘á»™ dÃ i trÆ°á»›c khi xuáº¥t</p>
-                <p>Tá»•ng hiá»‡n táº¡i khoáº£ng {draftLengthMetrics.totalActualWords} tá»« (~{draftLengthMetrics.totalActualPages} trang), má»¥c tiÃªu khoáº£ng {draftLengthMetrics.totalTargetWords} tá»« (~{draftLengthMetrics.totalTargetPages} trang).</p>
+                <p className="font-semibold">Chuẩn hóa tổng độ dài trước khi xuất</p>
+                <p>Tổng hiện tại khoảng {draftLengthMetrics.totalActualWords} từ (~{draftLengthMetrics.totalActualPages} trang), mục tiêu khoảng {draftLengthMetrics.totalTargetWords} từ (~{draftLengthMetrics.totalTargetPages} trang).</p>
                 <p>{draftDeltaLabel}</p>
-                <p className="text-xs opacity-80">Khi báº¥m xuáº¥t file, app sáº½ tá»± cÃ¢n láº¡i má»™t vÃ i má»¥c lá»›n náº¿u tá»•ng Ä‘á»™ dÃ i cÃ²n lá»‡ch nhiá»u.</p>
+                <p className="text-xs opacity-80">Khi bấm xuất file, app sẽ tự cân lại một vài mục lớn nếu tổng độ dài còn lệch nhiều.</p>
               </div>
             )}
             <div className="flex flex-wrap gap-3">
-              <button onClick={() => { void handleNormalizeBeforeExport(); }} disabled={isLoading || !draftLengthMetrics.totalTargetWords} className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><Sparkles size={18} /> Chuáº©n hÃ³a toÃ n bÃ i</button>
-              <button onClick={() => { void exportToDocx(); }} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"><FileText size={18} /> Táº£i xuá»‘ng SKKN (.doc)</button>
-              <button onClick={() => { void exportMarkdown(); }} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 bg-slate-600 text-white rounded-xl font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><FileDown size={18} /> Táº£i xuá»‘ng Markdown (.md)</button>
+              <button onClick={() => { void handleNormalizeBeforeExport(); }} disabled={isLoading || !draftLengthMetrics.totalTargetWords} className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><Sparkles size={18} /> Chuẩn hóa toàn bài</button>
+              <button onClick={() => { void exportToDocx(); }} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"><FileText size={18} /> Tải xuống SKKN (.doc)</button>
+              <button onClick={() => { void exportMarkdown(); }} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 bg-slate-600 text-white rounded-xl font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><FileDown size={18} /> Tải xuống Markdown (.md)</button>
             </div>
           </div>
         )}
@@ -1692,7 +1692,7 @@ ${bodyHtml}
             <Sparkles size={22} className="text-primary" />
             <h1 className="font-bold text-lg text-primary">Viethung</h1>
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Trá»£ lÃ­ viáº¿t SKKN thÃ´ng minh â€¢ build {APP_BUILD_TAG}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Trợ lí viết SKKN thông minh • build {APP_BUILD_TAG}</p>
         </div>
 
         {/* Step Navigation */}
@@ -1732,7 +1732,7 @@ ${bodyHtml}
         <div className="p-3 border-t border-slate-200 dark:border-slate-800 space-y-1">
           {data.info.title && (
             <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg mb-2">
-              <p className="text-[10px] text-slate-400">Äá» tÃ i:</p>
+              <p className="text-[10px] text-slate-400">Đề tài:</p>
               <p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{data.info.title}</p>
             </div>
           )}
@@ -1740,11 +1740,11 @@ ${bodyHtml}
             <button
               onClick={() => {
                 localStorage.setItem('skkn_data_v3', JSON.stringify(data));
-                Swal.fire({ icon: 'success', title: 'ÄÃ£ lÆ°u!', timer: 1000, showConfirmButton: false });
+                Swal.fire({ icon: 'success', title: 'Đã lưu!', timer: 1000, showConfirmButton: false });
               }}
               className="flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 text-xs transition-all"
             >
-              <Save size={14} /> LÆ°u phiÃªn
+              <Save size={14} /> Lưu phiên
             </button>
             <button
               onClick={resetData}
@@ -1771,7 +1771,7 @@ ${bodyHtml}
               onClick={() => setShowSettings(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
-              <Settings size={14} /> CÃ i Ä‘áº·t API Key
+              <Settings size={14} /> Cài đặt API Key
             </button>
           </div>
         </header>
@@ -1798,8 +1798,8 @@ ${bodyHtml}
           <div className="absolute inset-0 bg-white/60 dark:bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center">
             <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4 max-w-xs">
               <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="font-bold text-slate-700 dark:text-slate-200">Äang chá» ná»™i dung tá»« chuyÃªn gia AI...</p>
-              <p className="text-xs text-slate-400 text-center">QuÃ¡ trÃ¬nh nÃ y cÃ³ thá»ƒ máº¥t 30-60 giÃ¢y tÃ¹y thuá»™c vÃ o Ä‘á»™ phá»©c táº¡p</p>
+              <p className="font-bold text-slate-700 dark:text-slate-200">Đang chờ nội dung từ chuyên gia AI...</p>
+              <p className="text-xs text-slate-400 text-center">Quá trình này có thể mất 30-60 giây tùy thuộc vào độ phức tạp</p>
             </div>
           </div>
         )}
@@ -1810,7 +1810,7 @@ ${bodyHtml}
             {isLoading && (
               <span className="flex items-center gap-1.5 text-xs text-primary">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                Äang viáº¿t...
+                Đang viết...
               </span>
             )}
           </div>
@@ -1826,19 +1826,19 @@ ${bodyHtml}
               <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Settings size={20} className="text-primary" /></div>
                 <div>
-                  <h3 className="font-bold text-lg">Thiáº¿t láº­p Model & API Key</h3>
-                  <p className="text-xs text-slate-400">Káº¿t ná»‘i vá»›i Google Gemini API</p>
+                  <h3 className="font-bold text-lg">Thiết lập Model & API Key</h3>
+                  <p className="text-xs text-slate-400">Kết nối với Google Gemini API</p>
                 </div>
                 <button onClick={() => setShowSettings(false)} className="ml-auto text-slate-400 hover:text-slate-600 text-xl">&times;</button>
               </div>
               <div className="p-5 space-y-5">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">Chá»n Model AI</label>
+                  <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">Chọn Model AI</label>
                   <div className="space-y-2">
                     {[
-                      { name: 'Gemini 2.5 Flash', desc: 'Nhanh vÃ  cÃ¢n báº±ng cho háº§u háº¿t tÃ¡c vá»¥', badge: 'Default' },
-                      { name: 'Gemini 2.0 Flash', desc: 'Máº¡nh hÆ¡n cho tÃ¡c vá»¥ dÃ i vÃ  phá»©c táº¡p', badge: '' },
-                      { name: 'Gemini 2.0 Flash Lite', desc: 'Nhanh, chi phÃ­ tháº¥p', badge: '' },
+                      { name: 'Gemini 3 Flash', desc: 'Nhanh, hiệu quả cho tác vụ thông thường', badge: 'Default' },
+                      { name: 'Gemini 3 Pro', desc: 'Mạnh mẽ, phù hợp tác vụ phức tạp', badge: '' },
+                      { name: 'Gemini 2.5 Flash', desc: 'Ổn định, tốc độ cao', badge: '' },
                     ].map((model, i) => (
                       <div key={i} onClick={() => setSelectedModel(i)} className={cn('flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all', selectedModel === i ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700 hover:border-primary/50')}>
                         <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><Sparkles size={16} className="text-primary" /></div>
@@ -1855,20 +1855,20 @@ ${bodyHtml}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">ðŸ”‘ API Key</label>
-                  <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Nháº­p Gemini API Key (AIza...)" className="form-input" />
+                  <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">🔑 API Key</label>
+                  <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Nhập Gemini API Key (AIza...)" className="form-input" />
                 </div>
                 <div className="hint-box space-y-1">
-                  <p className="font-semibold text-xs">ðŸ“– HÆ°á»›ng dáº«n láº¥y Gemini API Key:</p>
+                  <p className="font-semibold text-xs">📖 Hướng dẫn lấy Gemini API Key:</p>
                   <ol className="text-xs space-y-0.5 list-decimal list-inside">
-                    <li>Truy cáº­p Google AI Studio</li>
-                    <li>ÄÄƒng nháº­p tÃ i khoáº£n Google</li>
-                    <li>VÃ o má»¥c API Keys vÃ  nháº¥n "Create API key"</li>
-                    <li>Copy key vÃ  dÃ¡n vÃ o Ã´ trÃªn</li>
+                    <li>Truy cập Google AI Studio</li>
+                    <li>Đăng nhập tài khoản Google</li>
+                    <li>Vào mục API Keys và nhấn "Create API key"</li>
+                    <li>Copy key và dán vào ô trên</li>
                   </ol>
-                  <a href="https://aistudio.google.com/app/apikey" target="_blank" className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold hover:underline mt-1">ðŸ”— Má»Ÿ trang API Keys</a>
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold hover:underline mt-1">🔗 Mở trang API Keys</a>
                 </div>
-                <button onClick={saveApiKey} className="btn-primary">LÆ°u cáº¥u hÃ¬nh</button>
+                <button onClick={saveApiKey} className="btn-primary">Lưu cấu hình</button>
               </div>
             </motion.div>
           </div>
@@ -1899,8 +1899,8 @@ ${bodyHtml}
                     <Target size={22} className="text-green-300" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">PhÃ¢n TÃ­ch TÃªn Äá» TÃ i</h3>
-                    <p className="text-white/70 text-xs">Káº¿t quáº£ Ä‘Ã¡nh giÃ¡ chi tiáº¿t (Quy trÃ¬nh 3 lá»›p)</p>
+                    <h3 className="font-bold text-lg">Phân Tích Tên Đề Tài</h3>
+                    <p className="text-white/70 text-xs">Kết quả đánh giá chi tiết (Quy trình 3 lớp)</p>
                   </div>
                 </div>
                 <button onClick={() => setShowAnalysis(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
@@ -1909,24 +1909,24 @@ ${bodyHtml}
               {isAnalyzing ? (
                 <div className="p-12 flex flex-col items-center gap-4">
                   <div className="w-14 h-14 border-4 border-purple-400 border-t-transparent rounded-full animate-spin" />
-                  <p className="font-semibold text-slate-300">Äang phÃ¢n tÃ­ch tÃªn Ä‘á» tÃ i...</p>
-                  <p className="text-xs text-slate-500">AI Ä‘ang Ä‘Ã¡nh giÃ¡ theo 4 tiÃªu chÃ­</p>
+                  <p className="font-semibold text-slate-300">Đang phân tích tên đề tài...</p>
+                  <p className="text-xs text-slate-500">AI đang đánh giá theo 4 tiêu chí</p>
                 </div>
               ) : analysisResult ? (
                 <div className="p-5 space-y-5">
                   {/* Score & Overlap */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-800 rounded-xl p-5 text-center">
-                      <p className="text-sm text-slate-400 mb-1">Tá»•ng Ä‘iá»ƒm</p>
+                      <p className="text-sm text-slate-400 mb-1">Tổng điểm</p>
                       <p className="text-5xl font-black">
                         {analysisResult.totalScore}<span className="text-lg text-slate-500">/100</span>
                       </p>
-                      <p className="text-sm mt-1">â­ {analysisResult.rating}</p>
+                      <p className="text-sm mt-1">⭐ {analysisResult.rating}</p>
                     </div>
                     <div className="bg-slate-800 rounded-xl p-5">
-                      <p className="text-sm text-slate-400 mb-2">Má»©c Ä‘á»™ trÃ¹ng láº·p</p>
+                      <p className="text-sm text-slate-400 mb-2">Mức độ trùng lặp</p>
                       <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-bold mb-2 ${getOverlapColor(analysisResult.overlap?.level)}`}>
-                        ðŸ” {analysisResult.overlap?.level}
+                        🔁 {analysisResult.overlap?.level}
                       </div>
                       <p className="text-xs text-slate-400 leading-relaxed">{analysisResult.overlap?.explanation}</p>
                     </div>
@@ -1934,7 +1934,7 @@ ${bodyHtml}
 
                   {/* Detailed Scores */}
                   <div className="bg-slate-800 rounded-xl p-5 space-y-4">
-                    <h4 className="font-bold flex items-center gap-2">ðŸ“Š Chi tiáº¿t Ä‘iá»ƒm sá»‘</h4>
+                    <h4 className="font-bold flex items-center gap-2">📊 Chi tiết điểm số</h4>
                     {analysisResult.criteria?.map((c: any, i: number) => (
                       <div key={i}>
                         <div className="flex items-center justify-between mb-1">
@@ -1955,14 +1955,14 @@ ${bodyHtml}
                   {/* Title Structure */}
                   {analysisResult.structure && (
                     <div className="bg-slate-800 rounded-xl p-5">
-                      <h4 className="font-bold mb-3 flex items-center gap-2">ðŸ§© Cáº¥u trÃºc tÃªn Ä‘á» tÃ i</h4>
+                      <h4 className="font-bold mb-3 flex items-center gap-2">🧩 Cấu trúc tên đề tài</h4>
                       <div className="grid grid-cols-5 gap-2">
                         {[
-                          { label: 'HÃ nh Ä‘á»™ng', value: analysisResult.structure.action },
-                          { label: 'CÃ´ng cá»¥', value: analysisResult.structure.tool },
-                          { label: 'MÃ´n há»c', value: analysisResult.structure.subject },
-                          { label: 'Pháº¡m vi', value: analysisResult.structure.scope },
-                          { label: 'Má»¥c Ä‘Ã­ch', value: analysisResult.structure.purpose },
+                          { label: 'Hành động', value: analysisResult.structure.action },
+                          { label: 'Công cụ', value: analysisResult.structure.tool },
+                          { label: 'Môn học', value: analysisResult.structure.subject },
+                          { label: 'Phạm vi', value: analysisResult.structure.scope },
+                          { label: 'Mục đích', value: analysisResult.structure.purpose },
                         ].map((item, i) => (
                           <div key={i} className="bg-slate-700 rounded-lg p-3 text-center">
                             <p className="text-[10px] text-slate-400 mb-1">{item.label}</p>
@@ -1976,11 +1976,11 @@ ${bodyHtml}
                   {/* Issues */}
                   {analysisResult.issues && analysisResult.issues.length > 0 && (
                     <div className="bg-amber-900/30 border border-amber-700/40 rounded-xl p-5">
-                      <h4 className="font-bold text-amber-400 mb-2 flex items-center gap-2">âš ï¸ Váº¥n Ä‘á» cáº§n kháº¯c phá»¥c ({analysisResult.issues.length})</h4>
+                      <h4 className="font-bold text-amber-400 mb-2 flex items-center gap-2">⚠️ Vấn đề cần khắc phục ({analysisResult.issues.length})</h4>
                       <ul className="space-y-2">
                         {analysisResult.issues.map((issue: string, i: number) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
-                            <span className="text-amber-400 mt-0.5">â€¢</span>
+                            <span className="text-amber-400 mt-0.5">•</span>
                             {issue}
                           </li>
                         ))}
@@ -1991,7 +1991,7 @@ ${bodyHtml}
                   {/* Suggestions */}
                   {analysisResult.suggestions && analysisResult.suggestions.length > 0 && (
                     <div className="space-y-3">
-                      <h4 className="font-bold text-yellow-400 flex items-center gap-2">âœ¨ Äá» xuáº¥t tÃªn thay tháº¿</h4>
+                      <h4 className="font-bold text-yellow-400 flex items-center gap-2">✨ Đề xuất tên thay thế</h4>
                       {analysisResult.suggestions.map((s: any, i: number) => (
                         <div key={i} className="bg-slate-800 rounded-xl p-4 flex items-center gap-4">
                           <div className="flex-1">
@@ -2004,11 +2004,11 @@ ${bodyHtml}
                               onClick={() => {
                                 handleUpdateInfo('title', s.title);
                                 setShowAnalysis(false);
-                                Swal.fire({ icon: 'success', title: 'ÄÃ£ Ã¡p dá»¥ng!', text: 'TÃªn Ä‘á» tÃ i Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t.', timer: 1500, showConfirmButton: false });
+                                Swal.fire({ icon: 'success', title: 'Đã áp dụng!', text: 'Tên đề tài đã được cập nhật.', timer: 1500, showConfirmButton: false });
                               }}
                               className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition-colors"
                             >
-                              Sá»­ dá»¥ng
+                              Sử dụng
                             </button>
                           </div>
                         </div>
@@ -2024,6 +2024,8 @@ ${bodyHtml}
     </div>
   );
 }
+
+
 
 
 

@@ -1,4 +1,4 @@
-﻿const DEFAULT_MODEL = 'gemini-2.5-flash';
+﻿const DEFAULT_MODEL = 'gemini-3-flash';
 const DEFAULT_MAX_OUTPUT_TOKENS = 8192;
 
 const extractTextFromResponse = (payload) => {
@@ -73,3 +73,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: message });
   }
 }
+
