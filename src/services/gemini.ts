@@ -8,17 +8,17 @@ const TOKENS_PER_WORD = 2.4;
 const MAX_SECTION_OUTPUT_TOKENS = 8192;
 
 const SECTION_LENGTH_WEIGHTS: Record<string, number> = {
-  'I.1. Tính cấp thiết phải tiến hành sáng kiến': 0.08,
-  'I.2. Mục tiêu của đề tài, sáng kiến': 0.04,
-  'I.3. Thời gian, đối tượng, phạm vi nghiên cứu': 0.03,
-  'II.1. Hiện trạng vấn đề': 0.1,
-  'II.2. Giải pháp thực hiện sáng kiến': 0.25,
-  'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 0.15,
-  'II.4. Hiệu quả của sáng kiến': 0.15,
-  'II.5. Tính khả thi': 0.06,
-  'II.6. Thời gian thực hiện': 0.03,
-  'II.7. Kinh phí thực hiện': 0.02,
-  'III. Kiến nghị, đề xuất': 0.1,
+  'I.1. Lí do chọn đề tài': 0.07,
+  'I.2. Mục đích nghiên cứu': 0.06,
+  'I.3. Đối tượng nghiên cứu': 0.05,
+  'I.4. Đối tượng khảo sát': 0.05,
+  'I.5. Phương pháp nghiên cứu': 0.06,
+  'I.6. Phạm vi triển khai': 0.06,
+  'II.1. Cơ sở lí luận': 0.10,
+  'II.2. Thực trạng': 0.12,
+  'II.3. Các biện pháp thực hiện sáng kiến': 0.24,
+  'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến': 0.12,
+  'III. Kết quả': 0.07,
 };
 
 const SECTION_NAMES = Object.keys(SECTION_LENGTH_WEIGHTS);
@@ -418,20 +418,24 @@ export const PROMPTS = {
     ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
     ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
 
-    Yêu cầu dàn ý phải bám sát cấu trúc chuẩn SKKN:
-    I. Đặt vấn đề
-      1. Tính cấp thiết phải tiến hành sáng kiến
-      2. Mục tiêu của đề tài, sáng kiến
-      3. Thời gian, đối tượng, phạm vi nghiên cứu
-    II. Nội dung của sáng kiến
-      1. Hiện trạng vấn đề
-      2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề
-      3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị
-      4. Hiệu quả của sáng kiến
-      5. Tính khả thi
-      6. Thời gian thực hiện đề tài, sáng kiến
-      7. Kinh phí thực hiện đề tài, sáng kiến
-    III. Kiến nghị, đề xuất
+    Yêu cầu dàn ý phải bám sát cấu trúc chuẩn SKKN sau:
+    Phần I. Đặt vấn đề
+      1. Lí do chọn đề tài
+      2. Mục đích nghiên cứu
+      3. Đối tượng nghiên cứu
+      4. Đối tượng khảo sát
+      5. Phương pháp nghiên cứu
+      6. Phạm vi triển khai
+    Phần II. Giải quyết vấn đề
+      1. Cơ sở lí luận
+      2. Thực trạng
+      3. Các biện pháp thực hiện sáng kiến
+        3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động
+        3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang)
+        3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng
+      4. Hiệu quả đạt được sau khi áp dụng sáng kiến
+    Phần III. Kết quả
+    Phần IV. Tài liệu tham khảo
 
     QUAN TRỌNG:
     - Chỉ viết dàn ý, không viết nội dung chi tiết.
@@ -481,7 +485,12 @@ export const PROMPTS = {
     - Không sử dụng LaTeX.
     - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
     ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
-    ${sectionName.includes('Hiệu quả') ? `- Bắt buộc chia rõ 3 mục con: 4.1. Hiệu quả về khoa học, 4.2. Hiệu quả về kinh tế, 4.3. Hiệu quả về xã hội.` : ''}
+        ${sectionName.includes('II.3. Các biện pháp thực hiện sáng kiến')
+      ? `- Bắt buộc chia rõ 3 mục con: 3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động; 3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang); 3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng.`
+      : ''}
+    ${sectionName.includes('II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến')
+      ? `- Ưu tiên nêu rõ số liệu trước và sau áp dụng, minh chứng định lượng và định tính.`
+      : ''}
   `,
       maxTokens: plan?.maxTokens || 8192,
     };
@@ -588,6 +597,8 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
+
+
 
 
 

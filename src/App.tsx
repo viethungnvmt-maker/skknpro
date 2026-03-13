@@ -42,22 +42,48 @@ function cn(...inputs: ClassValue[]) {
 
 // Section names for writing steps
 const SECTION_MAP: { [key: number]: string } = {
-  2: 'I.1. Tính cấp thiết phải tiến hành sáng kiến',
-  3: 'I.2. Mục tiêu của đề tài, sáng kiến',
-  4: 'I.3. Thời gian, đối tượng, phạm vi nghiên cứu',
-  5: 'II.1. Hiện trạng vấn đề',
-  6: 'II.2. Giải pháp thực hiện sáng kiến',
-  7: 'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến',
-  8: 'II.4. Hiệu quả của sáng kiến',
-  9: 'II.5. Tính khả thi',
-  10: 'II.6. Thời gian thực hiện',
-  11: 'II.7. Kinh phí thực hiện',
-  12: 'III. Kiến nghị, đề xuất',
+  2: 'I.1. Lí do chọn đề tài',
+  3: 'I.2. Mục đích nghiên cứu',
+  4: 'I.3. Đối tượng nghiên cứu',
+  5: 'I.4. Đối tượng khảo sát',
+  6: 'I.5. Phương pháp nghiên cứu',
+  7: 'I.6. Phạm vi triển khai',
+  8: 'II.1. Cơ sở lí luận',
+  9: 'II.2. Thực trạng',
+  10: 'II.3. Các biện pháp thực hiện sáng kiến',
+  11: 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
+  12: 'III. Kết quả',
 };
 
 // Step 13 is export/review of all sections// Step 13 is export/review of all sections
 const REVIEW_MAP: { [key: number]: number } = {};
 const SECTION_ORDER = Object.values(SECTION_MAP);
+
+const SECTION_NAME_MIGRATION: Record<string, string> = {
+  'I.1. Tính cấp thiết phải tiến hành sáng kiến': 'I.1. Lí do chọn đề tài',
+  'I.2. Mục tiêu của đề tài, sáng kiến': 'I.2. Mục đích nghiên cứu',
+  'I.3. Thời gian, đối tượng, phạm vi nghiên cứu': 'I.3. Đối tượng nghiên cứu',
+  'II.1. Hiện trạng vấn đề': 'II.2. Thực trạng',
+  'II.2. Giải pháp thực hiện sáng kiến': 'II.3. Các biện pháp thực hiện sáng kiến',
+  'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'III. Kết quả',
+  'II.4. Hiệu quả của sáng kiến': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
+  'II.5. Tính khả thi': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
+  'II.6. Thời gian thực hiện': 'I.6. Phạm vi triển khai',
+  'II.7. Kinh phí thực hiện': 'II.3. Các biện pháp thực hiện sáng kiến',
+  'III. Kiến nghị, đề xuất': 'III. Kết quả',
+};
+
+const remapSectionKeys = (sections: Record<string, string>) => Object.entries(sections || {}).reduce<Record<string, string>>((acc, [name, value]) => {
+  const mappedName = SECTION_NAME_MIGRATION[name] || name;
+  const current = acc[mappedName] || '';
+  const incoming = String(value || '');
+
+  if (!current || estimateWordCount(incoming) > estimateWordCount(current)) {
+    acc[mappedName] = incoming;
+  }
+
+  return acc;
+}, {});
 
 const serializeLengthPlans = (plans: ReturnType<typeof getAllSectionLengthPlans>) =>
   plans.reduce<Record<string, LockedLengthPlan>>((acc, { sectionName, ...plan }) => {
@@ -130,9 +156,12 @@ const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
 const APP_BUILD_TAG = '2026-03-13-r6';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
+  const normalizedSections = remapSectionKeys(candidate.sections || {});
+
   if (!candidate.confirmedRequirements) {
     return {
       ...candidate,
+      sections: normalizedSections,
       lockedInfo: null,
       lockedPageLimit: '',
       lockedLengthPlans: {},
@@ -145,6 +174,7 @@ const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
 
   return {
     ...candidate,
+    sections: normalizedSections,
     lockedInfo,
     lockedPageLimit,
     lockedLengthPlans,
@@ -168,27 +198,27 @@ export default function App() {
         const parsed = JSON.parse(oldSaved);
         // Map old section names to new section names
         const sectionMigration: { [key: string]: string } = {
-          'I. Đặt vấn đề': 'I.1. Tính cấp thiết phải tiến hành sáng kiến',
-          'II.1. Hiện trạng vấn đề': 'II.1. Hiện trạng vấn đề',
-          'II.2. Giải pháp thực hiện sáng kiến': 'II.2. Giải pháp thực hiện sáng kiến',
-          'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến',
-          'II.4. Hiệu quả của sáng kiến': 'II.4. Hiệu quả của sáng kiến',
-          'II.5. Tính khả thi': 'II.5. Tính khả thi',
-          'II.6-7. Thời gian & Kinh phí thực hiện': 'II.6. Thời gian thực hiện',
-          'III. Kiến nghị, đề xuất': 'III. Kiến nghị, đề xuất',
+          'I. Đặt vấn đề': 'I.1. Lí do chọn đề tài',
+          'II.1. Hiện trạng vấn đề': 'II.2. Thực trạng',
+          'II.2. Giải pháp thực hiện sáng kiến': 'II.3. Các biện pháp thực hiện sáng kiến',
+          'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 'III. Kết quả',
+          'II.4. Hiệu quả của sáng kiến': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
+          'II.5. Tính khả thi': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
+          'II.6-7. Thời gian & Kinh phí thực hiện': 'I.6. Phạm vi triển khai',
+          'III. Kiến nghị, đề xuất': 'III. Kết quả',
         };
         const legacyCurrentSections: { [key: string]: string } = {
-          'I.1. T�nh c?p thi?t ph?i ti?n h�nh s�ng ki?n': 'I.1. Tính cấp thiết phải tiến hành sáng kiến',
-          'I.2. M?c ti�u c?a d? t�i, s�ng ki?n': 'I.2. Mục tiêu của đề tài, sáng kiến',
-          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi�n c?u': 'I.3. Thời gian, đối tượng, phạm vi nghiên cứu',
-          'II.1. Hi?n tr?ng v?n d?': 'II.1. Hiện trạng vấn đề',
-          'II.2. Gi?i ph�p th?c hi?n s�ng ki?n': 'II.2. Giải pháp thực hiện sáng kiến',
-          'II.3. K?t qu? sau khi �p d?ng gi?i ph�p s�ng ki?n': 'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến',
-          'II.4. Hi?u qu? c?a s�ng ki?n': 'II.4. Hiệu quả của sáng kiến',
-          'II.5. T�nh kh? thi': 'II.5. Tính khả thi',
-          'II.6. Th?i gian th?c hi?n': 'II.6. Thời gian thực hiện',
-          'II.7. Kinh ph� th?c hi?n': 'II.7. Kinh phí thực hiện',
-          'III. Ki?n ngh?, d? xu?t': 'III. Kiến nghị, đề xuất',
+          'I.1. T�nh c?p thi?t ph?i ti?n h�nh s�ng ki?n': 'I.1. Lí do chọn đề tài',
+          'I.2. M?c ti�u c?a d? t�i, s�ng ki?n': 'I.2. Mục đích nghiên cứu',
+          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi�n c?u': 'I.3. Đối tượng nghiên cứu',
+          'II.1. Hi?n tr?ng v?n d?': 'II.2. Thực trạng',
+          'II.2. Gi?i ph�p th?c hi?n s�ng ki?n': 'II.3. Các biện pháp thực hiện sáng kiến',
+          'II.3. K?t qu? sau khi �p d?ng gi?i ph�p s�ng ki?n': 'III. Kết quả',
+          'II.4. Hi?u qu? c?a s�ng ki?n': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
+          'II.5. T�nh kh? thi': 'II.4. Hiệu quả đạt được sau khi áp dụng sáng kiến',
+          'II.6. Th?i gian th?c hi?n': 'I.6. Phạm vi triển khai',
+          'II.7. Kinh ph� th?c hi?n': 'II.3. Các biện pháp thực hiện sáng kiến',
+          'III. Ki?n ngh?, d? xu?t': 'III. Kết quả',
         };
         const newSections: { [key: string]: string } = {};
         if (parsed.sections) {
@@ -725,6 +755,48 @@ ${finalResult.content}`;
     return typeof html === 'string' ? html : '';
   };
 
+  const buildReferencesSectionMarkdown = (sections: Record<string, string>) => {
+    const title = activeInfo.title?.trim() || 'đề tài sáng kiến';
+    const subject = activeInfo.subject?.trim() || 'môn học';
+    const grade = activeInfo.grade?.trim() || 'lớp học';
+    const school = activeInfo.school?.trim() || 'đơn vị công tác';
+    const textbook = activeInfo.textbook?.trim();
+    const year = new Date().getFullYear();
+
+    const urlSet = new Set<string>();
+    SECTION_ORDER.forEach((sectionName) => {
+      const sectionContent = sections[sectionName] || '';
+      const matches = sectionContent.match(/https?:\/\/[^\s)]+/g) || [];
+      matches.forEach((rawUrl) => {
+        const cleaned = rawUrl.replace(/[.,;:!?]+$/, '');
+        if (cleaned) urlSet.add(cleaned);
+      });
+    });
+
+    const references: string[] = [
+      'Bộ Giáo dục và Đào tạo (2018). Chương trình Giáo dục phổ thông tổng thể.',
+      `Bộ Giáo dục và Đào tạo (${year}). Văn bản hướng dẫn thực hiện nhiệm vụ năm học và đổi mới phương pháp dạy học.`,
+      textbook
+        ? `${textbook}. Tài liệu dạy học sử dụng tại ${school}.`
+        : `Sách giáo khoa ${subject} ${grade}. Bộ sách đang sử dụng tại ${school}.`,
+      `Kế hoạch giáo dục của ${school} liên quan đến đề tài "${title}".`,
+      'Tài liệu chuyên môn, sáng kiến kinh nghiệm và báo cáo tổng kết của tổ/nhóm chuyên môn tại đơn vị.',
+    ];
+
+    if (urlSet.size > 0) {
+      Array.from(urlSet)
+        .slice(0, 8)
+        .forEach((url, index) => {
+          references.push(`Nguồn trực tuyến ${index + 1}: ${url} (truy cập ngày ${new Date().toLocaleDateString('vi-VN')}).`);
+        });
+    }
+
+    return [
+      '## Phần IV. Tài liệu tham khảo',
+      '',
+      ...references.map((item, index) => `${index + 1}. ${item}`),
+    ].join('\n');
+  };
   const resetData = () => {
     Swal.fire({
       title: 'Xóa dữ liệu?',
@@ -1507,7 +1579,11 @@ ${finalResult.content}`;
     setIsLoading(true);
     try {
       const { sections } = await normalizeDraftForExport(true);
-      const allContent = SECTION_ORDER.map((sectionName) => sections[sectionName] || '').join('\n\n---\n\n');
+      const referencesMarkdown = buildReferencesSectionMarkdown(sections);
+      const allContent = [
+        ...SECTION_ORDER.map((sectionName) => sections[sectionName] || ''),
+        referencesMarkdown,
+      ].join('\n\n---\n\n');
       const blob = new Blob([allContent], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1527,6 +1603,10 @@ ${finalResult.content}`;
     setIsLoading(true);
     try {
       const { sections: exportSections } = await normalizeDraftForExport(true);
+      const referencesMarkdown = buildReferencesSectionMarkdown(exportSections);
+      const referencesBodyHtml = renderMarkdown(
+        referencesMarkdown.replace(/^##\s*(?:Phần\s*)?IV\.\s*Tài liệu tham khảo\s*$/im, '').trim(),
+      );
 
       const getSectionHtml = (stepId: number) => {
         const sectionName = SECTION_MAP[stepId];
@@ -1545,9 +1625,10 @@ ${finalResult.content}`;
 
         md = md.replace(/^#{0,6}\s*I\.\s*(ĐẶT VẤN ĐỀ|Đặt vấn đề).*$/gim, '');
         md = md.replace(/^#{0,6}\s*II\.\s*(NỘI DUNG|Nội dung).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*III\.\s*(KIẾN NGHỊ|Kiến nghị).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*I{1,3}[\.\d]*[\.\-\s].*?(Đặt vấn đề|Tính cấp thiết|Mục tiêu|Thời gian.*đối tượng|Hiện trạng|Giải pháp|Kết quả|Hiệu quả|Tính khả thi|Kinh phí|Kiến nghị|ĐẶT VẤN ĐỀ|NỘI DUNG).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*\d+[\.\)]\s*(Tính cấp thiết|Mục tiêu|Thời gian.*đối tượng|Hiện trạng|Giải pháp|Kết quả|Hiệu quả|Tính khả thi|Thời gian thực hiện|Kinh phí|Kiến nghị).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*III\.\s*(KIẾN NGHỊ|Kiến nghị|KẾT QUẢ|Kết quả).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*Phần\s*[IVX]+\.\s*.*$/gim, '');
+        md = md.replace(/^#{0,6}\s*I{1,3}[\.\d]*[\.\-\s].*?(Đặt vấn đề|Lí do chọn đề tài|Lý do chọn đề tài|Mục đích nghiên cứu|Đối tượng nghiên cứu|Đối tượng khảo sát|Phương pháp nghiên cứu|Phạm vi triển khai|Hiện trạng|Thực trạng|Cơ sở lí luận|Giải pháp|Các biện pháp|Kết quả|Hiệu quả|Hiệu quả đạt được|Tính khả thi|Kinh phí|Kiến nghị|ĐẶT VẤN ĐỀ|NỘI DUNG).*$/gim, '');
+        md = md.replace(/^#{0,6}\s*\d+[\.\)]\s*(Lí do chọn đề tài|Lý do chọn đề tài|Mục đích nghiên cứu|Đối tượng nghiên cứu|Đối tượng khảo sát|Phương pháp nghiên cứu|Phạm vi triển khai|Cơ sở lí luận|Thực trạng|Hiện trạng|Các biện pháp|Giải pháp|Kết quả|Hiệu quả|Hiệu quả đạt được|Tính khả thi|Thời gian thực hiện|Kinh phí|Kiến nghị).*$/gim, '');
         md = md.replace(/\n{3,}/g, '\n\n');
         md = md.trim();
 
@@ -1560,45 +1641,48 @@ ${finalResult.content}`;
       const bodyHtml = `
 <h1 style="text-align:center; font-size:16pt; font-weight:bold;">NỘI DUNG SÁNG KIẾN KINH NGHIỆM</h1>
 
-<h2 style="font-size:14pt; font-weight:bold;">I. Đặt vấn đề</h2>
+<h2 style="font-size:14pt; font-weight:bold;">Phần I. Đặt vấn đề</h2>
 
-<h3 style="font-size:13pt; font-weight:bold;">1. Tính cấp thiết phải tiến hành sáng kiến</h3>
+<h3 style="font-size:13pt; font-weight:bold;">1. Lí do chọn đề tài</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(2)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">2. Mục tiêu của đề tài, sáng kiến</h3>
+<h3 style="font-size:13pt; font-weight:bold;">2. Mục đích nghiên cứu</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(3)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">3. Thời gian, đối tượng, phạm vi nghiên cứu</h3>
+<h3 style="font-size:13pt; font-weight:bold;">3. Đối tượng nghiên cứu</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(4)}</div>
 
-<h2 style="font-size:14pt; font-weight:bold;">II. Nội dung của sáng kiến</h2>
-
-<h3 style="font-size:13pt; font-weight:bold;">1. Hiện trạng vấn đề</h3>
+<h3 style="font-size:13pt; font-weight:bold;">4. Đối tượng khảo sát</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(5)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề</h3>
+<h3 style="font-size:13pt; font-weight:bold;">5. Phương pháp nghiên cứu</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(6)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị</h3>
+<h3 style="font-size:13pt; font-weight:bold;">6. Phạm vi triển khai</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(7)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">4. Hiệu quả của sáng kiến</h3>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.1. Hiệu quả về khoa học</h4>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.2. Hiệu quả về kinh tế</h4>
-<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">4.3. Hiệu quả về xã hội</h4>
+<h2 style="font-size:14pt; font-weight:bold;">Phần II. Giải quyết vấn đề</h2>
+
+<h3 style="font-size:13pt; font-weight:bold;">1. Cơ sở lí luận</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(8)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">5. Tính khả thi (khả năng áp dụng vào thực tiễn công tác của đơn vị, địa phương)</h3>
+<h3 style="font-size:13pt; font-weight:bold;">2. Thực trạng</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(9)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">6. Thời gian thực hiện đề tài, sáng kiến</h3>
+<h3 style="font-size:13pt; font-weight:bold;">3. Các biện pháp thực hiện sáng kiến</h3>
+<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">3.1. Biện pháp 1: Ứng dụng sáng tác nhạc AI vào phần khởi động</h4>
+<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">3.2. Biện pháp 2: Ứng dụng sáng tác nhạc AI vào phần di chuyển đội hình (tròn sang ngang, tròn sang U, U sang ngang)</h4>
+<h4 style="font-size:13pt; font-weight:bold; font-style:italic;">3.3. Biện pháp 3: Ứng dụng sáng tác nhạc AI vào phần thả lỏng</h4>
 <div style="margin-bottom:12pt;">${getSectionHtml(10)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">7. Kinh phí thực hiện đề tài, sáng kiến</h3>
+<h3 style="font-size:13pt; font-weight:bold;">4. Hiệu quả đạt được sau khi áp dụng sáng kiến</h3>
 <div style="margin-bottom:12pt;">${getSectionHtml(11)}</div>
 
-<h2 style="font-size:14pt; font-weight:bold;">III. Kiến nghị, đề xuất</h2>
+<h2 style="font-size:14pt; font-weight:bold;">Phần III. Kết quả</h2>
 <div style="margin-bottom:12pt;">${getSectionHtml(12)}</div>
+
+<h2 style="font-size:14pt; font-weight:bold;">Phần IV. Tài liệu tham khảo</h2>
+<div style="margin-bottom:12pt;">${referencesBodyHtml}</div>
 `;
 
       const docHtml = `
@@ -2093,6 +2177,16 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
