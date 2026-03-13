@@ -184,7 +184,7 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-13-r12';
+const APP_BUILD_TAG = '2026-03-13-r14';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   const normalizedSections = remapSectionKeys(candidate.sections || {});
 
@@ -350,31 +350,6 @@ export default function App() {
     return Math.max(1, minWords);
   };
 
-  const buildLengthFallbackContent = (
-    sectionName: string,
-    info: SKKNData['info'],
-    missingWords: number,
-  ) => {
-    const subject = info.subject || 'môn học';
-    const grade = info.grade || 'lớp học';
-    const school = info.school || 'đơn vị công tác';
-    const topic = info.title || 'đề tài';
-
-    const baseParagraphs = [
-      `Để bảo đảm phần "${sectionName}" phản ánh đúng yêu cầu của đề tài "${topic}", giáo viên xác định rõ mục tiêu theo ba lớp: mục tiêu kiến thức, mục tiêu năng lực và mục tiêu phẩm chất. Với đặc thù ${subject} ở ${grade} tại ${school}, mỗi mục tiêu đều gắn trực tiếp với biểu hiện quan sát được trong quá trình học tập, tránh nêu chung chung hoặc quá lý thuyết.`,
-      `Trong quá trình triển khai, mục tiêu được cụ thể hóa thành các chỉ báo theo từng giai đoạn thực hiện: trước khi áp dụng, trong khi áp dụng và sau khi áp dụng giải pháp. Ở mỗi giai đoạn, giáo viên ghi nhận mức độ tham gia của học sinh, chất lượng sản phẩm học tập, khả năng vận dụng kiến thức vào tình huống thực tế và mức độ hợp tác của nhóm. Các minh chứng này giúp việc đánh giá trở nên nhất quán và có căn cứ.`,
-      `Bên cạnh đó, mục tiêu của sáng kiến cũng cần bảo đảm tính khả thi tại đơn vị: phù hợp điều kiện cơ sở vật chất, phù hợp thời lượng dạy học, và có thể nhân rộng cho các lớp tương đương. Giáo viên xây dựng kế hoạch điều chỉnh theo phản hồi thực tế để giữ đúng mục tiêu cốt lõi, đồng thời bổ sung hoạt động hỗ trợ cho học sinh còn hạn chế, từ đó nâng dần hiệu quả thực hiện theo từng chu kỳ.`,
-    ];
-
-    let addition = baseParagraphs.join('\n\n');
-    const targetWords = Math.max(80, missingWords + 20);
-
-    while (estimateWordCount(addition) < targetWords) {
-      addition += `\n\nNgoài ra, giáo viên tiếp tục đối chiếu mục tiêu với kết quả định kỳ theo tuần, điều chỉnh nội dung và phương pháp tổ chức hoạt động để bảo đảm tiến độ và chất lượng đầu ra của học sinh.`;
-    }
-
-    return addition.trim();
-  };
 
 
   useEffect(() => {
@@ -644,16 +619,8 @@ ${finalResult.content}`;
         if (activePlan) {
           const hardMinWords = getHardMinWords(activePlan);
           if (finalResult.wordCount < hardMinWords) {
-            const missingWords = hardMinWords - finalResult.wordCount;
-            const fallbackAddition = buildLengthFallbackContent(sectionName, activeInfo, missingWords);
-            const mergedContent = `${finalResult.content.trim()}\n\n${fallbackAddition}`.trim();
-
-            finalResult = {
-              content: mergedContent,
-              wordCount: estimateWordCount(mergedContent),
-              adjusted: true,
-              plan: activePlan,
-            };
+            // Keep original AI output to avoid repetitive synthetic filler text.
+            // User can re-run AI rewrite for a natural longer version.
           }
         }
 
