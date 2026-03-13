@@ -43,6 +43,18 @@ const SECTION_LENGTH_WEIGHTS: Record<string, number> = {
 };
 
 const SECTION_NAMES = Object.keys(SECTION_LENGTH_WEIGHTS);
+const SECTION_SUBSTRUCTURE_RULES: Record<string, string> = {
+  [SECTION_KEYS.CONTENT_THEORY]: '- Bat buoc chia du muc con: (1) Gioi thieu ve phan mem Logo; (2) Vi sao Logo duoc dua vao day trong truong tieu hoc; (3) Khi hoc Logo hoc sinh duoc hoc va co the lam gi.',
+  [SECTION_KEYS.CONTENT_STATUS]: '- Bat buoc chia du muc con: (1) Thuan loi va kho khan, trong do phai co 1.1 Thuan loi va 1.2 Kho khan; (2) Thuc trang day - hoc phan mem Logo o truong tieu hoc.',
+  [SECTION_KEYS.CONTENT_MEASURES]: '- Bat buoc chia du muc con: (1) Phat hien va khac phuc loi thuong gap; (2) Nam yeu cau bai tap, trong do phai co 2.1 va 2.2; (3) Viet nhanh cau lenh lap, thu tuc; (4) Bieu duong, khich le su sang tao.',
+};
+const SECTION_SUBSTRUCTURE_KEEP_RULES: Record<string, string> = {
+  [SECTION_KEYS.CONTENT_THEORY]: '- BAT BUOC giu du muc 1, 2, 3 trong phan co so ly luan; khong gop hoac bo muc.',
+  [SECTION_KEYS.CONTENT_STATUS]: '- BAT BUOC giu du muc 1 (gom 1.1, 1.2) va muc 2 trong phan thuc trang; khong duoc thieu muc con.',
+  [SECTION_KEYS.CONTENT_MEASURES]: '- BAT BUOC giu du cac y 1, 2 (bao gom 2.1, 2.2), 3, 4 trong phan bien phap; khong duoc bo muc nao du phai rut gon.',
+};
+const getSectionSubstructureRule = (sectionName: string) => SECTION_SUBSTRUCTURE_RULES[sectionName] || '';
+const getSectionSubstructureKeepRule = (sectionName: string) => SECTION_SUBSTRUCTURE_KEEP_RULES[sectionName] || '';
 
 export interface SectionLengthPlan {
   sectionName: string;
@@ -522,9 +534,7 @@ export const PROMPTS = {
     - Không sử dụng LaTeX.
     - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
     ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
-        ${sectionName === SECTION_KEYS.CONTENT_MEASURES
-      ? `- Bat buoc trinh bay du 4 nhom bien phap theo khung: (1) phat hien va khac phuc loi thuong gap; (2) nam yeu cau bai tap voi 2.1 va 2.2; (3) viet nhanh cau lenh lap, thu tuc; (4) bieu duong, khich le sang tao.`
-      : ''}
+    ${getSectionSubstructureRule(sectionName)}
     ${sectionName === SECTION_KEYS.CONTENT_RESULTS
       ? `- Ưu tiên nêu rõ số liệu trước và sau áp dụng, minh chứng định lượng và định tính.`
       : ''}
@@ -553,9 +563,7 @@ export const PROMPTS = {
     Nhiệm vụ:
     - ${mode === 'shorten' ? 'Rút gọn bớt nội dung thừa, bỏ lặp ý, giữ lại ý quan trọng nhất.' : 'Mở rộng vừa đủ bằng ví dụ, chi tiết triển khai, minh họa thực tế nhưng không lan man.'}
     - BẮT BUỘC đảm bảo bản cuối cùng nằm trong khoảng ${plan.minWords}-${plan.maxWords} từ, ưu tiên gần ${plan.targetWords} từ.
-    ${sectionName === SECTION_KEYS.CONTENT_MEASURES
-      ? '- BAT BUOC giu du cac y 1, 2 (bao gom 2.1, 2.2), 3, 4 trong phan bien phap; khong duoc bo muc nao du phai rut gon.'
-      : ''}
+    ${getSectionSubstructureKeepRule(sectionName)}
     - Nếu còn ngắn hơn ${plan.minWords} từ thì tiếp tục bổ sung ý, ví dụ, minh họa để đủ độ dài.
     - Nếu còn dài hơn ${plan.maxWords} từ thì tiếp tục rút gọn cho đến khi đạt yêu cầu.
     - Không thêm lời giải thích về việc chỉnh sửa.
