@@ -42,69 +42,62 @@ function cn(...inputs: ClassValue[]) {
 
 // Section names for writing steps
 const SECTION_MAP: { [key: number]: string } = {
-  2: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - I. L\u00fd do ch\u1ecdn \u0111\u1ec1 t\u00e0i',
-  3: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - II. M\u1ee5c \u0111\u00edch nghi\u00ean c\u1ee9u',
-  4: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - III. \u0110\u1ed1i t\u01b0\u1ee3ng nghi\u00ean c\u1ee9u',
-  5: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - IV. \u0110\u1ed1i t\u01b0\u1ee3ng kh\u1ea3o s\u00e1t th\u1ef1c nghi\u1ec7m',
-  6: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - V. Ph\u01b0\u01a1ng ph\u00e1p nghi\u00ean c\u1ee9u',
-  7: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - VI. Ph\u1ea1m vi v\u00e0 k\u1ebf ho\u1ea1ch nghi\u00ean c\u1ee9u',
-  8: 'PH\u1ea6N N\u1ed8I DUNG - I. C\u01a1 s\u1edf l\u00fd lu\u1eadn',
-  9: 'PH\u1ea6N N\u1ed8I DUNG - II. Th\u1ef1c tr\u1ea1ng',
-  10: 'PH\u1ea6N N\u1ed8I DUNG - III. Bi\u1ec7n ph\u00e1p th\u1ef1c hi\u1ec7n',
-  11: 'PH\u1ea6N N\u1ed8I DUNG - IV. K\u1ebft qu\u1ea3 \u0111\u1ea1t \u0111\u01b0\u1ee3c',
-  12: 'PH\u1ea6N K\u1ebeT LU\u1eacN - I. K\u1ebft lu\u1eadn chung',
-  13: 'PH\u1ea6N K\u1ebeT LU\u1eacN - II. B\u00e0i h\u1ecdc kinh nghi\u1ec7m',
-  14: 'PH\u1ea6N K\u1ebeT LU\u1eacN - III. \u0110\u1ec1 xu\u1ea5t - khuy\u1ebfn ngh\u1ecb',
-  15: 'PH\u1ee4 L\u1ee4C',
+  2: '1. T\u00ean s\u00e1ng ki\u1ebfn',
+  3: '2. L\u0129nh v\u1ef1c \u00e1p d\u1ee5ng s\u00e1ng ki\u1ebfn',
+  4: '3. M\u00f4 t\u1ea3 c\u00e1c gi\u1ea3i ph\u00e1p c\u0169 th\u01b0\u1eddng l\u00e0m',
+  5: '4. Ng\u00e0y s\u00e1ng ki\u1ebfn \u0111\u01b0\u1ee3c \u00e1p d\u1ee5ng l\u1ea7n \u0111\u1ea7u ho\u1eb7c \u00e1p d\u1ee5ng th\u1eed',
+  6: '5. N\u1ed9i dung',
 };
 
-const SECTION_ORDER = Object.values(SECTION_MAP);
+const WRITING_STEP_IDS = Object.keys(SECTION_MAP)
+  .map((key) => Number(key))
+  .sort((a, b) => a - b);
+
+const FIRST_WRITING_STEP_ID = WRITING_STEP_IDS[0] ?? 2;
+const LAST_WRITING_STEP_ID = WRITING_STEP_IDS[WRITING_STEP_IDS.length - 1] ?? FIRST_WRITING_STEP_ID;
+const EXPORT_STEP_ID = 7;
+const MAX_STEP_ID = EXPORT_STEP_ID;
+
+const SECTION_ORDER = WRITING_STEP_IDS.map((stepId) => SECTION_MAP[stepId]);
+
 const SIDEBAR_SECTION_SUBITEMS: Record<number, string[]> = {
-  8: [
-    '1. Gi\u1edbi thi\u1ec7u v\u1ec1 ph\u1ea7n m\u1ec1m Logo',
-    '2. V\u00ec sao Logo \u0111\u01b0\u1ee3c \u0111\u01b0a v\u00e0o d\u1ea1y trong tr\u01b0\u1eddng ti\u1ec3u h\u1ecdc',
-    '3. Khi h\u1ecdc Logo h\u1ecdc sinh \u0111\u01b0\u1ee3c h\u1ecdc v\u00e0 c\u00f3 th\u1ec3 l\u00e0m g\u00ec',
-  ],
-  9: [
-    '1. Thu\u1eadn l\u1ee3i v\u00e0 kh\u00f3 kh\u0103n (1.1 Thu\u1eadn l\u1ee3i, 1.2 Kh\u00f3 kh\u0103n)',
-    '2. Th\u1ef1c tr\u1ea1ng d\u1ea1y - h\u1ecdc ph\u1ea7n m\u1ec1m Logo \u1edf tr\u01b0\u1eddng ti\u1ec3u h\u1ecdc',
-  ],
-  10: [
-    '1. Gi\u00fap h\u1ecdc sinh ph\u00e1t hi\u1ec7n v\u00e0 kh\u1eafc ph\u1ee5c l\u1ed7i th\u01b0\u1eddng g\u1eb7p',
-    '2. Gi\u00fap h\u1ecdc sinh n\u1eafm y\u00eau c\u1ea7u c\u1ee7a b\u00e0i t\u1eadp (2.1, 2.2)',
-    '3. Gi\u00fap h\u1ecdc sinh vi\u1ebft nhanh c\u00e2u l\u1ec7nh l\u1eb7p, th\u1ee7 t\u1ee5c',
-    '4. Bi\u1ec3u d\u01b0\u01a1ng, kh\u00edch l\u1ec7 s\u1ef1 t\u00ecm t\u00f2i, s\u00e1ng t\u1ea1o',
+  6: [
+    '5.1 M\u00f4 t\u1ea3 gi\u1ea3i ph\u00e1p m\u1edbi ho\u1eb7c c\u1ea3i ti\u1ebfn',
+    '5.2 V\u1ec1 kh\u1ea3 n\u0103ng \u00e1p d\u1ee5ng (ph\u1ea1m vi \u00e1p d\u1ee5ng) c\u1ee7a s\u00e1ng ki\u1ebfn',
+    '5.3 \u0110\u00e1nh gi\u00e1 l\u1ee3i \u00edch kinh t\u1ebf, x\u00e3 h\u1ed9i c\u1ee7a s\u00e1ng ki\u1ebfn',
   ],
 };
 
 const SECTION_NAME_MIGRATION: Record<string, string> = {
-  'I.1. Tính c?p thi?t ph?i ti?n hành sáng ki?n': SECTION_MAP[2],
-  'I.2. M?c tiêu c?a d? tài, sáng ki?n': SECTION_MAP[3],
-  'I.3. Th?i gian, d?i tu?ng, ph?m vi nghiên c?u': SECTION_MAP[4],
-  'II.1. Hi?n tr?ng v?n d?': SECTION_MAP[9],
-  'II.2. Gi?i pháp th?c hi?n sáng ki?n': SECTION_MAP[10],
-  'II.3. K?t qu? sau khi áp d?ng gi?i pháp sáng ki?n': SECTION_MAP[11],
-  'II.4. Hi?u qu? c?a sáng ki?n': SECTION_MAP[11],
-  'II.5. Tính kh? thi': SECTION_MAP[11],
-  'II.6. Th?i gian th?c hi?n': SECTION_MAP[7],
-  'II.7. Kinh phí th?c hi?n': SECTION_MAP[10],
-  'III. Ki?n ngh?, d? xu?t': SECTION_MAP[14],
+  '1. T\u00ean s\u00e1ng ki\u1ebfn': SECTION_MAP[2],
+  '2. L\u0129nh v\u1ef1c \u00e1p d\u1ee5ng s\u00e1ng ki\u1ebfn': SECTION_MAP[3],
+  '3. M\u00f4 t\u1ea3 c\u00e1c gi\u1ea3i ph\u00e1p c\u0169 th\u01b0\u1eddng l\u00e0m': SECTION_MAP[4],
+  '4. Ng\u00e0y s\u00e1ng ki\u1ebfn \u0111\u01b0\u1ee3c \u00e1p d\u1ee5ng l\u1ea7n \u0111\u1ea7u ho\u1eb7c \u00e1p d\u1ee5ng th\u1eed': SECTION_MAP[5],
+  '5. N\u1ed9i dung': SECTION_MAP[6],
+  '5.1 M\u00f4 t\u1ea3 gi\u1ea3i ph\u00e1p m\u1edbi ho\u1eb7c c\u1ea3i ti\u1ebfn': SECTION_MAP[6],
+  '5.2 V\u1ec1 kh\u1ea3 n\u0103ng \u00e1p d\u1ee5ng (ph\u1ea1m vi \u00e1p d\u1ee5ng) c\u1ee7a s\u00e1ng ki\u1ebfn': SECTION_MAP[6],
+  '5.3 \u0110\u00e1nh gi\u00e1 l\u1ee3i \u00edch kinh t\u1ebf, x\u00e3 h\u1ed9i c\u1ee7a s\u00e1ng ki\u1ebfn': SECTION_MAP[6],
 
-  'I.1. Lí do ch?n d? tài': SECTION_MAP[2],
-  'I.2. M?c dích nghiên c?u': SECTION_MAP[3],
-  'I.3. Ð?i tu?ng nghiên c?u': SECTION_MAP[4],
-  'I.4. Ð?i tu?ng kh?o sát': SECTION_MAP[5],
-  'I.5. Phuong pháp nghiên c?u': SECTION_MAP[6],
-  'I.6. Ph?m vi tri?n khai': SECTION_MAP[7],
-  'II.1. Co s? lí lu?n': SECTION_MAP[8],
-  'II.2. Th?c tr?ng': SECTION_MAP[9],
-  'II.3. Các bi?n pháp th?c hi?n sáng ki?n': SECTION_MAP[10],
-  'II.4. Hi?u qu? d?t du?c sau khi áp d?ng sáng ki?n': SECTION_MAP[11],
-  'III. K?t qu?': SECTION_MAP[12],
+  'PH\u1ea6N M\u1ede \u0110\u1ea6U - I. L\u00fd do ch\u1ecdn \u0111\u1ec1 t\u00e0i': SECTION_MAP[4],
+  'PH\u1ea6N M\u1ede \u0110\u1ea6U - II. M\u1ee5c \u0111\u00edch nghi\u00ean c\u1ee9u': SECTION_MAP[6],
+  'PH\u1ea6N M\u1ede \u0110\u1ea6U - III. \u0110\u1ed1i t\u01b0\u1ee3ng nghi\u00ean c\u1ee9u': SECTION_MAP[3],
+  'PH\u1ea6N M\u1ede \u0110\u1ea6U - IV. \u0110\u1ed1i t\u01b0\u1ee3ng kh\u1ea3o s\u00e1t th\u1ef1c nghi\u1ec7m': SECTION_MAP[3],
+  'PH\u1ea6N M\u1ede \u0110\u1ea6U - V. Ph\u01b0\u01a1ng ph\u00e1p nghi\u00ean c\u1ee9u': SECTION_MAP[6],
+  'PH\u1ea6N M\u1ede \u0110\u1ea6U - VI. Ph\u1ea1m vi v\u00e0 k\u1ebf ho\u1ea1ch nghi\u00ean c\u1ee9u': SECTION_MAP[5],
+  'PH\u1ea6N N\u1ed8I DUNG - I. C\u01a1 s\u1edf l\u00fd lu\u1eadn': SECTION_MAP[6],
+  'PH\u1ea6N N\u1ed8I DUNG - II. Th\u1ef1c tr\u1ea1ng': SECTION_MAP[4],
+  'PH\u1ea6N N\u1ed8I DUNG - III. Bi\u1ec7n ph\u00e1p th\u1ef1c hi\u1ec7n': SECTION_MAP[6],
+  'PH\u1ea6N N\u1ed8I DUNG - IV. K\u1ebft qu\u1ea3 \u0111\u1ea1t \u0111\u01b0\u1ee3c': SECTION_MAP[6],
+  'PH\u1ea6N K\u1ebeT LU\u1eacN - I. K\u1ebft lu\u1eadn chung': SECTION_MAP[6],
+  'PH\u1ea6N K\u1ebeT LU\u1eacN - II. B\u00e0i h\u1ecdc kinh nghi\u1ec7m': SECTION_MAP[6],
+  'PH\u1ea6N K\u1ebeT LU\u1eacN - III. \u0110\u1ec1 xu\u1ea5t - khuy\u1ebfn ngh\u1ecb': SECTION_MAP[6],
+  'PH\u1ee4 L\u1ee4C': SECTION_MAP[6],
 };
 
 const remapSectionKeys = (sections: Record<string, string>) => Object.entries(sections || {}).reduce<Record<string, string>>((acc, [name, value]) => {
   const mappedName = SECTION_NAME_MIGRATION[name] || name;
+  if (!SECTION_ORDER.includes(mappedName)) return acc;
+
   const current = acc[mappedName] || '';
   const incoming = String(value || '');
 
@@ -184,7 +177,7 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-14-r18';
+const APP_BUILD_TAG = '2026-03-14-r22';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   const normalizedSections = remapSectionKeys(candidate.sections || {});
 
@@ -218,7 +211,11 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return normalizeLoadedData({ ...INITIAL_DATA, ...parsed, info: { ...INITIAL_DATA.info, ...parsed.info } });
+        const rawStep = Number(parsed.currentStep);
+        const currentStep = Number.isFinite(rawStep)
+          ? Math.min(Math.max(Math.round(rawStep), 0), MAX_STEP_ID)
+          : 0;
+        return normalizeLoadedData({ ...INITIAL_DATA, ...parsed, info: { ...INITIAL_DATA.info, ...parsed.info }, currentStep });
       } catch { return INITIAL_DATA; }
     }
     // Migrate from v2 if exists
@@ -226,43 +223,19 @@ export default function App() {
     if (oldSaved) {
       try {
         const parsed = JSON.parse(oldSaved);
-        // Map old section names to new section names
-        const sectionMigration: { [key: string]: string } = {
-          'I. Ð?t v?n d?': SECTION_MAP[2],
-          'II.1. Hi?n tr?ng v?n d?': SECTION_MAP[9],
-          'II.2. Gi?i pháp th?c hi?n sáng ki?n': SECTION_MAP[10],
-          'II.3. K?t qu? sau khi áp d?ng gi?i pháp sáng ki?n': SECTION_MAP[11],
-          'II.4. Hi?u qu? c?a sáng ki?n': SECTION_MAP[11],
-          'II.5. Tính kh? thi': SECTION_MAP[11],
-          'II.6-7. Th?i gian & Kinh phí th?c hi?n': SECTION_MAP[7],
-          'III. Ki?n ngh?, d? xu?t': SECTION_MAP[14],
-        };
-        const legacyCurrentSections: { [key: string]: string } = {
-          'I.1. T?nh c?p thi?t ph?i ti?n h?nh s?ng ki?n': SECTION_MAP[2],
-          'I.2. M?c ti?u c?a d? t?i, s?ng ki?n': SECTION_MAP[3],
-          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi?n c?u': SECTION_MAP[4],
-          'II.1. Hi?n tr?ng v?n d?': SECTION_MAP[9],
-          'II.2. Gi?i ph?p th?c hi?n s?ng ki?n': SECTION_MAP[10],
-          'II.3. K?t qu? sau khi ?p d?ng gi?i ph?p s?ng ki?n': SECTION_MAP[11],
-          'II.4. Hi?u qu? c?a s?ng ki?n': SECTION_MAP[11],
-          'II.5. T?nh kh? thi': SECTION_MAP[11],
-          'II.6. Th?i gian th?c hi?n': SECTION_MAP[7],
-          'II.7. Kinh ph? th?c hi?n': SECTION_MAP[10],
-          'III. Ki?n ngh?, d? xu?t': SECTION_MAP[14],
-        };
-        const newSections: { [key: string]: string } = {};
-        if (parsed.sections) {
-          Object.entries(parsed.sections).forEach(([key, value]) => {
-            const newKey = sectionMigration[key] || legacyCurrentSections[key] || key;
-            newSections[newKey] = value as string;
-          });
-        }
+        // Map old section names to the current structure
+        const newSections: { [key: string]: string } = remapSectionKeys(parsed.sections || {});
+        const rawStep = Number(parsed.currentStep);
+        const currentStep = Number.isFinite(rawStep)
+          ? Math.min(Math.max(Math.round(rawStep), 0), MAX_STEP_ID)
+          : 0;
+
         const migrated = {
           ...INITIAL_DATA,
           ...parsed,
           info: { ...INITIAL_DATA.info, ...parsed.info },
           sections: newSections,
-          currentStep: Math.min(parsed.currentStep || 0, 16),
+          currentStep,
         };
         // Save migrated data as v3
         localStorage.setItem('skkn_data_v3', JSON.stringify(migrated));
@@ -356,51 +329,41 @@ export default function App() {
     missingWords: number,
   ) => {
     const lower = sectionName.toLowerCase();
-    const subject = info.subject || 'm?n h?c';
-    const grade = info.grade || 'l?p h?c';
-    const school = info.school || '??n v? c?ng t?c';
-    const location = info.location || '??a ph??ng';
-    const target = info.target || 'h?c sinh';
-    const duration = info.duration || 'n?m h?c hi?n t?i';
-    const topic = info.title || '?? t?i';
+    const subject = info.subject || 'm\u00f4n h\u1ecdc';
+    const grade = info.grade || 'l\u1edbp h\u1ecdc';
+    const school = info.school || '\u0111\u01a1n v\u1ecb c\u00f4ng t\u00e1c';
+    const location = info.location || '\u0111\u1ecba ph\u01b0\u01a1ng';
+    const target = info.target || 'h\u1ecdc sinh';
+    const duration = info.duration || 'n\u0103m h\u1ecdc hi\u1ec7n t\u1ea1i';
+    const topic = info.title || '\u0111\u1ec1 t\u00e0i s\u00e1ng ki\u1ebfn';
 
     let blocks: string[] = [];
 
-    if (lower.includes('??i t??ng nghi?n c?u')) {
+    if (sectionName === SECTION_MAP[2] || lower.includes('t\u00ean s\u00e1ng ki\u1ebfn')) {
       blocks = [
-        `### ??i t??ng tr?c ti?p\n??i t??ng nghi?n c?u tr?c ti?p l? ${target} thu?c ${grade} t?i ${school} (${location}). Nh?m n?y ???c l?a ch?n v? g?n tr?c ti?p v?i m?c ti?u c?a ?? t?i "${topic}" v? ph?n ?nh ??ng b?i c?nh tri?n khai.`,
-        `### ??c ?i?m v? ti?u ch? l?a ch?n\n??i t??ng ???c x?c ??nh theo c?c ti?u ch?: m?c ?? tham gia h?c t?p, kh? n?ng h?p t?c, nhu c?u h? tr? v? th?i quen h?c t?p. Vi?c ch?n m?u b?o ??m c? ?? c?c m?c n?ng l?c ?? k?t qu? nghi?n c?u c? ?? tin c?y.`,
-        `### Ph?m vi theo d?i\nQu? tr?nh theo d?i di?n ra trong ${duration}, g?m giai ?o?n kh?o s?t ban ??u, ?p d?ng gi?i ph?p v? ??nh gi? sau can thi?p. M?i giai ?o?n ??u c? minh ch?ng c? th? ?? ??i s?nh s? ti?n b? c?a h?c sinh.`,
+        `### T\u00ean s\u00e1ng ki\u1ebfn \u0111\u1ec1 xu\u1ea5t\nT\u00ean s\u00e1ng ki\u1ebfn c\u1ea7n ng\u1eafn g\u1ecdn, ph\u1ea3n \u00e1nh \u0111\u00fang tr\u1ecdng t\u00e2m c\u1ee7a \u0111\u1ec1 t\u00e0i "${topic}" v\u00e0 th\u1ec3 hi\u1ec7n r\u00f5 gi\u00e1 tr\u1ecb c\u1ea3i ti\u1ebfn trong d\u1ea1y h\u1ecdc.`,
+        `### C\u0103n c\u1ee9 \u0111\u1eb7t t\u00ean\nT\u00ean g\u1eafn v\u1edbi b\u1ed1i c\u1ea3nh tri\u1ec3n khai t\u1ea1i ${school}, m\u00f4n ${subject}, kh\u1ed1i ${grade}; \u0111\u1ed3ng th\u1eddi n\u00eau r\u00f5 m\u1ee5c ti\u00eau v\u00e0 ph\u1ea1m vi \u00e1p d\u1ee5ng.`,
       ];
-    } else if (lower.includes('m?c ??ch nghi?n c?u')) {
+    } else if (sectionName === SECTION_MAP[3] || lower.includes('l\u0129nh v\u1ef1c \u00e1p d\u1ee5ng')) {
       blocks = [
-        `### M?c ti?u t?ng qu?t\nM?c ti?u t?ng qu?t c?a ?? t?i "${topic}" l? n?ng cao ch?t l??ng d?y h?c ${subject} cho ${grade}, ??ng th?i t?ng t?nh ch? ??ng v? hi?u qu? h?c t?p c?a h?c sinh trong ?i?u ki?n th?c t? t?i ${school}.`,
-        `### M?c ti?u c? th?\n?? t?i h??ng ??n ba nh?m m?c ti?u: ki?n th?c, k? n?ng v? th?i ??. ? t?ng nh?m, gi?o vi?n x?c ??nh ch? b?o quan s?t r? r?ng ?? theo d?i m?c ?? thay ??i tr??c v? sau khi ?p d?ng gi?i ph?p.`,
+        `### L\u0129nh v\u1ef1c \u00e1p d\u1ee5ng\nS\u00e1ng ki\u1ebfn \u0111\u01b0\u1ee3c \u00e1p d\u1ee5ng trong m\u00f4n ${subject}, \u0111\u1ed1i v\u1edbi ${target} kh\u1ed1i ${grade} t\u1ea1i ${school} (${location}).`,
+        `### \u0110i\u1ec1u ki\u1ec7n tri\u1ec3n khai\nVi\u1ec7c \u00e1p d\u1ee5ng ph\u00f9 h\u1ee3p v\u1edbi \u0111i\u1ec1u ki\u1ec7n c\u01a1 s\u1edf v\u1eadt ch\u1ea5t hi\u1ec7n c\u00f3, b\u1ea3o \u0111\u1ea3m t\u00ednh kh\u1ea3 thi khi nh\u00e2n r\u1ed9ng trong t\u1ed5 chuy\u00ean m\u00f4n v\u00e0 to\u00e0n tr\u01b0\u1eddng.`,
       ];
-    } else if (lower.includes('c? s? l? lu?n')) {
+    } else if (sectionName === SECTION_MAP[4] || lower.includes('gi\u1ea3i ph\u00e1p c\u0169')) {
       blocks = [
-        `### N?n t?ng l? thuy?t\nPh?n n?y l?m r? c?c kh?i ni?m c?t l?i, c?n c? ch??ng tr?nh v? ??nh h??ng ph?t tri?n ph?m ch?t, n?ng l?c li?n quan ??n ${subject}. C? s? l? lu?n c?n li?n h? tr?c ti?p v?i b?i c?nh d?y h?c t?i ${school}.`,
-        `### Li?n h? th?c ti?n\nNgo?i l? thuy?t, c?n n?u c?c d?n ch?ng t? th?c t? d?y h?c ? ${grade}, t? ?? ch? ra v? sao gi?i ph?p ???c l?a ch?n ph? h?p v? c? t?nh kh? thi khi tri?n khai trong nh? tr??ng.`,
+        `### C\u00e1c c\u00e1ch l\u00e0m c\u0169 th\u01b0\u1eddng g\u1eb7p\nTr\u01b0\u1edbc khi c\u00f3 s\u00e1ng ki\u1ebfn, gi\u00e1o vi\u00ean th\u01b0\u1eddng d\u1ea1y theo c\u00e1ch tr\u00ecnh b\u00e0y m\u1ed9t chi\u1ec1u, h\u1ecdc sinh ti\u1ebfp thu th\u1ee5 \u0111\u1ed9ng, thi\u1ebfu ho\u1ea1t \u0111\u1ed9ng tr\u1ea3i nghi\u1ec7m v\u00e0 th\u1ef1c h\u00e0nh.`,
+        `### H\u1ea1n ch\u1ebf c\u1ea7n kh\u1eafc ph\u1ee5c\nNh\u1eefng c\u00e1ch l\u00e0m c\u0169 ch\u01b0a ph\u00e1t huy \u0111\u01b0\u1ee3c n\u0103ng l\u1ef1c t\u1ef1 h\u1ecdc, gi\u1ea3i quy\u1ebft v\u1ea5n \u0111\u1ec1 v\u00e0 h\u1ee3p t\u00e1c c\u1ee7a h\u1ecdc sinh, \u0111\u1ed3ng th\u1eddi kh\u00f3 \u0111\u00e1nh gi\u00e1 s\u1ef1 ti\u1ebfn b\u1ed9 m\u1ed9t c\u00e1ch r\u00f5 r\u00e0ng.`,
       ];
-    } else if (lower.includes('th?c tr?ng')) {
+    } else if (sectionName === SECTION_MAP[5] || lower.includes('ng\u00e0y s\u00e1ng ki\u1ebfn')) {
       blocks = [
-        `### B?c tranh tr??c can thi?p\nTh?c tr?ng c?n m? t? r? ?i?m m?nh, ?i?m h?n ch? v? s? li?u kh?o s?t ??u v?o c?a h?c sinh. C?c bi?u hi?n n?n g?n v?i m?c ?? ho?n th?nh nhi?m v?, th?i ?? h?c t?p v? ch?t l??ng s?n ph?m h?c t?p.`,
-        `### Nguy?n nh?n v? t?c ??ng\nB?n c?nh m? t? hi?n tr?ng, c?n ph?n t?ch nguy?n nh?n theo c?c nh?m: h?c sinh, gi?o vi?n, ?i?u ki?n c? s? v?t ch?t v? s? ph?i h?p ph? huynh. Ph?n t?ch n?y gi?p l?m r? s? c?n thi?t c?a c?c bi?n ph?p ? ph?n sau.`,
-      ];
-    } else if (lower.includes('bi?n ph?p th?c hi?n')) {
-      blocks = [
-        `### C?ch t? ch?c bi?n ph?p\nM?i bi?n ph?p c?n n?u r? m?c ti?u, ti?n tr?nh th?c hi?n, h?c li?u s? d?ng v? c?ch ??nh gi?. N?i dung n?n t?ch theo c?c b??c c? th? ?? gi?o vi?n kh?c c? th? tri?n khai l?i.`,
-        `### Minh ch?ng tri?n khai\nC?n b? sung v? d? c? th? t?i l?p: c?ch giao nhi?m v?, c?ch x? l? l?i th??ng g?p, c?ch ph?n h?i cho h?c sinh v? k?t qu? thu ???c sau t?ng ho?t ??ng. C?c m?c 2.1 v? 2.2 n?n tr?nh b?y t?ch b?ch, kh?ng g?p ?.`,
-      ];
-    } else if (lower.includes('k?t qu? ??t ???c')) {
-      blocks = [
-        `### So s?nh tr??c v? sau\nK?t qu? n?n th? hi?n theo d?ng ??i s?nh tr??c - sau b?ng s? li?u ??nh l??ng k?m nh?n x?t ??nh t?nh. C?n n?u r? ch? s? ?o l??ng v? th?i ?i?m ??nh gi? ?? b?o ??m t?nh thuy?t ph?c.`,
-        `### T?c ??ng gi?o d?c\nNgo?i s? li?u, n?n m? t? t?c ??ng ??n th?i ?? h?c t?p, m?c ?? t? tin, kh? n?ng h?p t?c v? ch?t l??ng s?n ph?m c?a h?c sinh sau khi ?p d?ng gi?i ph?p.`,
+        `### M\u1ed1c th\u1eddi gian \u00e1p d\u1ee5ng\nS\u00e1ng ki\u1ebfn \u0111\u01b0\u1ee3c tri\u1ec3n khai l\u1ea7n \u0111\u1ea7u trong ${duration} t\u1ea1i ${school}, b\u1eaft \u0111\u1ea7u t\u1eeb giai \u0111o\u1ea1n kh\u1ea3o s\u00e1t ban \u0111\u1ea7u \u0111\u1ebfn giai \u0111o\u1ea1n th\u1eed nghi\u1ec7m tr\u00ean l\u1edbp ${grade}.`,
+        `### K\u1ebf ho\u1ea1ch theo giai \u0111o\u1ea1n\nQu\u00e1 tr\u00ecnh \u00e1p d\u1ee5ng g\u1ed3m 3 b\u01b0\u1edbc: chu\u1ea9n b\u1ecb h\u1ecdc li\u1ec7u, t\u1ed5 ch\u1ee9c d\u1ea1y th\u1eed c\u00f3 quan s\u00e1t, v\u00e0 \u0111\u00e1nh gi\u00e1 \u0111i\u1ec1u ch\u1ec9nh \u0111\u1ec3 ho\u00e0n thi\u1ec7n m\u00f4 h\u00ecnh tri\u1ec3n khai.`,
       ];
     } else {
       blocks = [
-        `N?i dung c?n ???c m? r?ng b?ng minh ch?ng c? th? theo b?i c?nh d?y h?c ${subject} t?i ${school}, tr?nh di?n ??t ng?n g?n qu? m?c.`,
-        `C?n b? sung th?m v? d? tri?n khai, ti?u ch? ??nh gi? v? nh?n x?t k?t qu? ?? ph?n n?y ?? ?? s?u v? d? ?p d?ng trong th?c t?.`,
+        `### 5.1 M\u00f4 t\u1ea3 gi\u1ea3i ph\u00e1p m\u1edbi ho\u1eb7c c\u1ea3i ti\u1ebfn\nN\u00eau r\u00f5 m\u1ee5c ti\u00eau c\u1ea3i ti\u1ebfn, quy tr\u00ecnh th\u1ef1c hi\u1ec7n, h\u1ecdc li\u1ec7u s\u1eed d\u1ee5ng v\u00e0 vai tr\u00f2 c\u1ee7a gi\u00e1o vi\u00ean - h\u1ecdc sinh trong t\u1eebng ho\u1ea1t \u0111\u1ed9ng c\u1ee5 th\u1ec3.`,
+        `### 5.2 V\u1ec1 kh\u1ea3 n\u0103ng \u00e1p d\u1ee5ng (ph\u1ea1m vi \u00e1p d\u1ee5ng) c\u1ee7a s\u00e1ng ki\u1ebfn\nPh\u00e2n t\u00edch \u0111i\u1ec1u ki\u1ec7n \u00e1p d\u1ee5ng theo c\u1ea5p tr\u01b0\u1eddng, t\u1ed5 chuy\u00ean m\u00f4n, l\u1edbp h\u1ecdc; x\u00e1c \u0111\u1ecbnh y\u1ebfu t\u1ed1 thu\u1eadn l\u1ee3i, kh\u00f3 kh\u0103n v\u00e0 c\u00e1ch th\u00edch nghi khi nh\u00e2n r\u1ed9ng.`,
+        `### 5.3 \u0110\u00e1nh gi\u00e1 l\u1ee3i \u00edch kinh t\u1ebf, x\u00e3 h\u1ed9i c\u1ee7a s\u00e1ng ki\u1ebfn\nN\u00eau minh ch\u1ee9ng c\u1ee5 th\u1ec3 v\u1ec1 hi\u1ec7u qu\u1ea3 th\u1eddi gian, chi ph\u00ed, ch\u1ea5t l\u01b0\u1ee3ng h\u1ecdc t\u1eadp v\u00e0 t\u00e1c \u0111\u1ed9ng t\u00edch c\u1ef1c \u0111\u1ebfn h\u1ecdc sinh, gi\u00e1o vi\u00ean, nh\u00e0 tr\u01b0\u1eddng.`,
       ];
     }
 
@@ -408,7 +371,7 @@ export default function App() {
     const targetWords = Math.max(80, missingWords + 30);
 
     while (estimateWordCount(addition) < targetWords) {
-      addition += '\n\nTi?p t?c b? sung minh ch?ng th?c t? theo t?ng t?nh hu?ng l?p h?c, n?u r? c?ch t? ch?c, ti?u ch? ??nh gi? v? ?i?u ch?nh sau khi tri?n khai.';
+      addition += '\n\nTi\u1ebfp t\u1ee5c b\u1ed5 sung minh ch\u1ee9ng th\u1ef1c t\u1ebf theo t\u1eebng t\u00ecnh hu\u1ed1ng l\u1edbp h\u1ecdc, n\u00eau r\u00f5 c\u00e1ch t\u1ed5 ch\u1ee9c, ti\u00eau ch\u00ed \u0111\u00e1nh gi\u00e1 v\u00e0 \u0111i\u1ec1u ch\u1ec9nh sau khi tri\u1ec3n khai.';
     }
 
     return addition.trim();
@@ -470,7 +433,8 @@ export default function App() {
   };
 
   const goToStep = (stepId: number) => {
-    setData(prev => ({ ...prev, currentStep: stepId }));
+    const safeStepId = Math.min(Math.max(Math.round(stepId), 0), MAX_STEP_ID);
+    setData(prev => ({ ...prev, currentStep: safeStepId }));
   };
 
   const generateOutline = async () => {
@@ -708,14 +672,14 @@ ${finalResult.content}`;
         const stillShort = obviouslyShort || (minRequiredWords > 0
           && finalResult.wordCount < minRequiredWords);
 
-        const successMessage = finalResult.plan
-          ? `Ðã vi?t xong "${sectionName}" v?i kho?ng ${finalResult.wordCount} t? (m?c tiêu ${finalResult.plan.targetWords} t?, t?i thi?u ${minRequiredWords} t?).${finalResult.adjusted ? ' AI dã t? cân l?i d? dài sau khi vi?t.' : ''}${stillShort ? ' N?i dung v?n hoi ng?n, b?n có th? b?m "Vi?t l?i b?ng AI" d? m? r?ng thêm.' : ''} [build ${APP_BUILD_TAG}]`
-          : `Ðã vi?t xong "${sectionName}"! [build ${APP_BUILD_TAG}]`;
+                const successMessage = finalResult.plan
+          ? `\u0110\u00e3 vi\u1ebft xong "${sectionName}" v\u1edbi kho\u1ea3ng ${finalResult.wordCount} t\u1eeb (m\u1ee5c ti\u00eau ${finalResult.plan.targetWords} t\u1eeb, t\u1ed1i thi\u1ec3u ${minRequiredWords} t\u1eeb).${finalResult.adjusted ? ' AI \u0111\u00e3 t\u1ef1 c\u00e2n l\u1ea1i \u0111\u1ed9 d\u00e0i sau khi vi\u1ebft.' : ''}${stillShort ? ' N\u1ed9i dung v\u1eabn h\u01a1i ng\u1eafn, b\u1ea1n c\u00f3 th\u1ec3 b\u1ea5m "Vi\u1ebft l\u1ea1i b\u1eb1ng AI" \u0111\u1ec3 m\u1edf r\u1ed9ng th\u00eam.' : ''} [build ${APP_BUILD_TAG}]`
+          : `\u0110\u00e3 vi\u1ebft xong "${sectionName}"! [build ${APP_BUILD_TAG}]`;
 
-        Swal.fire(stillShort ? 'C?n m? r?ng thêm' : 'Thành công', successMessage, stillShort ? 'warning' : 'success');
+        Swal.fire(stillShort ? `C\u1ea7n m\u1edf r\u1ed9ng th\u00eam` : `Th\u00e0nh c\u00f4ng`, successMessage, stillShort ? 'warning' : 'success');
       }
     } catch (error: any) {
-      Swal.fire('L?i', error.message, 'error');
+      Swal.fire('L\u1ed7i', error.message, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1306,7 +1270,7 @@ ${finalResult.content}`;
           </div>
           <div className="flex gap-3 flex-wrap">
             <button onClick={generateOutline} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-primary-dark transition-colors"><Sparkles size={14} /> {`T\u1ea1o l\u1ea1i d\u00e0n \u00fd`}</button>
-            <button onClick={() => goToStep(2)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">{`Ti\u1ebfp t\u1ee5c vi\u1ebft n\u1ed9i dung`} <ChevronRight size={14} /></button>
+            <button onClick={() => goToStep(FIRST_WRITING_STEP_ID)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">{`Ti\u1ebfp t\u1ee5c vi\u1ebft n\u1ed9i dung`} <ChevronRight size={14} /></button>
           </div>
           <details className="mt-4">
             <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary transition-colors">{`Ch\u1ec9nh s\u1eeda d\u00e0n \u00fd (Markdown)`}</summary>
@@ -1352,7 +1316,7 @@ ${finalResult.content}`;
               </div>
               <div className="flex gap-3 flex-wrap">
                 <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50"><Sparkles size={14} /> {`Vi\u1ebft l\u1ea1i b\u1eb1ng AI`}</button>
-                {stepId < 16 && (
+                {stepId <= LAST_WRITING_STEP_ID && (
                   <button onClick={() => goToStep(stepId + 1)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">{`Ti\u1ebfp t\u1ee5c`} <ChevronRight size={14} /></button>
                 )}
               </div>
@@ -1638,22 +1602,44 @@ ${finalResult.content}`;
         let md = exportSections[sectionName] || '';
         if (!md) return '';
 
-        md = md.replace(/^.*[Dd]u?i dây.*$/gm, '');
-        md = md.replace(/^.*n?i dung chi ti?t.*$/gm, '');
-        md = md.replace(/^.*du?c (vi?t|trình bày) theo.*$/gm, '');
-        md = md.replace(/^.*yêu c?u v? d? dài.*$/gm, '');
-        md = md.replace(/^.*van phong và các nguyên t?c.*$/gm, '');
-        md = md.replace(/^.*các nguyên t?c dã d? ra.*$/gm, '');
-        md = md.replace(/^.*[Pp]h?n này trình bày.*$/gm, '');
-        md = md.replace(/^.*[Ss]au dây là.*$/gm, '');
-        md = md.replace(/^.*\([Kk]ho?ng \d+.*\).*$/gm, '');
+        const sectionHeadingPattern = '(?:1\\.\\s*T\\u00ean s\\u00e1ng ki\\u1ebfn|2\\.\\s*L\\u0129nh v\\u1ef1c \\u00e1p d\\u1ee5ng s\\u00e1ng ki\\u1ebfn|3\\.\\s*M\\u00f4 t\\u1ea3 c\\u00e1c gi\\u1ea3i ph\\u00e1p c\\u0169 th\\u01b0\\u1eddng l\\u00e0m|4\\.\\s*Ng\\u00e0y s\\u00e1ng ki\\u1ebfn \\u0111\\u01b0\\u1ee3c \\u00e1p d\\u1ee5ng l\\u1ea7n \\u0111\\u1ea7u ho\\u1eb7c \\u00e1p d\\u1ee5ng th\\u1eed|5\\.\\s*N\\u1ed9i dung|5\\.1\\s*M\\u00f4 t\\u1ea3 gi\\u1ea3i ph\\u00e1p m\\u1edbi ho\\u1eb7c c\\u1ea3i ti\\u1ebfn|5\\.2\\s*V\\u1ec1 kh\\u1ea3 n\\u0103ng \\u00e1p d\\u1ee5ng.*|5\\.3\\s*\\u0110\\u00e1nh gi\\u00e1 l\\u1ee3i \\u00edch kinh t\\u1ebf.*|L\\u00fd do ch\\u1ecdn \\u0111\\u1ec1 t\\u00e0i|M\\u1ee5c \\u0111\\u00edch nghi\\u00ean c\\u1ee9u|\\u0110\\u1ed1i t\\u01b0\\u1ee3ng nghi\\u00ean c\\u1ee9u|\\u0110\\u1ed1i t\\u01b0\\u1ee3ng kh\\u1ea3o s\\u00e1t(?: th\\u1ef1c nghi\\u1ec7m)?|Ph\\u01b0\\u01a1ng ph\\u00e1p nghi\\u00ean c\\u1ee9u|Ph\\u1ea1m vi(?: v\\u00e0 k\\u1ebf ho\\u1ea1ch)? nghi\\u00ean c\\u1ee9u|C\\u01a1 s\\u1edf l\\u00fd lu\\u1eadn|Th\\u1ef1c tr\\u1ea1ng|Bi\\u1ec7n ph\\u00e1p th\\u1ef1c hi\\u1ec7n|C\\u00e1c bi\\u1ec7n ph\\u00e1p th\\u1ef1c hi\\u1ec7n(?: s\\u00e1ng ki\\u1ebfn)?|K\\u1ebft qu\\u1ea3(?: \\u0111\\u1ea1t \\u0111\\u01b0\\u1ee3c)?|Hi\\u1ec7u qu\\u1ea3(?: \\u0111\\u1ea1t \\u0111\\u01b0\\u1ee3c)?|K\\u1ebft lu\\u1eadn chung|B\\u00e0i h\\u1ecdc kinh nghi\\u1ec7m|\\u0110\\u1ec1 xu\\u1ea5t(?:\\s*-\\s*khuy\\u1ebfn ngh\\u1ecb)?|Ph\\u1ee5 l\\u1ee5c)';
+        const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const sectionShortTitle = (sectionName.split(' - ')[1] || sectionName).replace(/^[IVX]+\.\s*/i, '').trim();
+        const escapedSectionShortTitle = escapeRegex(sectionShortTitle);
+        const sectionTitleRegex = new RegExp(`^\\s*(?:#+\\s*)?(?:[IVX]+\\.?\\s*)?${escapedSectionShortTitle}\\s*$`, 'i');
 
-        md = md.replace(/^#{0,6}\s*I\.\s*(Ð?T V?N Ð?|Ð?t v?n d?).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*II\.\s*(N?I DUNG|N?i dung).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*III\.\s*(KI?N NGH?|Ki?n ngh?|K?T QU?|K?t qu?).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*Ph?n\s*[IVX]+\.\s*.*$/gim, '');
-        md = md.replace(/^#{0,6}\s*I{1,3}[\.\d]*[\.\-\s].*?(Ð?t v?n d?|Lí do ch?n d? tài|Lý do ch?n d? tài|M?c dích nghiên c?u|Ð?i tu?ng nghiên c?u|Ð?i tu?ng kh?o sát|Phuong pháp nghiên c?u|Ph?m vi tri?n khai|Hi?n tr?ng|Th?c tr?ng|Co s? lí lu?n|Gi?i pháp|Các bi?n pháp|K?t qu?|Hi?u qu?|Hi?u qu? d?t du?c|Tính kh? thi|Kinh phí|Ki?n ngh?|Ð?T V?N Ð?|N?I DUNG).*$/gim, '');
-        md = md.replace(/^#{0,6}\s*\d+[\.\)]\s*(Lí do ch?n d? tài|Lý do ch?n d? tài|M?c dích nghiên c?u|Ð?i tu?ng nghiên c?u|Ð?i tu?ng kh?o sát|Phuong pháp nghiên c?u|Ph?m vi tri?n khai|Co s? lí lu?n|Th?c tr?ng|Hi?n tr?ng|Các bi?n pháp|Gi?i pháp|K?t qu?|Hi?u qu?|Hi?u qu? d?t du?c|Tính kh? thi|Th?i gian th?c hi?n|Kinh phí|Ki?n ngh?).*$/gim, '');
+        const cleanupPatterns = [
+          '^.*(?:D\\u01b0\\u1edbi \\u0111\\u00e2y|Sau \\u0111\\u00e2y).*$',
+          '^.*n\\u1ed9i dung chi ti\\u1ebft.*$',
+          '^.*\\u0111\\u01b0\\u1ee3c (?:vi\\u1ebft|tr\\u00ecnh b\\u00e0y) theo.*$',
+          '^.*y\\u00eau c\\u1ea7u v\\u1ec1 \\u0111\\u1ed9 d\\u00e0i.*$',
+          '^.*v\\u0103n phong v\\u00e0 c\\u00e1c nguy\\u00ean t\\u1eafc.*$',
+          '^.*c\\u00e1c nguy\\u00ean t\\u1eafc \\u0111\\u00e3 \\u0111\\u1ec1 ra.*$',
+          '^.*ph\\u1ea7n n\\u00e0y tr\\u00ecnh b\\u00e0y.*$',
+          '^.*\\([Kk]ho\\u1ea3ng \\d+.*\\).*$',
+        ];
+        cleanupPatterns.forEach((pattern) => {
+          md = md.replace(new RegExp(pattern, 'gim'), '');
+        });
+
+        md = md.replace(new RegExp('^\\s*#{0,6}\\s*PH\\u1ea6N\\s*[IVX]+\\s*[\\.\\-:]?.*$', 'gim'), '');
+        md = md.replace(new RegExp('^\\s*#{0,6}\\s*(?:I|II|III|IV|V|VI)\\.\\s*(?:\\u0110\\u1eb6T V\\u1ea4N \\u0110\\u1ec0|N\\u1ed8I DUNG|K\\u1ebeT LU\\u1eacN|KI\\u1ebeN NGH\\u1eca|K\\u1ebeT QU\\u1ea2).*$', 'gim'), '');
+        md = md.replace(new RegExp(`^\\s*#{0,6}\\s*(?:I|II|III|IV|V|VI)\\.\\s*${sectionHeadingPattern}.*$`, 'gim'), '');
+        md = md.replace(new RegExp(`^\\s*#{0,6}\\s*\\d+(?:\\.\\d+)?[\\.)]\\s*${sectionHeadingPattern}.*$`, 'gim'), '');
+        md = md.replace(new RegExp(`^\\s*(?:I|II|III|IV|V|VI)\\.\\s*${sectionHeadingPattern}\\s*$`, 'gim'), '');
+        md = md.replace(new RegExp(`^\\s*\\d+(?:\\.\\d+)?[\\.)]\\s*${sectionHeadingPattern}\\s*$`, 'gim'), '');
+        md = md.replace(/^\s*#{1,6}\s+[^\n]+\n+/, '');
+
+        const lines = md.split('\n');
+        for (let i = 0; i < 3; i += 1) {
+          if (lines.length && sectionTitleRegex.test(lines[0].trim())) {
+            lines.shift();
+          } else {
+            break;
+          }
+        }
+        md = lines.join('\n');
+
         md = md.replace(/\n{3,}/g, '\n\n');
         md = md.trim();
 
@@ -1661,60 +1647,27 @@ ${finalResult.content}`;
         html = html.replace(/\$/g, '');
         html = html.replace(/\\/g, '');
         return html;
-      };
+      };      const bodyHtml = `
+<h1 style="text-align:center; font-size:16pt; font-weight:bold;">M\u00d4 T\u1ea2 GI\u1ea2I PH\u00c1P V\u00c0 K\u1ebeT QU\u1ea2 TH\u1ef0C HI\u1ec6N S\u00c1NG KI\u1ebeN</h1>
 
-      const bodyHtml = `
-<h1 style="text-align:center; font-size:16pt; font-weight:bold;">N?I DUNG SÁNG KI?N KINH NGHI?M</h1>
-
-<h2 style="font-size:14pt; font-weight:bold;">PH?N M? Ð?U</h2>
-
-<h3 style="font-size:13pt; font-weight:bold;">I. LÝ DO CH?N Ð? TÀI</h3>
+<h2 style="font-size:13pt; font-weight:bold;">1. T\u00caN S\u00c1NG KI\u1ebeN</h2>
 <div style="margin-bottom:12pt;">${getSectionHtml(2)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">II. M?C ÐÍCH NGHIÊN C?U</h3>
+<h2 style="font-size:13pt; font-weight:bold;">2. L\u0128NH V\u1ef0C \u00c1P D\u1ee4NG S\u00c1NG KI\u1ebeN</h2>
 <div style="margin-bottom:12pt;">${getSectionHtml(3)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">III. Ð?I TU?NG NGHIÊN C?U</h3>
+<h2 style="font-size:13pt; font-weight:bold;">3. M\u00d4 T\u1ea2 C\u00c1C GI\u1ea2I PH\u00c1P C\u0168 TH\u01af\u1edcNG L\u00c0M</h2>
 <div style="margin-bottom:12pt;">${getSectionHtml(4)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">IV. Ð?I TU?NG KH?O SÁT TH?C NGHI?M</h3>
+<h2 style="font-size:13pt; font-weight:bold;">4. NG\u00c0Y S\u00c1NG KI\u1ebeN \u0110\u01af\u1ee2C \u00c1P D\u1ee4NG L\u1ea6N \u0110\u1ea6U HO\u1eb6C \u00c1P D\u1ee4NG TH\u1eec</h2>
 <div style="margin-bottom:12pt;">${getSectionHtml(5)}</div>
 
-<h3 style="font-size:13pt; font-weight:bold;">V. PHUONG PHÁP NGHIÊN C?U</h3>
+<h2 style="font-size:13pt; font-weight:bold;">5. N\u1ed8I DUNG</h2>
+<div style="margin-bottom:6pt; font-weight:bold;">5.1 M\u00f4 t\u1ea3 gi\u1ea3i ph\u00e1p m\u1edbi ho\u1eb7c c\u1ea3i ti\u1ebfn</div>
+<div style="margin-bottom:6pt; font-weight:bold;">5.2 V\u1ec1 kh\u1ea3 n\u0103ng \u00e1p d\u1ee5ng (ph\u1ea1m vi \u00e1p d\u1ee5ng) c\u1ee7a s\u00e1ng ki\u1ebfn</div>
+<div style="margin-bottom:6pt; font-weight:bold;">5.3 \u0110\u00e1nh gi\u00e1 l\u1ee3i \u00edch kinh t\u1ebf, x\u00e3 h\u1ed9i c\u1ee7a s\u00e1ng ki\u1ebfn</div>
 <div style="margin-bottom:12pt;">${getSectionHtml(6)}</div>
-
-<h3 style="font-size:13pt; font-weight:bold;">VI. PH?M VI VÀ K? HO?CH NGHIÊN C?U</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(7)}</div>
-
-<h2 style="font-size:14pt; font-weight:bold;">PH?N N?I DUNG</h2>
-
-<h3 style="font-size:13pt; font-weight:bold;">I. CO S? LÝ LU?N</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(8)}</div>
-
-<h3 style="font-size:13pt; font-weight:bold;">II. TH?C TR?NG</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(9)}</div>
-
-<h3 style="font-size:13pt; font-weight:bold;">III. BI?N PHÁP TH?C HI?N</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(10)}</div>
-
-<h3 style="font-size:13pt; font-weight:bold;">IV. K?T QU? Ð?T ÐU?C</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(11)}</div>
-
-<h2 style="font-size:14pt; font-weight:bold;">PH?N K?T LU?N</h2>
-
-<h3 style="font-size:13pt; font-weight:bold;">I. K?T LU?N CHUNG</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(12)}</div>
-
-<h3 style="font-size:13pt; font-weight:bold;">II. BÀI H?C KINH NGHI?M</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(13)}</div>
-
-<h3 style="font-size:13pt; font-weight:bold;">III. Ð? XU?T - KHUY?N NGH?</h3>
-<div style="margin-bottom:12pt;">${getSectionHtml(14)}</div>
-
-<h2 style="font-size:14pt; font-weight:bold;">PH? L?C</h2>
-<div style="margin-bottom:12pt;">${getSectionHtml(15)}</div>
 `;
-
       const docHtml = `
 <!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
@@ -1791,12 +1744,11 @@ ${bodyHtml}
     const totalSections = allSections.length;
     const progress = Math.round((completedSections.length / totalSections) * 100);
     const draftLengthMetrics = buildDraftLengthMetrics();
-    const draftDeltaLabel = draftLengthMetrics.totalDeltaWords === 0
-      ? 'Ðang kh?p r?t sát m?c tiêu t?ng th?.'
+        const draftDeltaLabel = draftLengthMetrics.totalDeltaWords === 0
+      ? `\u0110ang kh\u1edbp r\u1ea5t s\u00e1t m\u1ee5c ti\u00eau t\u1ed5ng th\u1ec3.`
       : draftLengthMetrics.totalDeltaWords > 0
-        ? `Toàn bài hi?n còn thi?u kho?ng ${draftLengthMetrics.totalDeltaWords} t? (~${(draftLengthMetrics.totalDeltaWords / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`
-        : `Toàn bài hi?n dang dài hon kho?ng ${Math.abs(draftLengthMetrics.totalDeltaWords)} t? (~${(Math.abs(draftLengthMetrics.totalDeltaWords) / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`;
-
+        ? `To\u00e0n b\u00e0i hi\u1ec7n c\u00f2n thi\u1ebfu kho\u1ea3ng ${draftLengthMetrics.totalDeltaWords} t\u1eeb (~${(draftLengthMetrics.totalDeltaWords / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`
+        : `To\u00e0n b\u00e0i hi\u1ec7n \u0111ang d\u00e0i h\u01a1n kho\u1ea3ng ${Math.abs(draftLengthMetrics.totalDeltaWords)} t\u1eeb (~${(Math.abs(draftLengthMetrics.totalDeltaWords) / EXPORT_WORDS_PER_PAGE).toFixed(1)} trang).`;
     return (
       <div className="space-y-6">
         <div className="banner-header">
@@ -1806,7 +1758,7 @@ ${bodyHtml}
         <div className="content-card space-y-5">
           <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">{`Ti\u1ebfn \u0111\u1ed9 ho\u00e0n th\u00e0nh`}</h3>
           <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} /></div>
-          <p className="text-sm text-slate-500">{completedSections.length}/{totalSections} ph?n dã hoàn thành ({progress}%)</p>
+          <p className="text-sm text-slate-500">{completedSections.length}/{totalSections} {`ph\u1ea7n \u0111\u00e3 ho\u00e0n th\u00e0nh`} ({progress}%)</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {allSections.map(k => {
               const done = !!data.sections[SECTION_MAP[k]];
@@ -1847,7 +1799,7 @@ ${bodyHtml}
     if (stepId === 0) return renderInfoStep();
     if (stepId === 1) return renderOutlineStep();
     if (SECTION_MAP[stepId]) return renderWriteStep(stepId);
-    if (stepId === 16) return renderExportStep();
+    if (stepId === EXPORT_STEP_ID) return renderExportStep();
     return null;
   };
 
@@ -1856,7 +1808,7 @@ ${bodyHtml}
     if (stepId === 0) return data.confirmedRequirements;
     if (stepId === 1) return !!data.outline;
     if (SECTION_MAP[stepId]) return !!data.sections[SECTION_MAP[stepId]];
-    if (stepId === 16) {
+    if (stepId === EXPORT_STEP_ID) {
       const allSections = Object.keys(SECTION_MAP).map(k => Number(k));
       return allSections.every(k => !!data.sections[SECTION_MAP[k]]);
     }
@@ -1929,7 +1881,7 @@ ${bodyHtml}
         <div className="p-3 border-t border-slate-200 dark:border-slate-800 space-y-1">
           {data.info.title && (
             <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg mb-2">
-              <p className="text-[10px] text-slate-400">Ð? tài:</p>
+              <p className="text-[10px] text-slate-400">{`\u0110\u1ec1 t\u00e0i:`}</p>
               <p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{data.info.title}</p>
             </div>
           )}
@@ -1937,11 +1889,11 @@ ${bodyHtml}
             <button
               onClick={() => {
                 localStorage.setItem('skkn_data_v3', JSON.stringify(data));
-                Swal.fire({ icon: 'success', title: 'Ðã luu!', timer: 1000, showConfirmButton: false });
+                Swal.fire({ icon: 'success', title: '\u0110\u00e3 l\u01b0u!', timer: 1000, showConfirmButton: false });
               }}
               className="flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 text-xs transition-all"
             >
-              <Save size={14} /> Luu phiên
+              <Save size={14} /> {`L\u01b0u phi\u00ean`}
             </button>
             <button
               onClick={resetData}
@@ -2224,6 +2176,27 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

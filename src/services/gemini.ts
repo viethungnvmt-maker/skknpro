@@ -8,51 +8,31 @@ const TOKENS_PER_WORD = 2.4;
 const MAX_SECTION_OUTPUT_TOKENS = 8192;
 
 const SECTION_KEYS = {
-  INTRO_REASON: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - I. L\u00fd do ch\u1ecdn \u0111\u1ec1 t\u00e0i',
-  INTRO_PURPOSE: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - II. M\u1ee5c \u0111\u00edch nghi\u00ean c\u1ee9u',
-  INTRO_OBJECT: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - III. \u0110\u1ed1i t\u01b0\u1ee3ng nghi\u00ean c\u1ee9u',
-  INTRO_SURVEY: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - IV. \u0110\u1ed1i t\u01b0\u1ee3ng kh\u1ea3o s\u00e1t th\u1ef1c nghi\u1ec7m',
-  INTRO_METHOD: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - V. Ph\u01b0\u01a1ng ph\u00e1p nghi\u00ean c\u1ee9u',
-  INTRO_SCOPE: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - VI. Ph\u1ea1m vi v\u00e0 k\u1ebf ho\u1ea1ch nghi\u00ean c\u1ee9u',
-  CONTENT_THEORY: 'PH\u1ea6N N\u1ed8I DUNG - I. C\u01a1 s\u1edf l\u00fd lu\u1eadn',
-  CONTENT_STATUS: 'PH\u1ea6N N\u1ed8I DUNG - II. Th\u1ef1c tr\u1ea1ng',
-  CONTENT_MEASURES: 'PH\u1ea6N N\u1ed8I DUNG - III. Bi\u1ec7n ph\u00e1p th\u1ef1c hi\u1ec7n',
-  CONTENT_RESULTS: 'PH\u1ea6N N\u1ed8I DUNG - IV. K\u1ebft qu\u1ea3 \u0111\u1ea1t \u0111\u01b0\u1ee3c',
-  CONCLUSION_GENERAL: 'PH\u1ea6N K\u1ebeT LU\u1eacN - I. K\u1ebft lu\u1eadn chung',
-  CONCLUSION_LESSONS: 'PH\u1ea6N K\u1ebeT LU\u1eacN - II. B\u00e0i h\u1ecdc kinh nghi\u1ec7m',
-  CONCLUSION_PROPOSALS: 'PH\u1ea6N K\u1ebeT LU\u1eacN - III. \u0110\u1ec1 xu\u1ea5t - khuy\u1ebfn ngh\u1ecb',
-  APPENDIX: 'PH\u1ee4 L\u1ee4C',
+  NAME: '1. T\u00ean s\u00e1ng ki\u1ebfn',
+  FIELD: '2. L\u0129nh v\u1ef1c \u00e1p d\u1ee5ng s\u00e1ng ki\u1ebfn',
+  LEGACY_SOLUTIONS: '3. M\u00f4 t\u1ea3 c\u00e1c gi\u1ea3i ph\u00e1p c\u0169 th\u01b0\u1eddng l\u00e0m',
+  FIRST_APPLIED: '4. Ng\u00e0y s\u00e1ng ki\u1ebfn \u0111\u01b0\u1ee3c \u00e1p d\u1ee5ng l\u1ea7n \u0111\u1ea7u ho\u1eb7c \u00e1p d\u1ee5ng th\u1eed',
+  CONTENT: '5. N\u1ed9i dung',
 } as const;
 
-
 const SECTION_LENGTH_WEIGHTS: Record<string, number> = {
-  [SECTION_KEYS.INTRO_REASON]: 0.07,
-  [SECTION_KEYS.INTRO_PURPOSE]: 0.05,
-  [SECTION_KEYS.INTRO_OBJECT]: 0.04,
-  [SECTION_KEYS.INTRO_SURVEY]: 0.05,
-  [SECTION_KEYS.INTRO_METHOD]: 0.06,
-  [SECTION_KEYS.INTRO_SCOPE]: 0.05,
-  [SECTION_KEYS.CONTENT_THEORY]: 0.11,
-  [SECTION_KEYS.CONTENT_STATUS]: 0.14,
-  [SECTION_KEYS.CONTENT_MEASURES]: 0.20,
-  [SECTION_KEYS.CONTENT_RESULTS]: 0.10,
-  [SECTION_KEYS.CONCLUSION_GENERAL]: 0.04,
-  [SECTION_KEYS.CONCLUSION_LESSONS]: 0.03,
-  [SECTION_KEYS.CONCLUSION_PROPOSALS]: 0.03,
-  [SECTION_KEYS.APPENDIX]: 0.03,
+  [SECTION_KEYS.NAME]: 0.07,
+  [SECTION_KEYS.FIELD]: 0.1,
+  [SECTION_KEYS.LEGACY_SOLUTIONS]: 0.18,
+  [SECTION_KEYS.FIRST_APPLIED]: 0.1,
+  [SECTION_KEYS.CONTENT]: 0.55,
 };
 
 const SECTION_NAMES = Object.keys(SECTION_LENGTH_WEIGHTS);
+
 const SECTION_SUBSTRUCTURE_RULES: Record<string, string> = {
-  [SECTION_KEYS.CONTENT_THEORY]: '- Bat buoc chia du muc con: (1) Gioi thieu ve phan mem Logo; (2) Vi sao Logo duoc dua vao day trong truong tieu hoc; (3) Khi hoc Logo hoc sinh duoc hoc va co the lam gi.',
-  [SECTION_KEYS.CONTENT_STATUS]: '- Bat buoc chia du muc con: (1) Thuan loi va kho khan, trong do phai co 1.1 Thuan loi va 1.2 Kho khan; (2) Thuc trang day - hoc phan mem Logo o truong tieu hoc.',
-  [SECTION_KEYS.CONTENT_MEASURES]: '- Bat buoc chia du muc con: (1) Phat hien va khac phuc loi thuong gap; (2) Nam yeu cau bai tap, trong do phai co 2.1 va 2.2; (3) Viet nhanh cau lenh lap, thu tuc; (4) Bieu duong, khich le su sang tao.',
+  [SECTION_KEYS.CONTENT]: '- B\u1eaft bu\u1ed9c tr\u00ecnh b\u00e0y \u0111\u1ee7 3 m\u1ee5c con: 5.1 M\u00f4 t\u1ea3 gi\u1ea3i ph\u00e1p m\u1edbi ho\u1eb7c c\u1ea3i ti\u1ebfn; 5.2 V\u1ec1 kh\u1ea3 n\u0103ng \u00e1p d\u1ee5ng (ph\u1ea1m vi \u00e1p d\u1ee5ng) c\u1ee7a s\u00e1ng ki\u1ebfn; 5.3 \u0110\u00e1nh gi\u00e1 l\u1ee3i \u00edch kinh t\u1ebf, x\u00e3 h\u1ed9i c\u1ee7a s\u00e1ng ki\u1ebfn.',
 };
+
 const SECTION_SUBSTRUCTURE_KEEP_RULES: Record<string, string> = {
-  [SECTION_KEYS.CONTENT_THEORY]: '- BAT BUOC giu du muc 1, 2, 3 trong phan co so ly luan; khong gop hoac bo muc.',
-  [SECTION_KEYS.CONTENT_STATUS]: '- BAT BUOC giu du muc 1 (gom 1.1, 1.2) va muc 2 trong phan thuc trang; khong duoc thieu muc con.',
-  [SECTION_KEYS.CONTENT_MEASURES]: '- BAT BUOC giu du cac y 1, 2 (bao gom 2.1, 2.2), 3, 4 trong phan bien phap; khong duoc bo muc nao du phai rut gon.',
+  [SECTION_KEYS.CONTENT]: '- BAT BUOC gi\u1eef \u0111\u1ee7 3 m\u1ee5c 5.1, 5.2, 5.3 trong ph\u1ea7n N\u1ed9i dung; kh\u00f4ng \u0111\u01b0\u1ee3c g\u1ed9p ho\u1eb7c b\u1ecf m\u1ee5c con.',
 };
+
 const getSectionSubstructureRule = (sectionName: string) => SECTION_SUBSTRUCTURE_RULES[sectionName] || '';
 const getSectionSubstructureKeepRule = (sectionName: string) => SECTION_SUBSTRUCTURE_KEEP_RULES[sectionName] || '';
 
@@ -452,39 +432,14 @@ export const PROMPTS = {
     ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
 
     Yeu cau dan y phai bam sat cau truc sau:
-    PHAN MO DAU
-      I. Ly do chon de tai
-      II. Muc dich nghien cuu
-      III. Doi tuong nghien cuu
-      IV. Doi tuong khao sat thuc nghiem
-      V. Phuong phap nghien cuu
-      VI. Pham vi va ke hoach nghien cuu
-
-    PHAN NOI DUNG
-      I. Co so ly luan
-        1. Gioi thieu ve phan mem Logo
-        2. Vi sao Logo duoc dua vao day trong truong tieu hoc
-        3. Khi hoc Logo hoc sinh duoc hoc va co the lam gi
-      II. Thuc trang
-        1. Thuan loi va kho khan
-          1.1. Thuan loi
-          1.2. Kho khan
-        2. Thuc trang day - hoc phan mem Logo o truong tieu hoc
-      III. Bien phap thuc hien
-        1. Giup hoc sinh phat hien va khac phuc loi thuong gap
-        2. Giup hoc sinh nam duoc yeu cau cua bai tap
-          2.1. Tao thoi quen nghien cuu de bai, phan tich hinh mau
-          2.2. Su dung cau lenh Wait giup hoc sinh phan tich de bai
-        3. Giup hoc sinh viet nhanh cac cau lenh lap, cac thu tuc
-        4. Bieu duong, khich le su tim toi, sang tao cua hoc sinh
-      IV. Ket qua dat duoc
-
-    PHAN KET LUAN
-      I. Ket luan chung
-      II. Bai hoc kinh nghiem
-      III. De xuat - khuyen nghi
-
-    PHU LUC
+    1. Ten sang kien
+    2. Linh vuc ap dung sang kien
+    3. Mo ta cac giai phap cu thuong lam
+    4. Ngay sang kien duoc ap dung lan dau hoac ap dung thu
+    5. Noi dung
+      5.1 Mo ta giai phap moi hoac cai tien
+      5.2 Ve kha nang ap dung (pham vi ap dung) cua sang kien
+      5.3 Danh gia loi ich kinh te, xa hoi cua sang kien
 
     QUAN TRỌNG:
     - Chỉ viết dàn ý, không viết nội dung chi tiết.
@@ -535,7 +490,7 @@ export const PROMPTS = {
     - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
     ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
     ${getSectionSubstructureRule(sectionName)}
-    ${sectionName === SECTION_KEYS.CONTENT_RESULTS
+    ${sectionName === SECTION_KEYS.CONTENT
       ? `- Ưu tiên nêu rõ số liệu trước và sau áp dụng, minh chứng định lượng và định tính.`
       : ''}
   `,
@@ -645,6 +600,10 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
+
+
+
+
 
 
 
