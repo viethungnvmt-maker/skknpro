@@ -184,7 +184,7 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-14-r17';
+const APP_BUILD_TAG = '2026-03-14-r18';
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   const normalizedSections = remapSectionKeys(candidate.sections || {});
 
@@ -1775,7 +1775,7 @@ ${bodyHtml}
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SKKN_${activeInfo.title || 'export'}.docx`;
+      a.download = `SKKN_${activeInfo.title || 'export'}.doc`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error: any) {
@@ -1833,7 +1833,7 @@ ${bodyHtml}
             )}
             <div className="flex flex-wrap gap-3">
               <button onClick={() => { void handleNormalizeBeforeExport(); }} disabled={isLoading || !draftLengthMetrics.totalTargetWords} className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><Sparkles size={18} /> {'Chu\u1ea9n h\u00f3a to\u00e0n b\u00e0i'}</button>
-              <button onClick={() => { void exportToDocx(); }} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"><FileText size={18} /> {'T\u1ea3i xu\u1ed1ng SKKN (.docx)'}</button>
+              <button onClick={() => { void exportToDocx(); }} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"><FileText size={18} /> {'T\u1ea3i xu\u1ed1ng SKKN (.doc)'}</button>
               <button onClick={() => { void exportMarkdown(); }} disabled={isLoading} className="flex items-center gap-2 px-6 py-3 bg-slate-600 text-white rounded-xl font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><FileDown size={18} /> {'T\u1ea3i xu\u1ed1ng Markdown (.md)'}</button>
             </div>
           </div>
@@ -2224,6 +2224,8 @@ ${bodyHtml}
     </div>
   );
 }
+
+
 
 
 
