@@ -42,65 +42,65 @@ function cn(...inputs: ClassValue[]) {
 
 // Section names for writing steps
 const SECTION_MAP: { [key: number]: string } = {
-  2: 'PH?N M? Ð?U - I. Lý do ch?n d? tài',
-  3: 'PH?N M? Ð?U - II. M?c dích nghiên c?u',
-  4: 'PH?N M? Ð?U - III. Ð?i tu?ng nghiên c?u',
-  5: 'PH?N M? Ð?U - IV. Ð?i tu?ng kh?o sát th?c nghi?m',
-  6: 'PH?N M? Ð?U - V. Phuong pháp nghiên c?u',
-  7: 'PH?N M? Ð?U - VI. Ph?m vi và k? ho?ch nghiên c?u',
-  8: 'PH?N N?I DUNG - I. Co s? lý lu?n',
-  9: 'PH?N N?I DUNG - II. Th?c tr?ng',
-  10: 'PH?N N?I DUNG - III. Bi?n pháp th?c hi?n',
-  11: 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-  12: 'PH?N K?T LU?N - I. K?t lu?n chung',
-  13: 'PH?N K?T LU?N - II. Bài h?c kinh nghi?m',
-  14: 'PH?N K?T LU?N - III. Ð? xu?t - khuy?n ngh?',
-  15: 'PH? L?C',
+  2: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - I. L\u00fd do ch\u1ecdn \u0111\u1ec1 t\u00e0i',
+  3: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - II. M\u1ee5c \u0111\u00edch nghi\u00ean c\u1ee9u',
+  4: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - III. \u0110\u1ed1i t\u01b0\u1ee3ng nghi\u00ean c\u1ee9u',
+  5: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - IV. \u0110\u1ed1i t\u01b0\u1ee3ng kh\u1ea3o s\u00e1t th\u1ef1c nghi\u1ec7m',
+  6: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - V. Ph\u01b0\u01a1ng ph\u00e1p nghi\u00ean c\u1ee9u',
+  7: 'PH\u1ea6N M\u1ede \u0110\u1ea6U - VI. Ph\u1ea1m vi v\u00e0 k\u1ebf ho\u1ea1ch nghi\u00ean c\u1ee9u',
+  8: 'PH\u1ea6N N\u1ed8I DUNG - I. C\u01a1 s\u1edf l\u00fd lu\u1eadn',
+  9: 'PH\u1ea6N N\u1ed8I DUNG - II. Th\u1ef1c tr\u1ea1ng',
+  10: 'PH\u1ea6N N\u1ed8I DUNG - III. Bi\u1ec7n ph\u00e1p th\u1ef1c hi\u1ec7n',
+  11: 'PH\u1ea6N N\u1ed8I DUNG - IV. K\u1ebft qu\u1ea3 \u0111\u1ea1t \u0111\u01b0\u1ee3c',
+  12: 'PH\u1ea6N K\u1ebeT LU\u1eacN - I. K\u1ebft lu\u1eadn chung',
+  13: 'PH\u1ea6N K\u1ebeT LU\u1eacN - II. B\u00e0i h\u1ecdc kinh nghi\u1ec7m',
+  14: 'PH\u1ea6N K\u1ebeT LU\u1eacN - III. \u0110\u1ec1 xu\u1ea5t - khuy\u1ebfn ngh\u1ecb',
+  15: 'PH\u1ee4 L\u1ee4C',
 };
 
 const SECTION_ORDER = Object.values(SECTION_MAP);
 const SIDEBAR_SECTION_SUBITEMS: Record<number, string[]> = {
   8: [
-    '1. Gi?i thi?u v? ph?n m?m Logo',
-    '2. V? sao Logo ???c ??a v?o d?y trong tr??ng ti?u h?c',
-    '3. Khi h?c Logo h?c sinh ???c h?c v? c? th? l?m g?',
+    '1. Gi\u1edbi thi\u1ec7u v\u1ec1 ph\u1ea7n m\u1ec1m Logo',
+    '2. V\u00ec sao Logo \u0111\u01b0\u1ee3c \u0111\u01b0a v\u00e0o d\u1ea1y trong tr\u01b0\u1eddng ti\u1ec3u h\u1ecdc',
+    '3. Khi h\u1ecdc Logo h\u1ecdc sinh \u0111\u01b0\u1ee3c h\u1ecdc v\u00e0 c\u00f3 th\u1ec3 l\u00e0m g\u00ec',
   ],
   9: [
-    '1. Thu?n l?i v? kh? kh?n (1.1 Thu?n l?i, 1.2 Kh? kh?n)',
-    '2. Th?c tr?ng d?y - h?c ph?n m?m Logo ? tr??ng ti?u h?c',
+    '1. Thu\u1eadn l\u1ee3i v\u00e0 kh\u00f3 kh\u0103n (1.1 Thu\u1eadn l\u1ee3i, 1.2 Kh\u00f3 kh\u0103n)',
+    '2. Th\u1ef1c tr\u1ea1ng d\u1ea1y - h\u1ecdc ph\u1ea7n m\u1ec1m Logo \u1edf tr\u01b0\u1eddng ti\u1ec3u h\u1ecdc',
   ],
   10: [
-    '1. Gi?p h?c sinh ph?t hi?n v? kh?c ph?c l?i th??ng g?p',
-    '2. Gi?p h?c sinh n?m y?u c?u b?i t?p (2.1, 2.2)',
-    '3. Gi?p h?c sinh vi?t nhanh c?u l?nh l?p, th? t?c',
-    '4. Bi?u d??ng, kh?ch l? s? t?m t?i, s?ng t?o',
+    '1. Gi\u00fap h\u1ecdc sinh ph\u00e1t hi\u1ec7n v\u00e0 kh\u1eafc ph\u1ee5c l\u1ed7i th\u01b0\u1eddng g\u1eb7p',
+    '2. Gi\u00fap h\u1ecdc sinh n\u1eafm y\u00eau c\u1ea7u c\u1ee7a b\u00e0i t\u1eadp (2.1, 2.2)',
+    '3. Gi\u00fap h\u1ecdc sinh vi\u1ebft nhanh c\u00e2u l\u1ec7nh l\u1eb7p, th\u1ee7 t\u1ee5c',
+    '4. Bi\u1ec3u d\u01b0\u01a1ng, kh\u00edch l\u1ec7 s\u1ef1 t\u00ecm t\u00f2i, s\u00e1ng t\u1ea1o',
   ],
 };
 
 const SECTION_NAME_MIGRATION: Record<string, string> = {
-  'I.1. Tính c?p thi?t ph?i ti?n hành sáng ki?n': 'PH?N M? Ð?U - I. Lý do ch?n d? tài',
-  'I.2. M?c tiêu c?a d? tài, sáng ki?n': 'PH?N M? Ð?U - II. M?c dích nghiên c?u',
-  'I.3. Th?i gian, d?i tu?ng, ph?m vi nghiên c?u': 'PH?N M? Ð?U - III. Ð?i tu?ng nghiên c?u',
-  'II.1. Hi?n tr?ng v?n d?': 'PH?N N?I DUNG - II. Th?c tr?ng',
-  'II.2. Gi?i pháp th?c hi?n sáng ki?n': 'PH?N N?I DUNG - III. Bi?n pháp th?c hi?n',
-  'II.3. K?t qu? sau khi áp d?ng gi?i pháp sáng ki?n': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-  'II.4. Hi?u qu? c?a sáng ki?n': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-  'II.5. Tính kh? thi': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-  'II.6. Th?i gian th?c hi?n': 'PH?N M? Ð?U - VI. Ph?m vi và k? ho?ch nghiên c?u',
-  'II.7. Kinh phí th?c hi?n': 'PH?N N?I DUNG - III. Bi?n pháp th?c hi?n',
-  'III. Ki?n ngh?, d? xu?t': 'PH?N K?T LU?N - III. Ð? xu?t - khuy?n ngh?',
+  'I.1. Tính c?p thi?t ph?i ti?n hành sáng ki?n': SECTION_MAP[2],
+  'I.2. M?c tiêu c?a d? tài, sáng ki?n': SECTION_MAP[3],
+  'I.3. Th?i gian, d?i tu?ng, ph?m vi nghiên c?u': SECTION_MAP[4],
+  'II.1. Hi?n tr?ng v?n d?': SECTION_MAP[9],
+  'II.2. Gi?i pháp th?c hi?n sáng ki?n': SECTION_MAP[10],
+  'II.3. K?t qu? sau khi áp d?ng gi?i pháp sáng ki?n': SECTION_MAP[11],
+  'II.4. Hi?u qu? c?a sáng ki?n': SECTION_MAP[11],
+  'II.5. Tính kh? thi': SECTION_MAP[11],
+  'II.6. Th?i gian th?c hi?n': SECTION_MAP[7],
+  'II.7. Kinh phí th?c hi?n': SECTION_MAP[10],
+  'III. Ki?n ngh?, d? xu?t': SECTION_MAP[14],
 
-  'I.1. Lí do ch?n d? tài': 'PH?N M? Ð?U - I. Lý do ch?n d? tài',
-  'I.2. M?c dích nghiên c?u': 'PH?N M? Ð?U - II. M?c dích nghiên c?u',
-  'I.3. Ð?i tu?ng nghiên c?u': 'PH?N M? Ð?U - III. Ð?i tu?ng nghiên c?u',
-  'I.4. Ð?i tu?ng kh?o sát': 'PH?N M? Ð?U - IV. Ð?i tu?ng kh?o sát th?c nghi?m',
-  'I.5. Phuong pháp nghiên c?u': 'PH?N M? Ð?U - V. Phuong pháp nghiên c?u',
-  'I.6. Ph?m vi tri?n khai': 'PH?N M? Ð?U - VI. Ph?m vi và k? ho?ch nghiên c?u',
-  'II.1. Co s? lí lu?n': 'PH?N N?I DUNG - I. Co s? lý lu?n',
-  'II.2. Th?c tr?ng': 'PH?N N?I DUNG - II. Th?c tr?ng',
-  'II.3. Các bi?n pháp th?c hi?n sáng ki?n': 'PH?N N?I DUNG - III. Bi?n pháp th?c hi?n',
-  'II.4. Hi?u qu? d?t du?c sau khi áp d?ng sáng ki?n': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-  'III. K?t qu?': 'PH?N K?T LU?N - I. K?t lu?n chung',
+  'I.1. Lí do ch?n d? tài': SECTION_MAP[2],
+  'I.2. M?c dích nghiên c?u': SECTION_MAP[3],
+  'I.3. Ð?i tu?ng nghiên c?u': SECTION_MAP[4],
+  'I.4. Ð?i tu?ng kh?o sát': SECTION_MAP[5],
+  'I.5. Phuong pháp nghiên c?u': SECTION_MAP[6],
+  'I.6. Ph?m vi tri?n khai': SECTION_MAP[7],
+  'II.1. Co s? lí lu?n': SECTION_MAP[8],
+  'II.2. Th?c tr?ng': SECTION_MAP[9],
+  'II.3. Các bi?n pháp th?c hi?n sáng ki?n': SECTION_MAP[10],
+  'II.4. Hi?u qu? d?t du?c sau khi áp d?ng sáng ki?n': SECTION_MAP[11],
+  'III. K?t qu?': SECTION_MAP[12],
 };
 
 const remapSectionKeys = (sections: Record<string, string>) => Object.entries(sections || {}).reduce<Record<string, string>>((acc, [name, value]) => {
@@ -228,27 +228,27 @@ export default function App() {
         const parsed = JSON.parse(oldSaved);
         // Map old section names to new section names
         const sectionMigration: { [key: string]: string } = {
-          'I. Ð?t v?n d?': 'PH?N M? Ð?U - I. Lý do ch?n d? tài',
-          'II.1. Hi?n tr?ng v?n d?': 'PH?N N?I DUNG - II. Th?c tr?ng',
-          'II.2. Gi?i pháp th?c hi?n sáng ki?n': 'PH?N N?I DUNG - III. Bi?n pháp th?c hi?n',
-          'II.3. K?t qu? sau khi áp d?ng gi?i pháp sáng ki?n': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-          'II.4. Hi?u qu? c?a sáng ki?n': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-          'II.5. Tính kh? thi': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-          'II.6-7. Th?i gian & Kinh phí th?c hi?n': 'PH?N M? Ð?U - VI. Ph?m vi và k? ho?ch nghiên c?u',
-          'III. Ki?n ngh?, d? xu?t': 'PH?N K?T LU?N - III. Ð? xu?t - khuy?n ngh?',
+          'I. Ð?t v?n d?': SECTION_MAP[2],
+          'II.1. Hi?n tr?ng v?n d?': SECTION_MAP[9],
+          'II.2. Gi?i pháp th?c hi?n sáng ki?n': SECTION_MAP[10],
+          'II.3. K?t qu? sau khi áp d?ng gi?i pháp sáng ki?n': SECTION_MAP[11],
+          'II.4. Hi?u qu? c?a sáng ki?n': SECTION_MAP[11],
+          'II.5. Tính kh? thi': SECTION_MAP[11],
+          'II.6-7. Th?i gian & Kinh phí th?c hi?n': SECTION_MAP[7],
+          'III. Ki?n ngh?, d? xu?t': SECTION_MAP[14],
         };
         const legacyCurrentSections: { [key: string]: string } = {
-          'I.1. T?nh c?p thi?t ph?i ti?n h?nh s?ng ki?n': 'PH?N M? Ð?U - I. Lý do ch?n d? tài',
-          'I.2. M?c ti?u c?a d? t?i, s?ng ki?n': 'PH?N M? Ð?U - II. M?c dích nghiên c?u',
-          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi?n c?u': 'PH?N M? Ð?U - III. Ð?i tu?ng nghiên c?u',
-          'II.1. Hi?n tr?ng v?n d?': 'PH?N N?I DUNG - II. Th?c tr?ng',
-          'II.2. Gi?i ph?p th?c hi?n s?ng ki?n': 'PH?N N?I DUNG - III. Bi?n pháp th?c hi?n',
-          'II.3. K?t qu? sau khi ?p d?ng gi?i ph?p s?ng ki?n': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-          'II.4. Hi?u qu? c?a s?ng ki?n': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-          'II.5. T?nh kh? thi': 'PH?N N?I DUNG - IV. K?t qu? d?t du?c',
-          'II.6. Th?i gian th?c hi?n': 'PH?N M? Ð?U - VI. Ph?m vi và k? ho?ch nghiên c?u',
-          'II.7. Kinh ph? th?c hi?n': 'PH?N N?I DUNG - III. Bi?n pháp th?c hi?n',
-          'III. Ki?n ngh?, d? xu?t': 'PH?N K?T LU?N - III. Ð? xu?t - khuy?n ngh?',
+          'I.1. T?nh c?p thi?t ph?i ti?n h?nh s?ng ki?n': SECTION_MAP[2],
+          'I.2. M?c ti?u c?a d? t?i, s?ng ki?n': SECTION_MAP[3],
+          'I.3. Th?i gian, d?i tu?ng, ph?m vi nghi?n c?u': SECTION_MAP[4],
+          'II.1. Hi?n tr?ng v?n d?': SECTION_MAP[9],
+          'II.2. Gi?i ph?p th?c hi?n s?ng ki?n': SECTION_MAP[10],
+          'II.3. K?t qu? sau khi ?p d?ng gi?i ph?p s?ng ki?n': SECTION_MAP[11],
+          'II.4. Hi?u qu? c?a s?ng ki?n': SECTION_MAP[11],
+          'II.5. T?nh kh? thi': SECTION_MAP[11],
+          'II.6. Th?i gian th?c hi?n': SECTION_MAP[7],
+          'II.7. Kinh ph? th?c hi?n': SECTION_MAP[10],
+          'III. Ki?n ngh?, d? xu?t': SECTION_MAP[14],
         };
         const newSections: { [key: string]: string } = {};
         if (parsed.sections) {
@@ -1018,14 +1018,14 @@ ${finalResult.content}`;
                 type="text"
                 value={data.info.school}
                 onChange={(e) => handleUpdateInfo('school', e.target.value)}
-                placeholder="VD: Tru?ng THPT Nguy?n Du"
+                placeholder={`VD: Tr\u01b0\u1eddng THPT Nguy\u1ec5n Du`}
                 className="form-input"
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Ð?a di?m (Huy?n, T?nh) <span className="text-red-500">*</span>
+                {`\u0110\u1ecba \u0111i\u1ec3m (Huy\u1ec7n, T\u1ec9nh)`} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1033,7 +1033,7 @@ ${finalResult.content}`;
                   type="text"
                   value={data.info.location}
                   onChange={(e) => handleUpdateInfo('location', e.target.value)}
-                  placeholder="VD: Qu?n 1, TP.HCM"
+                  placeholder={`VD: Qu\u1eadn 1, TP.HCM`}
                   className="form-input-icon"
                 />
               </div>
@@ -1042,7 +1042,7 @@ ${finalResult.content}`;
 
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Ði?u ki?n CSVC (Tivi, Máy chi?u, WiFi...) <span className="text-red-500">*</span>
+              {`\u0110i\u1ec1u ki\u1ec7n CSVC (Tivi, M\u00e1y chi\u1ebfu, WiFi...)`} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <Monitor size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1050,7 +1050,7 @@ ${finalResult.content}`;
                 type="text"
                 value={data.info.facilities}
                 onChange={(e) => handleUpdateInfo('facilities', e.target.value)}
-                placeholder="VD: Phòng máy chi?u, Tivi thông minh, Internet ?n d?nh..."
+                placeholder={`VD: Ph\u00f2ng m\u00e1y chi\u1ebfu, Tivi th\u00f4ng minh, Internet \u1ed5n \u0111\u1ecbnh...`}
                 className="form-input-icon"
               />
             </div>
@@ -1059,9 +1059,9 @@ ${finalResult.content}`;
 
         <div className="content-card space-y-6">
           <h3 className="section-title">
-            2. Thông tin b? sung
+            {`2. Th\u00f4ng tin b\u1ed5 sung`}
             <span className="text-xs text-amber-500 font-normal ml-2 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
-              (Khuyên dùng d? tang chi ti?t)
+              {`(Khuy\u00ean d\u00f9ng \u0111\u1ec3 t\u0103ng chi ti\u1ebft)`}
             </span>
           </h3>
 
@@ -1074,21 +1074,21 @@ ${finalResult.content}`;
                   type="text"
                   value={data.info.textbook}
                   onChange={(e) => handleUpdateInfo('textbook', e.target.value)}
-                  placeholder="VD: K?t n?i tri th?c, Cánh di?u..."
+                  placeholder={`VD: K\u1ebft n\u1ed1i tri th\u1ee9c, C\u00e1nh di\u1ec1u...`}
                   className="form-input-icon"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Ð?i tu?ng nghiên c?u</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{`\u0110\u1ed1i t\u01b0\u1ee3ng nghi\u00ean c\u1ee9u`}</label>
               <div className="relative">
                 <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.target}
                   onChange={(e) => handleUpdateInfo('target', e.target.value)}
-                  placeholder="VD: 45 HS l?p 12A (th?c nghi?m)..."
+                  placeholder={`VD: 45 HS l\u1edbp 12A (th\u1ef1c nghi\u1ec7m)...`}
                   className="form-input-icon"
                 />
               </div>
@@ -1097,28 +1097,28 @@ ${finalResult.content}`;
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Th?i gian th?c hi?n</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{`Th\u1eddi gian th\u1ef1c hi\u1ec7n`}</label>
               <div className="relative">
                 <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.duration}
                   onChange={(e) => handleUpdateInfo('duration', e.target.value)}
-                  placeholder="VD: Nam h?c 2024-2025"
+                  placeholder={`VD: N\u0103m h\u1ecdc 2024-2025`}
                   className="form-input-icon"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">?ng d?ng AI/Công ngh?</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{`\u1ee8ng d\u1ee5ng AI/C\u00f4ng ngh\u1ec7`}</label>
               <div className="relative">
                 <Cpu size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={data.info.techUsed}
                   onChange={(e) => handleUpdateInfo('techUsed', e.target.value)}
-                  placeholder="VD: S? d?ng ChatGPT, Canva, Padlet..."
+                  placeholder={`VD: S\u1eed d\u1ee5ng ChatGPT, Canva, Padlet...`}
                   className="form-input-icon"
                 />
               </div>
@@ -1126,13 +1126,13 @@ ${finalResult.content}`;
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Ð?c thù / Tr?ng tâm d? tài</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{`\u0110\u1eb7c th\u00f9 / Tr\u1ecdng t\u00e2m \u0111\u1ec1 t\u00e0i`}</label>
             <div className="relative">
               <Target size={16} className="absolute left-3 top-3.5 text-slate-400" />
               <textarea
                 value={data.info.focus}
                 onChange={(e) => handleUpdateInfo('focus', e.target.value)}
-                placeholder="Mô t? ng?n g?n v? d?c thù ho?c tr?ng tâm c?a d? tài..."
+                placeholder={`M\u00f4 t\u1ea3 ng\u1eafn g\u1ecdn v\u1ec1 \u0111\u1eb7c th\u00f9 ho\u1eb7c tr\u1ecdng t\u00e2m c\u1ee7a \u0111\u1ec1 t\u00e0i...`}
                 rows={2}
                 className="form-input-icon resize-none"
               />
@@ -1142,8 +1142,8 @@ ${finalResult.content}`;
 
         <div className="content-card space-y-6">
           <h3 className="section-title">
-            4. Yêu c?u khác
-            <span className="text-xs text-slate-400 font-normal ml-2">(Tùy ch?n - AI s? tuân th? nghiêm ng?t)</span>
+            {`4. Y\u00eau c\u1ea7u kh\u00e1c`}
+            <span className="text-xs text-slate-400 font-normal ml-2">{`(T\u00f9y ch\u1ecdn - AI s\u1ebd tu\u00e2n th\u1ee7 nghi\u00eam ng\u1eb7t)`}</span>
           </h3>
 
           <div className="space-y-4">
@@ -1155,8 +1155,8 @@ ${finalResult.content}`;
                 className="mt-1 w-4 h-4 rounded border-amber-300 text-amber-500 focus:ring-amber-200"
               />
               <span className="text-sm">
-                <span className="font-bold text-amber-600">?? Thêm nhi?u</span>{' '}
-                <span className="font-bold text-amber-600">bài toán th?c t?, ví d? minh h?a</span>
+                <span className="font-bold text-amber-600">{`\uD83D\uDCCA Th\u00eam nhi\u1ec1u`}</span>{' '}
+                <span className="font-bold text-amber-600">{`b\u00e0i to\u00e1n th\u1ef1c t\u1ebf, v\u00ed d\u1ee5 minh h\u1ecda`}</span>
               </span>
             </label>
 
@@ -1168,13 +1168,13 @@ ${finalResult.content}`;
                 className="mt-1 w-4 h-4 rounded border-purple-300 text-purple-500 focus:ring-purple-200"
               />
               <span className="text-sm">
-                <span className="font-bold text-purple-600">?? B? sung</span>{' '}
-                <span className="font-bold text-purple-600">b?ng bi?u, s? li?u th?ng kê</span>
+                <span className="font-bold text-purple-600">{`\uD83D\uDCC8 B\u1ed5 sung`}</span>{' '}
+                <span className="font-bold text-purple-600">{`b\u1ea3ng bi\u1ec3u, s\u1ed1 li\u1ec7u th\u1ed1ng k\u00ea`}</span>
               </span>
             </label>
 
             <div className="flex items-center gap-3 bg-purple-50 dark:bg-purple-900/10 rounded-xl p-3">
-              <span className="text-sm text-purple-700 dark:text-purple-300">?? S? trang SKKN c?n gi?i h?n:</span>
+              <span className="text-sm text-purple-700 dark:text-purple-300">{`\uD83D\uDCC4 S\u1ed1 trang SKKN c\u1ea7n gi\u1edbi h\u1ea1n:`}</span>
               <input
                 type="number"
                 min="1"
@@ -1185,15 +1185,15 @@ ${finalResult.content}`;
                 disabled={hasLockedSession}
                 className="w-24 px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-purple-200 disabled:opacity-60 disabled:cursor-not-allowed"
               />
-              <span className="text-xs text-slate-400">(Ð? tr?ng n?u không gi?i h?n)</span>
+              <span className="text-xs text-slate-400">{`(\u0110\u1ec3 tr\u1ed1ng n\u1ebfu kh\u00f4ng gi\u1edbi h\u1ea1n)`}</span>
             </div>
 
             {hasLockedSession && (
               <div className="hint-box">
                 <p>
-                  Ðã khóa toàn b? c?u hình phiên vi?t hi?n t?i
-                  {data.lockedPageLimit ? `, trong dó s? trang du?c ch?t ? m?c ${data.lockedPageLimit} trang.` : '.'}
-                  {' '}Các checkbox, yêu c?u b? sung và thông tin mô t? s? gi? nguyên cho d?n khi b?n m? khóa.
+                  {`\u0110\u00e3 kh\u00f3a to\u00e0n b\u1ed9 c\u1ea5u h\u00ecnh phi\u00ean vi\u1ebft hi\u1ec7n t\u1ea1i`}
+                  {data.lockedPageLimit ? `, trong \u0111\u00f3 s\u1ed1 trang \u0111\u01b0\u1ee3c ch\u1ed1t \u1edf m\u1ee9c ${data.lockedPageLimit} trang.` : '.'}
+                  {' '}{`C\u00e1c checkbox, y\u00eau c\u1ea7u b\u1ed5 sung v\u00e0 th\u00f4ng tin m\u00f4 t\u1ea3 s\u1ebd gi\u1eef nguy\u00ean cho \u0111\u1ebfn khi b\u1ea1n m\u1edf kh\u00f3a.`}
                 </p>
               </div>
             )}
@@ -1202,8 +1202,8 @@ ${finalResult.content}`;
               <div className="info-box space-y-2">
                 <p className="font-semibold">
                   {hasLockedSession
-                    ? `Phân b? dã khóa cho lu?t vi?t hi?n t?i (${activePageLimitLabel} trang)`
-                    : `Phân b? d? dài d? ki?n theo gi?i h?n ${activePageLimitLabel} trang`}
+                    ? `Ph\u00e2n b\u1ed5 \u0111\u00e3 kh\u00f3a cho l\u01b0\u1ee3t vi\u1ebft hi\u1ec7n t\u1ea1i (${activePageLimitLabel} trang)`
+                    : `Ph\u00e2n b\u1ed5 \u0111\u1ed9 d\u00e0i d\u1ef1 ki\u1ebfn theo gi\u1edbi h\u1ea1n ${activePageLimitLabel} trang`}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                   {sectionLengthPlans.map((plan) => (
@@ -1212,28 +1212,28 @@ ${finalResult.content}`;
                       className="flex items-start justify-between gap-3 rounded-lg bg-white/70 dark:bg-slate-900/30 px-3 py-2"
                     >
                       <span className="leading-relaxed">{plan.sectionName}</span>
-                      <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} t?)</span>
+                      <span className="font-semibold whitespace-nowrap">~{plan.targetPagesLabel} trang ({plan.targetWords} {`t\u1eeb`})</span>
                     </div>
                   ))}
                 </div>
                 <p className="text-xs opacity-80">
                   {hasLockedSession
-                    ? 'M?i l?n vi?t ti?p theo s? dùng dúng snapshot này, bao g?m checkbox và yêu c?u b? sung, cho d?n khi b?n m? khóa.'
-                    : 'App s? dùng phân b? này khi g?i AI và t? biên t?p l?i n?u m?c nào l?ch quá xa kh?i m?c dã chia.'}
+                    ? `M\u1ed7i l\u1ea7n vi\u1ebft ti\u1ebfp theo s\u1ebd d\u00f9ng \u0111\u00fang snapshot n\u00e0y, bao g\u1ed3m checkbox v\u00e0 y\u00eau c\u1ea7u b\u1ed5 sung, cho \u0111\u1ebfn khi b\u1ea1n m\u1edf kh\u00f3a.`
+                    : `App s\u1ebd d\u00f9ng ph\u00e2n b\u1ed5 n\u00e0y khi g\u1ecdi AI v\u00e0 t\u1ef1 bi\u00ean t\u1eadp l\u1ea1i n\u1ebfu m\u1ee5c n\u00e0o l\u1ec7ch qu\u00e1 xa kh\u1ecfi m\u1ee9c \u0111\u00e3 chia.`}
                 </p>
               </div>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">??? Yêu c?u b? sung khác (tùy ý):</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{`Y\u00eau c\u1ea7u b\u1ed5 sung kh\u00e1c (t\u00f9y \u00fd):`}</label>
             <textarea
               value={data.info.customRequirements}
               onChange={(e) => handleUpdateInfo('customRequirements', e.target.value)}
-              placeholder={`Nh?p các yêu c?u d?c bi?t khác c?a b?n. Ví d?:
-• Vi?t ng?n g?n ph?n co s? lý lu?n (kho?ng 3 trang)
-• T?p trung vào gi?i pháp ?ng d?ng AI
-• Vi?t theo phong cách h?c thu?t nghiêm túc...`}
+              placeholder={`Nh\u1eadp c\u00e1c y\u00eau c\u1ea7u \u0111\u1eb7c bi\u1ec7t kh\u00e1c c\u1ee7a b\u1ea1n. V\u00ed d\u1ee5:
+• Vi\u1ebft ng\u1eafn g\u1ecdn ph\u1ea7n c\u01a1 s\u1edf l\u00fd lu\u1eadn (kho\u1ea3ng 3 trang)
+• T\u1eadp trung v\u00e0o gi\u1ea3i ph\u00e1p \u1ee9ng d\u1ee5ng AI
+• Vi\u1ebft theo phong c\u00e1ch h\u1ecdc thu\u1eadt nghi\u00eam t\u00fac...`}
               rows={4}
               className="form-input resize-none"
             />
@@ -1244,44 +1244,44 @@ ${finalResult.content}`;
       <button onClick={confirmRequirements} className={hasLockedSession ? 'btn-confirmed' : 'btn-confirm'}>
         {hasLockedSession ? (
           <span className="flex items-center justify-center gap-2">
-            <CheckCircle2 size={18} /> ? Ðã khóa phiên vi?t - B?m d? m? khóa và s?a l?i
+            <CheckCircle2 size={18} /> {`\u0110\u00e3 kh\u00f3a phi\u00ean vi\u1ebft - B\u1ea5m \u0111\u1ec3 m\u1edf kh\u00f3a v\u00e0 s\u1eeda l\u1ea1i`}
           </span>
         ) : (
           <span className="flex items-center justify-center gap-2">
-            <Save size={18} /> ?? Xác nh?n luu các yêu c?u này
+            <Save size={18} /> {`X\u00e1c nh\u1eadn l\u01b0u c\u00e1c y\u00eau c\u1ea7u n\u00e0y`}
           </span>
         )}
       </button>
 
       {hasLockedSession && (
         <p className="text-center text-xs text-green-600 dark:text-green-400">
-          ? Các yêu c?u dã du?c luu! AI s? tuân th? NGHIÊM NG?T khi vi?t SKKN.
+          {`C\u00e1c y\u00eau c\u1ea7u \u0111\u00e3 \u0111\u01b0\u1ee3c l\u01b0u! AI s\u1ebd tu\u00e2n th\u1ee7 NGHI\u00caM NG\u1eb6T khi vi\u1ebft SKKN.`}
         </p>
       )}
 
       <div className="content-card space-y-5">
-        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 italic">Tùy ch?n kh?i t?o</h3>
+        <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 italic">{`T\u00f9y ch\u1ecdn kh\u1edfi t\u1ea1o`}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => { goToStep(1); }}
             className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-primary text-primary font-semibold hover:bg-primary/5 transition-all"
           >
-            <Sparkles size={18} /> AI L?p Dàn Ý Chi Ti?t
+            <Sparkles size={18} /> {`AI L\u1eadp D\u00e0n \u00dd Chi Ti\u1ebft`}
           </button>
           <button className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-            <FileText size={18} /> S? D?ng Dàn Ý Có S?n
+            <FileText size={18} /> {`S\u1eed D\u1ee5ng D\u00e0n \u00dd C\u00f3 S\u1eb5n`}
           </button>
         </div>
         <div className="info-box flex items-start gap-2">
           <Sparkles size={16} className="mt-0.5 flex-shrink-0" />
-          <p>H? th?ng AI s? t? d?ng phân tích d? tài và t?o ra dàn ý chi ti?t g?m 6 ph?n chu?n B? GD&amp;ÐT. B?n có th? ch?nh s?a l?i sau khi t?o xong.</p>
+          <p>{`H\u1ec7 th\u1ed1ng AI s\u1ebd t\u1ef1 \u0111\u1ed9ng ph\u00e2n t\u00edch \u0111\u1ec1 t\u00e0i v\u00e0 t\u1ea1o ra d\u00e0n \u00fd chi ti\u1ebft g\u1ed3m 6 ph\u1ea7n chu\u1ea9n B\u1ed9 GD&\u0110T. B\u1ea1n c\u00f3 th\u1ec3 ch\u1ec9nh s\u1eeda l\u1ea1i sau khi t\u1ea1o xong.`}</p>
         </div>
         <button
           onClick={() => { goToStep(1); generateOutline(); }}
           disabled={!data.info.title || isLoading}
           className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          ?? B?t d?u l?p dàn ý ngay
+          {`B\u1eaft \u0111\u1ea7u l\u1eadp d\u00e0n \u00fd ngay`}
         </button>
       </div>
     </div>
@@ -1289,8 +1289,8 @@ ${finalResult.content}`;
   const renderOutlineStep = () => (
     <div className="space-y-6">
       <div className="banner-header">
-        <h2 className="text-2xl font-bold">L?p Dàn Ý SKKN</h2>
-        <p className="text-white/80 mt-1">Xây d?ng khung su?n chi ti?t cho Sáng ki?n kinh nghi?m</p>
+        <h2 className="text-2xl font-bold">{`L\u1eadp D\u00e0n \u00dd SKKN`}</h2>
+        <p className="text-white/80 mt-1">{`X\u00e2y d\u1ef1ng khung s\u01b0\u1eddn chi ti\u1ebft cho S\u00e1ng ki\u1ebfn kinh nghi\u1ec7m`}</p>
       </div>
 
       {data.outline ? (
@@ -1299,17 +1299,17 @@ ${finalResult.content}`;
             <div className="dot bg-red-400" />
             <div className="dot bg-amber-400" />
             <div className="dot bg-green-400" />
-            <span className="ml-2 text-xs text-slate-500">?? B?n th?o SKKN.docx</span>
+            <span className="ml-2 text-xs text-slate-500">{`\uD83D\uDCC4 B\u1ea3n th\u1ea3o SKKN.docx`}</span>
           </div>
           <div className="bg-white dark:bg-slate-800 p-6 rounded-b-xl border border-slate-100 dark:border-slate-700 min-h-[400px]">
             <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(data.outline) }} />
           </div>
           <div className="flex gap-3 flex-wrap">
-            <button onClick={generateOutline} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-primary-dark transition-colors"><Sparkles size={14} /> T?o l?i dàn ý</button>
-            <button onClick={() => goToStep(2)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Ti?p t?c vi?t n?i dung <ChevronRight size={14} /></button>
+            <button onClick={generateOutline} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-primary-dark transition-colors"><Sparkles size={14} /> {`T\u1ea1o l\u1ea1i d\u00e0n \u00fd`}</button>
+            <button onClick={() => goToStep(2)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">{`Ti\u1ebfp t\u1ee5c vi\u1ebft n\u1ed9i dung`} <ChevronRight size={14} /></button>
           </div>
           <details className="mt-4">
-            <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary transition-colors">?? Ch?nh s?a dàn ý (Markdown)</summary>
+            <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary transition-colors">{`Ch\u1ec9nh s\u1eeda d\u00e0n \u00fd (Markdown)`}</summary>
             <textarea value={data.outline} onChange={(e) => setData(prev => ({ ...prev, outline: e.target.value }))} className="w-full mt-2 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 outline-none font-mono text-sm resize-none min-h-[300px]" />
           </details>
         </div>
@@ -1317,10 +1317,10 @@ ${finalResult.content}`;
         <div className="content-card flex flex-col items-center justify-center py-16 space-y-4 text-center">
           <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"><Layout size={40} /></div>
           <div>
-            <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">Chua có dàn ý</p>
-            <p className="text-sm text-slate-400 mt-1">Nh?n nút bên du?i d? AI t?o dàn ý chi ti?t</p>
+            <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">{`Ch\u01b0a c\u00f3 d\u00e0n \u00fd`}</p>
+            <p className="text-sm text-slate-400 mt-1">{`Nh\u1ea5n n\u00fat b\u00ean d\u01b0\u1edbi \u0111\u1ec3 AI t\u1ea1o d\u00e0n \u00fd chi ti\u1ebft`}</p>
           </div>
-          <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '? Ðang t?o dàn ý...' : '?? T?o dàn ý b?ng AI'}</button>
+          <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? `\u0110ang t\u1ea1o d\u00e0n \u00fd...` : `T\u1ea1o d\u00e0n \u00fd b\u1eb1ng AI`}</button>
         </div>
       )}
     </div>
@@ -1345,19 +1345,19 @@ ${finalResult.content}`;
                 <div className="dot bg-red-400" />
                 <div className="dot bg-amber-400" />
                 <div className="dot bg-green-400" />
-                <span className="ml-2 text-xs text-slate-500">?? {sectionName}</span>
+                <span className="ml-2 text-xs text-slate-500">{`\uD83D\uDCC4 `}{sectionName}</span>
               </div>
               <div className="bg-white dark:bg-slate-800 p-6 rounded-b-xl border border-slate-100 dark:border-slate-700 min-h-[300px]">
                 <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }} />
               </div>
               <div className="flex gap-3 flex-wrap">
-                <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50"><Sparkles size={14} /> Vi?t l?i b?ng AI</button>
+                <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50"><Sparkles size={14} /> {`Vi\u1ebft l\u1ea1i b\u1eb1ng AI`}</button>
                 {stepId < 16 && (
-                  <button onClick={() => goToStep(stepId + 1)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Ti?p t?c <ChevronRight size={14} /></button>
+                  <button onClick={() => goToStep(stepId + 1)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">{`Ti\u1ebfp t\u1ee5c`} <ChevronRight size={14} /></button>
                 )}
               </div>
               <details className="mt-2">
-                <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary">?? Ch?nh s?a n?i dung</summary>
+                <summary className="text-sm text-slate-500 cursor-pointer hover:text-primary">{`Ch\u1ec9nh s\u1eeda n\u1ed9i dung`}</summary>
                 <textarea value={content} onChange={(e) => setData(prev => ({ ...prev, sections: { ...prev.sections, [sectionName]: e.target.value } }))} className="w-full mt-2 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm resize-none min-h-[300px] outline-none" />
               </details>
             </>
@@ -1365,11 +1365,11 @@ ${finalResult.content}`;
             <div className="flex flex-col items-center justify-center py-16 space-y-4 text-center">
               <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"><PenTool size={40} /></div>
               <div>
-                <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">Chua có n?i dung</p>
-                <p className="text-sm text-slate-400 mt-1">Nh?n nút bên du?i d? AI vi?t ph?n này</p>
+                <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">{`Ch\u01b0a c\u00f3 n\u1ed9i dung`}</p>
+                <p className="text-sm text-slate-400 mt-1">{`Nh\u1ea5n n\u00fat b\u00ean d\u01b0\u1edbi \u0111\u1ec3 AI vi\u1ebft ph\u1ea7n n\u00e0y`}</p>
               </div>
-              <div className="info-box max-w-md text-left"><p>?? AI s? d?a trên dàn ý dã t?o d? vi?t n?i dung chi ti?t cho ph?n <strong>{sectionName}</strong>.</p></div>
-              <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '? Ðang vi?t...' : `?? AI vi?t "${STEPS[stepId].title}"`}</button>
+              <div className="info-box max-w-md text-left"><p>{`AI s\u1ebd d\u1ef1a tr\u00ean d\u00e0n \u00fd \u0111\u00e3 t\u1ea1o \u0111\u1ec3 vi\u1ebft n\u1ed9i dung chi ti\u1ebft cho ph\u1ea7n `}<strong>{sectionName}</strong>.</p></div>
+              <button onClick={() => generateSection(sectionName)} disabled={isLoading} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? `\u0110ang vi\u1ebft...` : `AI vi\u1ebft "${STEPS[stepId].title}"`}</button>
             </div>
           )}
         </div>
@@ -1800,11 +1800,11 @@ ${bodyHtml}
     return (
       <div className="space-y-6">
         <div className="banner-header">
-          <h2 className="text-2xl font-bold">Xu?t SKKN</h2>
-          <p className="text-white/80 mt-1">T?ng h?p và xu?t file hoàn ch?nh</p>
+          <h2 className="text-2xl font-bold">{`Xu\u1ea5t SKKN`}</h2>
+          <p className="text-white/80 mt-1">{`T\u1ed5ng h\u1ee3p v\u00e0 xu\u1ea5t file ho\u00e0n ch\u1ec9nh`}</p>
         </div>
         <div className="content-card space-y-5">
-          <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">?? Ti?n d? hoàn thành</h3>
+          <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">{`Ti\u1ebfn \u0111\u1ed9 ho\u00e0n th\u00e0nh`}</h3>
           <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} /></div>
           <p className="text-sm text-slate-500">{completedSections.length}/{totalSections} ph?n dã hoàn thành ({progress}%)</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1821,14 +1821,14 @@ ${bodyHtml}
         </div>
         {completedSections.length === totalSections && (
           <div className="content-card space-y-4">
-            <h3 className="font-bold text-lg text-green-600 dark:text-green-400">?? SKKN dã hoàn thành!</h3>
-            <p className="text-sm text-slate-500">T?t c? các ph?n dã du?c vi?t xong. B?n có th? xem l?i t?ng ph?n ho?c xu?t file.</p>
+            <h3 className="font-bold text-lg text-green-600 dark:text-green-400">{`SKKN \u0111\u00e3 ho\u00e0n th\u00e0nh!`}</h3>
+            <p className="text-sm text-slate-500">{`T\u1ea5t c\u1ea3 c\u00e1c ph\u1ea7n \u0111\u00e3 \u0111\u01b0\u1ee3c vi\u1ebft xong. B\u1ea1n c\u00f3 th\u1ec3 xem l\u1ea1i t\u1eebng ph\u1ea7n ho\u1eb7c xu\u1ea5t file.`}</p>
             {draftLengthMetrics.totalTargetWords > 0 && (
               <div className="info-box space-y-2">
-                <p className="font-semibold">Chu?n hóa t?ng d? dài tru?c khi xu?t</p>
-                <p>T?ng hi?n t?i kho?ng {draftLengthMetrics.totalActualWords} t? (~{draftLengthMetrics.totalActualPages} trang), m?c tiêu kho?ng {draftLengthMetrics.totalTargetWords} t? (~{draftLengthMetrics.totalTargetPages} trang).</p>
+                <p className="font-semibold">{`Chu\u1ea9n h\u00f3a t\u1ed5ng \u0111\u1ed9 d\u00e0i tr\u01b0\u1edbc khi xu\u1ea5t`}</p>
+                <p>{`T\u1ed5ng hi\u1ec7n t\u1ea1i kho\u1ea3ng `}{draftLengthMetrics.totalActualWords}{` t\u1eeb (~`}{draftLengthMetrics.totalActualPages}{` trang), m\u1ee5c ti\u00eau kho\u1ea3ng `}{draftLengthMetrics.totalTargetWords}{` t\u1eeb (~`}{draftLengthMetrics.totalTargetPages}{` trang).`}</p>
                 <p>{draftDeltaLabel}</p>
-                <p className="text-xs opacity-80">Nút t?i xu?ng s? xu?t ngay theo n?i dung hi?n t?i, không ch? AI. N?u c?n cân l?i d? dài, hãy b?m "Chu?n hóa toàn bài" tru?c.</p>
+                <p className="text-xs opacity-80">{`N\u00fat t\u1ea3i xu\u1ed1ng s\u1ebd xu\u1ea5t ngay theo n\u1ed9i dung hi\u1ec7n t\u1ea1i, kh\u00f4ng ch\u1edd AI. N\u1ebfu c\u1ea7n c\u00e2n l\u1ea1i \u0111\u1ed9 d\u00e0i, h\u00e3y b\u1ea5m \"Chu\u1ea9n h\u00f3a to\u00e0n b\u00e0i\" tr\u01b0\u1edbc.`}</p>
               </div>
             )}
             <div className="flex flex-wrap gap-3">
@@ -1873,7 +1873,7 @@ ${bodyHtml}
             <Sparkles size={22} className="text-primary" />
             <h1 className="font-bold text-lg text-primary">Viethung</h1>
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Tr? lí vi?t SKKN thông minh • build {APP_BUILD_TAG}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">{`Tr\u1ee3 l\u00ed vi\u1ebft SKKN th\u00f4ng minh`} • build {APP_BUILD_TAG}</p>
         </div>
 
         {/* Step Navigation */}
@@ -1995,8 +1995,8 @@ ${bodyHtml}
           <div className="absolute inset-0 bg-white/60 dark:bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center">
             <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-4 max-w-xs">
               <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="font-bold text-slate-700 dark:text-slate-200">Ðang ch? n?i dung t? chuyên gia AI...</p>
-              <p className="text-xs text-slate-400 text-center">Quá trình này có th? m?t 30-60 giây tùy thu?c vào d? ph?c t?p</p>
+              <p className="font-bold text-slate-700 dark:text-slate-200">{`\u0110ang ch\u1edd n\u1ed9i dung t\u1eeb chuy\u00ean gia AI...`}</p>
+              <p className="text-xs text-slate-400 text-center">{`Qu\u00e1 tr\u00ecnh n\u00e0y c\u00f3 th\u1ec3 m\u1ea5t 30-60 gi\u00e2y t\u00f9y thu\u1ed9c v\u00e0o \u0111\u1ed9 ph\u1ee9c t\u1ea1p`}</p>
             </div>
           </div>
         )}
@@ -2052,21 +2052,21 @@ ${bodyHtml}
                   </div>
                 </div>
                 <p className="text-xs italic text-amber-600 dark:text-amber-400">
-                  ?? N?u model dang ch?n h?t lu?t ho?c quá t?i, h? th?ng s? t? chuy?n model khác và áp d?ng t? l?n b?m ti?p theo d? ti?t ki?m quota.
+                  {`N\u1ebfu model \u0111ang ch\u1ecdn h\u1ebft l\u01b0\u1ee3t ho\u1eb7c qu\u00e1 t\u1ea3i, h\u1ec7 th\u1ed1ng s\u1ebd t\u1ef1 chuy\u1ec3n model kh\u00e1c v\u00e0 \u00e1p d\u1ee5ng t\u1eeb l\u1ea7n b\u1ea5m ti\u1ebfp theo \u0111\u1ec3 ti\u1ebft ki\u1ec7m quota.`}
                 </p>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">?? API Key</label>
+                  <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">{`API Key`}</label>
                   <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="Nh?p Gemini API Key (AIza...)" className="form-input" />
                 </div>
                 <div className="hint-box space-y-1">
-                  <p className="font-semibold text-xs">?? Hu?ng d?n l?y Gemini API Key:</p>
+                  <p className="font-semibold text-xs">{`H\u01b0\u1edbng d\u1eabn l\u1ea5y Gemini API Key:`}</p>
                   <ol className="text-xs space-y-0.5 list-decimal list-inside">
                     <li>Truy c?p Google AI Studio</li>
                     <li>Ðang nh?p tài kho?n Google</li>
                     <li>Vào m?c API Keys và nh?n "Create API key"</li>
                     <li>Copy key và dán vào ô trên</li>
                   </ol>
-                  <a href="https://aistudio.google.com/app/apikey" target="_blank" className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold hover:underline mt-1">?? M? trang API Keys</a>
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold hover:underline mt-1">{`M\u1edf trang API Keys`}</a>
                 </div>
                 <button onClick={saveApiKey} className="btn-primary">Luu c?u hình</button>
               </div>
@@ -2126,7 +2126,7 @@ ${bodyHtml}
                     <div className="bg-slate-800 rounded-xl p-5">
                       <p className="text-sm text-slate-400 mb-2">M?c d? trùng l?p</p>
                       <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-bold mb-2 ${getOverlapColor(analysisResult.overlap?.level)}`}>
-                        ?? {analysisResult.overlap?.level}
+                        {analysisResult.overlap?.level}
                       </div>
                       <p className="text-xs text-slate-400 leading-relaxed">{analysisResult.overlap?.explanation}</p>
                     </div>
@@ -2134,7 +2134,7 @@ ${bodyHtml}
 
                   {/* Detailed Scores */}
                   <div className="bg-slate-800 rounded-xl p-5 space-y-4">
-                    <h4 className="font-bold flex items-center gap-2">?? Chi ti?t di?m s?</h4>
+                    <h4 className="font-bold flex items-center gap-2">{`Chi ti\u1ebft \u0111i\u1ec3m s\u1ed1`}</h4>
                     {analysisResult.criteria?.map((c: any, i: number) => (
                       <div key={i}>
                         <div className="flex items-center justify-between mb-1">
@@ -2155,7 +2155,7 @@ ${bodyHtml}
                   {/* Title Structure */}
                   {analysisResult.structure && (
                     <div className="bg-slate-800 rounded-xl p-5">
-                      <h4 className="font-bold mb-3 flex items-center gap-2">?? C?u trúc tên d? tài</h4>
+                      <h4 className="font-bold mb-3 flex items-center gap-2">{`C\u1ea5u tr\u00fac t\u00ean \u0111\u1ec1 t\u00e0i`}</h4>
                       <div className="grid grid-cols-5 gap-2">
                         {[
                           { label: 'Hành d?ng', value: analysisResult.structure.action },
@@ -2176,7 +2176,7 @@ ${bodyHtml}
                   {/* Issues */}
                   {analysisResult.issues && analysisResult.issues.length > 0 && (
                     <div className="bg-amber-900/30 border border-amber-700/40 rounded-xl p-5">
-                      <h4 className="font-bold text-amber-400 mb-2 flex items-center gap-2">?? V?n d? c?n kh?c ph?c ({analysisResult.issues.length})</h4>
+                      <h4 className="font-bold text-amber-400 mb-2 flex items-center gap-2">{`V\u1ea5n \u0111\u1ec1 c\u1ea7n kh\u1eafc ph\u1ee5c`} ({analysisResult.issues.length})</h4>
                       <ul className="space-y-2">
                         {analysisResult.issues.map((issue: string, i: number) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
@@ -2224,6 +2224,12 @@ ${bodyHtml}
     </div>
   );
 }
+
+
+
+
+
+
 
 
 
