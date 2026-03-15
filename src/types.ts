@@ -15,6 +15,10 @@
   pageLimit: string; // Số trang giới hạn
   extraExamples: boolean; // Thêm bài toán thực tế
   extraTables: boolean; // Bổ sung bảng biểu
+  referenceDocName: string; // Tên file tài liệu tham khảo đã tải lên
+  referenceDocContent: string; // Nội dung tài liệu tham khảo (plain text)
+  templateDocName: string; // Tên file mẫu sáng kiến đã tải lên
+  templateDocContent: string; // Nội dung mẫu sáng kiến (plain text)
 }
 
 export interface LockedLengthPlan {
@@ -56,6 +60,10 @@ export const INITIAL_DATA: SKKNData = {
     pageLimit: '',
     extraExamples: false,
     extraTables: false,
+    referenceDocName: '',
+    referenceDocContent: '',
+    templateDocName: '',
+    templateDocContent: '',
   },
   outline: '',
   sections: {},

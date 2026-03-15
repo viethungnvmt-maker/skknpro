@@ -26,7 +26,8 @@ import {
   Target,
   Pencil,
   School,
-  GraduationCap
+  GraduationCap,
+  Upload
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { marked } from 'marked';
@@ -129,6 +130,62 @@ const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
 const APP_BUILD_TAG = '2026-03-13-r6';
+const SUPPORTED_TEXT_EXTENSIONS = ['txt', 'md', 'markdown', 'rtf', 'csv', 'json', 'html', 'htm'];
+const UPLOAD_ACCEPT_ATTR = SUPPORTED_TEXT_EXTENSIONS.map((ext) => `.${ext}`).join(',');
+const MAX_REFERENCE_DOC_CHARS = 18000;
+const MAX_TEMPLATE_DOC_CHARS = 30000;
+
+const getFileExtension = (fileName: string) => {
+  const parts = fileName.toLowerCase().split('.');
+  return parts.length > 1 ? parts[parts.length - 1] : '';
+};
+
+const sanitizeUploadedText = (rawText: string) => rawText
+  .replace(/\u0000/g, ' ')
+  .replace(/\r\n/g, '\n')
+  .replace(/\r/g, '\n')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim();
+
+const isLikelyReadableText = (text: string) => {
+  if (!text.trim()) return false;
+
+  const sample = text.slice(0, 2000);
+  if (!sample) return false;
+
+  const controlCount = (sample.match(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g) || []).length;
+  const replacementCount = (sample.match(/\uFFFD/g) || []).length;
+  const suspiciousRatio = (controlCount + replacementCount) / sample.length;
+
+  return suspiciousRatio < 0.08;
+};
+
+const readTextFromUploadedFile = async (file: File, maxChars: number) => {
+  const extension = getFileExtension(file.name);
+  if (!SUPPORTED_TEXT_EXTENSIONS.includes(extension)) {
+    throw new Error(`Định dạng ".${extension || 'không xác định'}" chưa hỗ trợ. Vui lòng dùng tệp văn bản (${SUPPORTED_TEXT_EXTENSIONS.join(', ')}).`);
+  }
+
+  const raw = await file.text();
+  const normalized = sanitizeUploadedText(raw);
+
+  if (!normalized) {
+    throw new Error('Không đọc được nội dung từ tệp đã chọn.');
+  }
+
+  if (!isLikelyReadableText(normalized)) {
+    throw new Error('Nội dung tệp không phải văn bản thuần hoặc bị lỗi mã hóa. Vui lòng chuyển sang .txt/.md rồi tải lại.');
+  }
+
+  const clipped = normalized.length > maxChars;
+  const content = clipped ? `${normalized.slice(0, maxChars).trim()}\n\n[... nội dung đã được rút gọn để tối ưu xử lý ...]` : normalized;
+
+  return {
+    content,
+    clipped,
+  };
+};
+
 const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
   if (!candidate.confirmedRequirements) {
     return {
@@ -365,6 +422,88 @@ export default function App() {
         info: { ...prev.info, [field]: value }
       };
     });
+  };
+
+  const updateInfoFields = (payload: Partial<SKKNData['info']>) => {
+    setData((prev) => {
+      if (prev.confirmedRequirements) return prev;
+
+      return {
+        ...prev,
+        info: { ...prev.info, ...payload },
+      };
+    });
+  };
+
+  const clearUploadedFile = (target: 'reference' | 'template') => {
+    if (target === 'reference') {
+      updateInfoFields({
+        referenceDocName: '',
+        referenceDocContent: '',
+      });
+      return;
+    }
+
+    updateInfoFields({
+      templateDocName: '',
+      templateDocContent: '',
+    });
+  };
+
+  const handleUploadReferenceDoc = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (hasLockedSession) return;
+
+    setIsLoading(true);
+    try {
+      const { content, clipped } = await readTextFromUploadedFile(file, MAX_REFERENCE_DOC_CHARS);
+      updateInfoFields({
+        referenceDocName: file.name,
+        referenceDocContent: content,
+      });
+
+      Swal.fire(
+        'Đã tải tài liệu tham khảo',
+        clipped
+          ? `Đã nạp "${file.name}" (nội dung dài nên hệ thống đã rút gọn để tối ưu xử lý).`
+          : `Đã nạp "${file.name}" và sẽ dùng làm tài liệu tham khảo khi lập dàn ý/viết bài.`,
+        'success',
+      );
+    } catch (error: any) {
+      Swal.fire('Không thể tải tài liệu', error.message || 'Vui lòng thử lại với tệp văn bản thuần.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUploadTemplateDoc = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (hasLockedSession) return;
+
+    setIsLoading(true);
+    try {
+      const { content, clipped } = await readTextFromUploadedFile(file, MAX_TEMPLATE_DOC_CHARS);
+      updateInfoFields({
+        templateDocName: file.name,
+        templateDocContent: content,
+      });
+
+      Swal.fire(
+        'Đã tải mẫu sáng kiến',
+        clipped
+          ? `Đã nạp "${file.name}" (nội dung dài nên đã rút gọn). Hệ thống vẫn ưu tiên bám cấu trúc mẫu khi lập dàn ý và viết.`
+          : `Đã nạp "${file.name}". Từ bây giờ AI sẽ ưu tiên mẫu này, bám sát cấu trúc mục con (1.1, 1.2...).`,
+        'success',
+      );
+    } catch (error: any) {
+      Swal.fire('Không thể tải mẫu sáng kiến', error.message || 'Vui lòng thử lại với tệp văn bản thuần.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const goToStep = (stepId: number) => {
@@ -731,6 +870,8 @@ ${finalResult.content}`;
     const grade = activeInfo.grade?.trim() || 'lớp học';
     const school = activeInfo.school?.trim() || 'đơn vị công tác';
     const textbook = activeInfo.textbook?.trim();
+    const referenceDocName = activeInfo.referenceDocName?.trim();
+    const templateDocName = activeInfo.templateDocName?.trim();
     const year = new Date().getFullYear();
 
     const urlSet = new Set<string>();
@@ -742,6 +883,11 @@ ${finalResult.content}`;
         if (cleaned) urlSet.add(cleaned);
       });
     });
+    const uploadedReferenceUrls = (activeInfo.referenceDocContent || '').match(/https?:\/\/[^\s)]+/g) || [];
+    uploadedReferenceUrls.forEach((rawUrl) => {
+      const cleaned = rawUrl.replace(/[.,;:!?]+$/, '');
+      if (cleaned) urlSet.add(cleaned);
+    });
 
     const references: string[] = [
       'Bộ Giáo dục và Đào tạo (2018). Chương trình Giáo dục phổ thông tổng thể.',
@@ -752,6 +898,12 @@ ${finalResult.content}`;
       `Kế hoạch giáo dục của ${school} liên quan đến đề tài "${title}".`,
       'Tài liệu chuyên môn, sáng kiến kinh nghiệm và báo cáo tổng kết của tổ/nhóm chuyên môn tại đơn vị.',
     ];
+    if (referenceDocName) {
+      references.unshift(`Tài liệu tham khảo do người dùng tải lên: "${referenceDocName}".`);
+    }
+    if (templateDocName) {
+      references.unshift(`Mẫu sáng kiến do người dùng cung cấp để định hướng bố cục: "${templateDocName}".`);
+    }
 
     if (urlSet.size > 0) {
       Array.from(urlSet)
@@ -1084,6 +1236,142 @@ ${finalResult.content}`;
 
         <div className="content-card space-y-6">
           <h3 className="section-title">
+            3. Tài liệu đính kèm
+            <span className="text-xs text-slate-400 font-normal ml-2">(Ưu tiên xử lý trước khi lập dàn ý và viết)</span>
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-slate-700 dark:text-slate-200">Tài liệu tham khảo</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Dùng để bổ sung dẫn chứng, số liệu, bối cảnh thực tế.
+                  </p>
+                </div>
+                <BookOpen size={18} className="text-slate-400 flex-shrink-0" />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="reference-doc-upload"
+                  className={cn(
+                    'inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border transition-colors cursor-pointer',
+                    hasLockedSession
+                      ? 'border-slate-200 text-slate-400 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed'
+                      : 'border-primary/40 text-primary hover:bg-primary/10',
+                  )}
+                >
+                  <Upload size={14} /> Tải tài liệu
+                </label>
+                <input
+                  id="reference-doc-upload"
+                  type="file"
+                  accept={UPLOAD_ACCEPT_ATTR}
+                  onChange={handleUploadReferenceDoc}
+                  disabled={hasLockedSession}
+                  className="hidden"
+                />
+
+                {data.info.referenceDocName && (
+                  <button
+                    type="button"
+                    onClick={() => clearUploadedFile('reference')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <Trash2 size={13} /> Xóa
+                  </button>
+                )}
+              </div>
+
+              {data.info.referenceDocName ? (
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate">
+                    Đã tải: {data.info.referenceDocName}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap">
+                    {data.info.referenceDocContent.slice(0, 220)}
+                    {data.info.referenceDocContent.length > 220 ? '...' : ''}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400">
+                  Chưa có tài liệu. Hỗ trợ tệp văn bản: {SUPPORTED_TEXT_EXTENSIONS.map((ext) => `.${ext}`).join(', ')}.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-4 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-emerald-700 dark:text-emerald-300">Mẫu sáng kiến (ưu tiên)</p>
+                  <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80 mt-1">
+                    Khi có mẫu, AI sẽ bám sát đề mục và mục con như 1.1, 1.2.
+                  </p>
+                </div>
+                <FileText size={18} className="text-emerald-500 flex-shrink-0" />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="template-doc-upload"
+                  className={cn(
+                    'inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold border transition-colors cursor-pointer',
+                    hasLockedSession
+                      ? 'border-slate-200 text-slate-400 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed'
+                      : 'border-emerald-400 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/20',
+                  )}
+                >
+                  <Upload size={14} /> Tải mẫu sáng kiến
+                </label>
+                <input
+                  id="template-doc-upload"
+                  type="file"
+                  accept={UPLOAD_ACCEPT_ATTR}
+                  onChange={handleUploadTemplateDoc}
+                  disabled={hasLockedSession}
+                  className="hidden"
+                />
+
+                {data.info.templateDocName && (
+                  <button
+                    type="button"
+                    onClick={() => clearUploadedFile('template')}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <Trash2 size={13} /> Xóa
+                  </button>
+                )}
+              </div>
+
+              {data.info.templateDocName ? (
+                <div className="rounded-lg border border-emerald-200 dark:border-emerald-900/50 bg-white/90 dark:bg-slate-900/60 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 truncate">
+                    Đang ưu tiên: {data.info.templateDocName}
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+                    {data.info.templateDocContent.slice(0, 220)}
+                    {data.info.templateDocContent.length > 220 ? '...' : ''}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
+                  Chưa tải mẫu. Tải tệp mẫu để AI bám sát cấu trúc từng mục nhỏ khi viết.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="hint-box">
+            <p>
+              Lưu ý: Nếu đã tải <strong>mẫu sáng kiến</strong>, hệ thống sẽ ưu tiên mẫu này khi lập dàn ý và viết từng phần,
+              cố gắng bám sát các đề mục con (ví dụ 1.1, 1.2, 2.1...) thay vì dùng khung mặc định.
+            </p>
+          </div>
+        </div>
+
+        <div className="content-card space-y-6">
+          <h3 className="section-title">
             4. Yêu cầu khác
             <span className="text-xs text-slate-400 font-normal ml-2">(Tùy chọn - AI sẽ tuân thủ nghiêm ngặt)</span>
           </h3>
@@ -1234,6 +1522,12 @@ ${finalResult.content}`;
         <h2 className="text-2xl font-bold">Lập Dàn Ý SKKN</h2>
         <p className="text-white/80 mt-1">Xây dựng khung sườn chi tiết cho Sáng kiến kinh nghiệm</p>
       </div>
+      {(activeInfo.templateDocName || activeInfo.referenceDocName) && (
+        <div className="info-box space-y-1">
+          {activeInfo.templateDocName && <p>Ưu tiên mẫu sáng kiến: <strong>{activeInfo.templateDocName}</strong> (bám sát mục con như 1.1, 1.2 nếu có).</p>}
+          {activeInfo.referenceDocName && <p>Dùng thêm tài liệu tham khảo: <strong>{activeInfo.referenceDocName}</strong>.</p>}
+        </div>
+      )}
 
       {data.outline ? (
         <div className="content-card space-y-4">
@@ -1280,9 +1574,15 @@ ${finalResult.content}`;
           <p className="text-white/80 mt-1">{STEPS[stepId].desc}</p>
         </div>
 
-        <div className="content-card space-y-4">
-          {content ? (
-            <>
+      <div className="content-card space-y-4">
+        {(activeInfo.templateDocName || activeInfo.referenceDocName) && (
+          <div className="info-box space-y-1">
+            {activeInfo.templateDocName && <p>Đang ưu tiên mẫu sáng kiến: <strong>{activeInfo.templateDocName}</strong>.</p>}
+            {activeInfo.referenceDocName && <p>Đang tham chiếu tài liệu: <strong>{activeInfo.referenceDocName}</strong>.</p>}
+          </div>
+        )}
+        {content ? (
+          <>
               <div className="doc-preview-bar">
                 <div className="dot bg-red-400" />
                 <div className="dot bg-amber-400" />

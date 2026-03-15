@@ -399,7 +399,49 @@ export async function callGeminiAI(
 }
 
 export const PROMPTS = {
-  GENERATE_OUTLINE: (info: any) => `
+  GENERATE_OUTLINE: (info: any) => {
+    const referenceBlock = info.referenceDocContent
+      ? `
+    === TÀI LIỆU THAM KHẢO NGƯỜI DÙNG CUNG CẤP (${info.referenceDocName || 'không rõ tên'}) ===
+    ${info.referenceDocContent}
+    ==============================================================
+    `
+      : '';
+
+    const templateBlock = info.templateDocContent
+      ? `
+    === MẪU SÁNG KIẾN NGƯỜI DÙNG CUNG CẤP (${info.templateDocName || 'không rõ tên'}) ===
+    ${info.templateDocContent}
+    =================================================================
+    `
+      : '';
+
+    const structureGuidance = info.templateDocContent
+      ? `
+    ƯU TIÊN CẤU TRÚC MẪU NGƯỜI DÙNG:
+    - Ưu tiên TUYỆT ĐỐI cấu trúc của mẫu sáng kiến người dùng cung cấp.
+    - Giữ nguyên logic hệ thống đề mục, tiểu mục và đánh số (ví dụ: 1, 1.1, 1.2, 2.1...).
+    - Nếu mẫu có các mục con chi tiết, phải bám sát và phản ánh lại đầy đủ trong dàn ý.
+    - Chỉ điều chỉnh câu chữ để phù hợp đề tài/môn học/lớp của người dùng, không đổi khung mục.
+    `
+      : `
+    Yêu cầu dàn ý phải bám sát cấu trúc chuẩn SKKN:
+    I. Đặt vấn đề
+      1. Tính cấp thiết phải tiến hành sáng kiến
+      2. Mục tiêu của đề tài, sáng kiến
+      3. Thời gian, đối tượng, phạm vi nghiên cứu
+    II. Nội dung của sáng kiến
+      1. Hiện trạng vấn đề
+      2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề
+      3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị
+      4. Hiệu quả của sáng kiến
+      5. Tính khả thi
+      6. Thời gian thực hiện đề tài, sáng kiến
+      7. Kinh phí thực hiện đề tài, sáng kiến
+    III. Kiến nghị, đề xuất
+    `;
+
+    return `
     Bạn là một chuyên gia giáo dục Việt Nam. Hãy lập một dàn ý chi tiết cho Sáng kiến kinh nghiệm (SKKN) với các thông tin sau:
     - Tên đề tài: ${info.title}
     - Môn học: ${info.subject || 'Chưa xác định'}
@@ -417,21 +459,12 @@ export const PROMPTS = {
     ${info.extraExamples ? '- Yêu cầu thêm nhiều bài toán thực tế, ví dụ minh họa' : ''}
     ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
     ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
+    ${info.templateDocName ? `- Mẫu sáng kiến ưu tiên: ${info.templateDocName}` : ''}
+    ${info.referenceDocName ? `- Tài liệu tham khảo bổ sung: ${info.referenceDocName}` : ''}
 
-    Yêu cầu dàn ý phải bám sát cấu trúc chuẩn SKKN:
-    I. Đặt vấn đề
-      1. Tính cấp thiết phải tiến hành sáng kiến
-      2. Mục tiêu của đề tài, sáng kiến
-      3. Thời gian, đối tượng, phạm vi nghiên cứu
-    II. Nội dung của sáng kiến
-      1. Hiện trạng vấn đề
-      2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề
-      3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị
-      4. Hiệu quả của sáng kiến
-      5. Tính khả thi
-      6. Thời gian thực hiện đề tài, sáng kiến
-      7. Kinh phí thực hiện đề tài, sáng kiến
-    III. Kiến nghị, đề xuất
+    ${referenceBlock}
+    ${templateBlock}
+    ${structureGuidance}
 
     QUAN TRỌNG:
     - Chỉ viết dàn ý, không viết nội dung chi tiết.
@@ -439,10 +472,25 @@ export const PROMPTS = {
     - Không viết lời mở đầu hay bình luận thêm.
     - Mỗi phần gồm 3-5 ý chính ngắn gọn, rõ ràng.
     - Trả về bằng Markdown.
-  `,
+  `;
+  },
 
   WRITE_SECTION: (sectionName: string, outline: string, info: any, planOverride?: SectionLengthPlan | null) => {
     const plan = planOverride || getSectionLengthPlan(sectionName, info.pageLimit);
+    const referenceBlock = info.referenceDocContent
+      ? `
+    === TÀI LIỆU THAM KHẢO ĐÍNH KÈM (${info.referenceDocName || 'không rõ tên'}) ===
+    ${info.referenceDocContent}
+    ==========================================================
+    `
+      : '';
+    const templateBlock = info.templateDocContent
+      ? `
+    === MẪU SÁNG KIẾN ƯU TIÊN (${info.templateDocName || 'không rõ tên'}) ===
+    ${info.templateDocContent}
+    =======================================================
+    `
+      : '';
 
     const lengthBlock = plan
       ? `
@@ -456,14 +504,16 @@ export const PROMPTS = {
     `
       : '';
 
-    return {
-      prompt: `
-    ${lengthBlock}
-    Dựa trên dàn ý SKKN sau:
-    ${outline}
+	    return {
+	      prompt: `
+	    ${lengthBlock}
+	    Dựa trên dàn ý SKKN sau:
+	    ${outline}
+	    ${referenceBlock}
+	    ${templateBlock}
 
-    Hãy viết nội dung cho phần: "${sectionName}".
-    Thông tin chung:
+	    Hãy viết nội dung cho phần: "${sectionName}".
+	    Thông tin chung:
     - Tên đề tài: ${info.title}
     - Môn học: ${info.subject || 'Chưa xác định'}
     - Khối lớp: ${info.grade || 'Chưa xác định'}
@@ -476,12 +526,21 @@ export const PROMPTS = {
     Yêu cầu:
     - Không viết lời dẫn nhập kiểu "Dưới đây là...", "Phần này trình bày...".
     - Viết đúng trọng tâm đề tài, tránh lan man và tránh mẫu câu chung chung dùng cho mọi SKKN.
-    - Văn phong sư phạm, trang trọng, cụ thể, có chi tiết thực tế lớp học khi phù hợp.
-    - Nếu có bảng biểu thì điền đầy đủ số liệu hợp lý, không để ô trống.
-    - Không sử dụng LaTeX.
-    - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
-    ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
-    ${sectionName.includes('Hiệu quả') ? `- Bắt buộc chia rõ 3 mục con: 4.1. Hiệu quả về khoa học, 4.2. Hiệu quả về kinh tế, 4.3. Hiệu quả về xã hội.` : ''}
+	    - Văn phong sư phạm, trang trọng, cụ thể, có chi tiết thực tế lớp học khi phù hợp.
+	    - Nếu có bảng biểu thì điền đầy đủ số liệu hợp lý, không để ô trống.
+	    - Không sử dụng LaTeX.
+	    ${info.templateDocContent
+    ? '- BẮT BUỘC bám sát cấu trúc mẫu sáng kiến người dùng đã tải lên, kể cả các mục con như 1.1, 1.2 nếu có liên quan tới phần đang viết.'
+    : ''}
+	    ${info.templateDocContent
+    ? '- Nếu dàn ý hiện tại khác mẫu, ưu tiên mẫu của người dùng khi triển khai tiêu đề và tiểu mục.'
+    : ''}
+	    ${info.referenceDocContent
+    ? '- Khi có dữ liệu trong tài liệu tham khảo đính kèm, ưu tiên dùng làm căn cứ minh họa phù hợp.'
+    : ''}
+	    - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
+	    ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
+	    ${sectionName.includes('Hiệu quả') ? `- Bắt buộc chia rõ 3 mục con: 4.1. Hiệu quả về khoa học, 4.2. Hiệu quả về kinh tế, 4.3. Hiệu quả về xã hội.` : ''}
   `,
       maxTokens: plan?.maxTokens || 8192,
     };
