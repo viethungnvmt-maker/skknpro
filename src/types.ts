@@ -67,17 +67,20 @@ export const INITIAL_DATA: SKKNData = {
 };
 
 export const STEPS = [
-  { id: 0, title: 'Th\u00f4ng tin', desc: 'Thi\u1ebft l\u1eadp th\u00f4ng tin c\u01a1 b\u1ea3n' },
-  { id: 1, title: 'L\u1eadp d\u00e0n \u00fd', desc: 'X\u00e2y d\u1ef1ng khung s\u01b0\u1eddn cho SKKN' },
-  { id: 2, title: '1. T\u00ean s\u00e1ng ki\u1ebfn', desc: 'N\u00eau t\u00ean s\u00e1ng ki\u1ebfn r\u00f5 r\u00e0ng, ng\u1eafn g\u1ecdn' },
-  { id: 3, title: '2. L\u0129nh v\u1ef1c \u00e1p d\u1ee5ng s\u00e1ng ki\u1ebfn', desc: 'X\u00e1c \u0111\u1ecbnh m\u00f4n/l\u0129nh v\u1ef1c, \u0111\u1ed1i t\u01b0\u1ee3ng \u00e1p d\u1ee5ng' },
-  { id: 4, title: '3. M\u00f4 t\u1ea3 c\u00e1c gi\u1ea3i ph\u00e1p c\u0169 th\u01b0\u1eddng l\u00e0m', desc: 'Ph\u00e2n t\u00edch c\u00e1ch l\u00e0m c\u0169 v\u00e0 h\u1ea1n ch\u1ebf' },
-  { id: 5, title: '4. Ng\u00e0y s\u00e1ng ki\u1ebfn \u0111\u01b0\u1ee3c \u00e1p d\u1ee5ng l\u1ea7n \u0111\u1ea7u ho\u1eb7c \u00e1p d\u1ee5ng th\u1eed', desc: 'Ghi r\u00f5 m\u1ed1c th\u1eddi gian tri\u1ec3n khai' },
-  { id: 6, title: '5. N\u1ed9i dung', desc: 'Bao g\u1ed3m 5.1 m\u00f4 t\u1ea3 gi\u1ea3i ph\u00e1p m\u1edbi, 5.2 kh\u1ea3 n\u0103ng \u00e1p d\u1ee5ng, 5.3 \u0111\u00e1nh gi\u00e1 l\u1ee3i \u00edch' },
-  { id: 7, title: 'Xu\u1ea5t SKKN', desc: 'T\u1ed5ng h\u1ee3p v\u00e0 xu\u1ea5t file' },
+  { id: 0, title: 'Thông tin', desc: 'Thiết lập thông tin cơ bản' },
+  { id: 1, title: 'Lập Dàn Ý', desc: 'Xây dựng khung sườn cho SKKN' },
+  { id: 2, title: 'I.1. Tính cấp thiết', desc: 'Tính cấp thiết phải tiến hành sáng kiến' },
+  { id: 3, title: 'I.2. Mục tiêu', desc: 'Mục tiêu của đề tài, sáng kiến' },
+  { id: 4, title: 'I.3. Thời gian & Phạm vi', desc: 'Thời gian, đối tượng, phạm vi nghiên cứu' },
+  { id: 5, title: 'II.1. Hiện trạng vấn đề', desc: 'Nêu rõ cách làm cũ, phân tích nhược điểm' },
+  { id: 6, title: 'II.2. Giải pháp', desc: 'Giải pháp thực hiện sáng kiến' },
+  { id: 7, title: 'II.3. Kết quả', desc: 'Kết quả áp dụng giải pháp sáng kiến' },
+  { id: 8, title: 'II.4. Hiệu quả', desc: 'Hiệu quả về khoa học, kinh tế, xã hội' },
+  { id: 9, title: 'II.5. Tính khả thi', desc: 'Khả năng áp dụng vào thực tiễn' },
+  { id: 10, title: 'II.6. Thời gian', desc: 'Thời gian thực hiện đề tài, sáng kiến' },
+  { id: 11, title: 'II.7. Kinh phí', desc: 'Kinh phí thực hiện đề tài, sáng kiến' },
+  { id: 12, title: 'III. Kiến nghị, đề xuất', desc: 'Kiến nghị và đề xuất' },
+  { id: 13, title: 'Xuất SKKN', desc: 'Tổng hợp và xuất file' },
 ];
-
-
-
 
 

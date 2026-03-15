@@ -7,34 +7,21 @@ const WORDS_PER_PAGE = 420;
 const TOKENS_PER_WORD = 2.4;
 const MAX_SECTION_OUTPUT_TOKENS = 8192;
 
-const SECTION_KEYS = {
-  NAME: '1. T\u00ean s\u00e1ng ki\u1ebfn',
-  FIELD: '2. L\u0129nh v\u1ef1c \u00e1p d\u1ee5ng s\u00e1ng ki\u1ebfn',
-  LEGACY_SOLUTIONS: '3. M\u00f4 t\u1ea3 c\u00e1c gi\u1ea3i ph\u00e1p c\u0169 th\u01b0\u1eddng l\u00e0m',
-  FIRST_APPLIED: '4. Ng\u00e0y s\u00e1ng ki\u1ebfn \u0111\u01b0\u1ee3c \u00e1p d\u1ee5ng l\u1ea7n \u0111\u1ea7u ho\u1eb7c \u00e1p d\u1ee5ng th\u1eed',
-  CONTENT: '5. N\u1ed9i dung',
-} as const;
-
 const SECTION_LENGTH_WEIGHTS: Record<string, number> = {
-  [SECTION_KEYS.NAME]: 0.07,
-  [SECTION_KEYS.FIELD]: 0.1,
-  [SECTION_KEYS.LEGACY_SOLUTIONS]: 0.18,
-  [SECTION_KEYS.FIRST_APPLIED]: 0.1,
-  [SECTION_KEYS.CONTENT]: 0.55,
+  'I.1. Tính cấp thiết phải tiến hành sáng kiến': 0.08,
+  'I.2. Mục tiêu của đề tài, sáng kiến': 0.04,
+  'I.3. Thời gian, đối tượng, phạm vi nghiên cứu': 0.03,
+  'II.1. Hiện trạng vấn đề': 0.1,
+  'II.2. Giải pháp thực hiện sáng kiến': 0.25,
+  'II.3. Kết quả sau khi áp dụng giải pháp sáng kiến': 0.15,
+  'II.4. Hiệu quả của sáng kiến': 0.15,
+  'II.5. Tính khả thi': 0.06,
+  'II.6. Thời gian thực hiện': 0.03,
+  'II.7. Kinh phí thực hiện': 0.02,
+  'III. Kiến nghị, đề xuất': 0.1,
 };
 
 const SECTION_NAMES = Object.keys(SECTION_LENGTH_WEIGHTS);
-
-const SECTION_SUBSTRUCTURE_RULES: Record<string, string> = {
-  [SECTION_KEYS.CONTENT]: '- B\u1eaft bu\u1ed9c tr\u00ecnh b\u00e0y \u0111\u1ee7 3 m\u1ee5c con: 5.1 M\u00f4 t\u1ea3 gi\u1ea3i ph\u00e1p m\u1edbi ho\u1eb7c c\u1ea3i ti\u1ebfn; 5.2 V\u1ec1 kh\u1ea3 n\u0103ng \u00e1p d\u1ee5ng (ph\u1ea1m vi \u00e1p d\u1ee5ng) c\u1ee7a s\u00e1ng ki\u1ebfn; 5.3 \u0110\u00e1nh gi\u00e1 l\u1ee3i \u00edch kinh t\u1ebf, x\u00e3 h\u1ed9i c\u1ee7a s\u00e1ng ki\u1ebfn.',
-};
-
-const SECTION_SUBSTRUCTURE_KEEP_RULES: Record<string, string> = {
-  [SECTION_KEYS.CONTENT]: '- BAT BUOC gi\u1eef \u0111\u1ee7 3 m\u1ee5c 5.1, 5.2, 5.3 trong ph\u1ea7n N\u1ed9i dung; kh\u00f4ng \u0111\u01b0\u1ee3c g\u1ed9p ho\u1eb7c b\u1ecf m\u1ee5c con.',
-};
-
-const getSectionSubstructureRule = (sectionName: string) => SECTION_SUBSTRUCTURE_RULES[sectionName] || '';
-const getSectionSubstructureKeepRule = (sectionName: string) => SECTION_SUBSTRUCTURE_KEEP_RULES[sectionName] || '';
 
 export interface SectionLengthPlan {
   sectionName: string;
@@ -431,15 +418,20 @@ export const PROMPTS = {
     ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
     ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
 
-    Yeu cau dan y phai bam sat cau truc sau:
-    1. Ten sang kien
-    2. Linh vuc ap dung sang kien
-    3. Mo ta cac giai phap cu thuong lam
-    4. Ngay sang kien duoc ap dung lan dau hoac ap dung thu
-    5. Noi dung
-      5.1 Mo ta giai phap moi hoac cai tien
-      5.2 Ve kha nang ap dung (pham vi ap dung) cua sang kien
-      5.3 Danh gia loi ich kinh te, xa hoi cua sang kien
+    Yêu cầu dàn ý phải bám sát cấu trúc chuẩn SKKN:
+    I. Đặt vấn đề
+      1. Tính cấp thiết phải tiến hành sáng kiến
+      2. Mục tiêu của đề tài, sáng kiến
+      3. Thời gian, đối tượng, phạm vi nghiên cứu
+    II. Nội dung của sáng kiến
+      1. Hiện trạng vấn đề
+      2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề
+      3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị
+      4. Hiệu quả của sáng kiến
+      5. Tính khả thi
+      6. Thời gian thực hiện đề tài, sáng kiến
+      7. Kinh phí thực hiện đề tài, sáng kiến
+    III. Kiến nghị, đề xuất
 
     QUAN TRỌNG:
     - Chỉ viết dàn ý, không viết nội dung chi tiết.
@@ -489,10 +481,7 @@ export const PROMPTS = {
     - Không sử dụng LaTeX.
     - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
     ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
-    ${getSectionSubstructureRule(sectionName)}
-    ${sectionName === SECTION_KEYS.CONTENT
-      ? `- Ưu tiên nêu rõ số liệu trước và sau áp dụng, minh chứng định lượng và định tính.`
-      : ''}
+    ${sectionName.includes('Hiệu quả') ? `- Bắt buộc chia rõ 3 mục con: 4.1. Hiệu quả về khoa học, 4.2. Hiệu quả về kinh tế, 4.3. Hiệu quả về xã hội.` : ''}
   `,
       maxTokens: plan?.maxTokens || 8192,
     };
@@ -518,7 +507,6 @@ export const PROMPTS = {
     Nhiệm vụ:
     - ${mode === 'shorten' ? 'Rút gọn bớt nội dung thừa, bỏ lặp ý, giữ lại ý quan trọng nhất.' : 'Mở rộng vừa đủ bằng ví dụ, chi tiết triển khai, minh họa thực tế nhưng không lan man.'}
     - BẮT BUỘC đảm bảo bản cuối cùng nằm trong khoảng ${plan.minWords}-${plan.maxWords} từ, ưu tiên gần ${plan.targetWords} từ.
-    ${getSectionSubstructureKeepRule(sectionName)}
     - Nếu còn ngắn hơn ${plan.minWords} từ thì tiếp tục bổ sung ý, ví dụ, minh họa để đủ độ dài.
     - Nếu còn dài hơn ${plan.maxWords} từ thì tiếp tục rút gọn cho đến khi đạt yêu cầu.
     - Không thêm lời giải thích về việc chỉnh sửa.
@@ -600,14 +588,6 @@ export const PROMPTS = {
     Chỉ trả về JSON thuần. totalScore = tổng 4 criteria scores.
   `,
 };
-
-
-
-
-
-
-
-
 
 
 
