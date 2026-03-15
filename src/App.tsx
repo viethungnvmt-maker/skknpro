@@ -35,7 +35,17 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import { INITIAL_DATA, type LockedLengthPlan, type SKKNData, STEPS } from './types';
-import { GEMINI_MODEL_SWITCH_EVENT, callGeminiAI, estimateWordCount, getAllSectionLengthPlans, getSectionLengthPlan, PROMPTS, type GeminiModelSwitchDetail, type SectionLengthPlan } from './services/gemini';
+import {
+  GEMINI_MODEL_SWITCH_EVENT,
+  callGeminiAI,
+  estimateWordCount,
+  extractDocumentTextWithGemini,
+  getAllSectionLengthPlans,
+  getSectionLengthPlan,
+  PROMPTS,
+  type GeminiModelSwitchDetail,
+  type SectionLengthPlan,
+} from './services/gemini';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -129,9 +139,12 @@ const EXPORT_TOTAL_TOLERANCE_RATIO = 0.05;
 const EXPORT_MIN_SECTION_ADJUSTMENT = 45;
 const MAX_EXPORT_NORMALIZATION_PASSES = 2;
 const MAX_EXPORT_SECTIONS_PER_PASS = 4;
-const APP_BUILD_TAG = '2026-03-13-r6';
+const APP_BUILD_TAG = '2026-03-15-r7';
+const PREFERRED_DOC_EXTENSIONS = ['pdf', 'docx', 'doc'];
 const SUPPORTED_TEXT_EXTENSIONS = ['txt', 'md', 'markdown', 'rtf', 'csv', 'json', 'html', 'htm'];
-const UPLOAD_ACCEPT_ATTR = SUPPORTED_TEXT_EXTENSIONS.map((ext) => `.${ext}`).join(',');
+const SUPPORTED_UPLOAD_EXTENSIONS = [...PREFERRED_DOC_EXTENSIONS, ...SUPPORTED_TEXT_EXTENSIONS];
+const UPLOAD_ACCEPT_ATTR = SUPPORTED_UPLOAD_EXTENSIONS.map((ext) => `.${ext}`).join(',');
+const MAX_UPLOAD_FILE_SIZE_BYTES = 3 * 1024 * 1024;
 const MAX_REFERENCE_DOC_CHARS = 18000;
 const MAX_TEMPLATE_DOC_CHARS = 30000;
 
@@ -139,6 +152,36 @@ const getFileExtension = (fileName: string) => {
   const parts = fileName.toLowerCase().split('.');
   return parts.length > 1 ? parts[parts.length - 1] : '';
 };
+
+const getFileMimeType = (file: File, extension: string) => {
+  if (file.type && file.type.trim()) return file.type;
+
+  if (extension === 'pdf') return 'application/pdf';
+  if (extension === 'doc') return 'application/msword';
+  if (extension === 'docx') return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  if (extension === 'txt') return 'text/plain';
+  if (extension === 'md' || extension === 'markdown') return 'text/markdown';
+  if (extension === 'rtf') return 'application/rtf';
+  if (extension === 'csv') return 'text/csv';
+  if (extension === 'json') return 'application/json';
+  if (extension === 'html' || extension === 'htm') return 'text/html';
+
+  return 'application/octet-stream';
+};
+
+const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = typeof reader.result === 'string' ? reader.result : '';
+    if (!result.includes(',')) {
+      reject(new Error('Không thể đọc nội dung tệp.'));
+      return;
+    }
+    resolve(result);
+  };
+  reader.onerror = () => reject(new Error('Không thể đọc nội dung tệp.'));
+  reader.readAsDataURL(file);
+});
 
 const sanitizeUploadedText = (rawText: string) => rawText
   .replace(/\u0000/g, ' ')
@@ -160,10 +203,43 @@ const isLikelyReadableText = (text: string) => {
   return suspiciousRatio < 0.08;
 };
 
-const readTextFromUploadedFile = async (file: File, maxChars: number) => {
+const readUploadedFileContent = async (file: File, maxChars: number) => {
   const extension = getFileExtension(file.name);
-  if (!SUPPORTED_TEXT_EXTENSIONS.includes(extension)) {
-    throw new Error(`Định dạng ".${extension || 'không xác định'}" chưa hỗ trợ. Vui lòng dùng tệp văn bản (${SUPPORTED_TEXT_EXTENSIONS.join(', ')}).`);
+  if (!SUPPORTED_UPLOAD_EXTENSIONS.includes(extension)) {
+    throw new Error(`Định dạng ".${extension || 'không xác định'}" chưa hỗ trợ. Ưu tiên: .pdf, .doc, .docx.`);
+  }
+
+  if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
+    throw new Error(`Tệp "${file.name}" vượt quá ${(MAX_UPLOAD_FILE_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB. Vui lòng nén hoặc chia nhỏ tệp.`);
+  }
+
+  if (PREFERRED_DOC_EXTENSIONS.includes(extension)) {
+    const dataUrl = await readFileAsDataUrl(file);
+    const base64Data = dataUrl.split(',')[1] || '';
+    if (!base64Data) {
+      throw new Error('Không thể đọc dữ liệu từ file PDF/Word.');
+    }
+
+    const extracted = await extractDocumentTextWithGemini({
+      fileName: file.name,
+      mimeType: getFileMimeType(file, extension),
+      base64Data,
+    });
+    const normalizedExtracted = sanitizeUploadedText(extracted);
+    if (!normalizedExtracted) {
+      throw new Error('Không trích xuất được nội dung từ file PDF/Word. Vui lòng thử file khác.');
+    }
+
+    const clipped = normalizedExtracted.length > maxChars;
+    const content = clipped
+      ? `${normalizedExtracted.slice(0, maxChars).trim()}\n\n[... nội dung đã được rút gọn để tối ưu xử lý ...]`
+      : normalizedExtracted;
+
+    return {
+      content,
+      clipped,
+      sourceType: 'doc' as const,
+    };
   }
 
   const raw = await file.text();
@@ -183,6 +259,7 @@ const readTextFromUploadedFile = async (file: File, maxChars: number) => {
   return {
     content,
     clipped,
+    sourceType: 'text' as const,
   };
 };
 
@@ -458,7 +535,7 @@ export default function App() {
 
     setIsLoading(true);
     try {
-      const { content, clipped } = await readTextFromUploadedFile(file, MAX_REFERENCE_DOC_CHARS);
+      const { content, clipped, sourceType } = await readUploadedFileContent(file, MAX_REFERENCE_DOC_CHARS);
       updateInfoFields({
         referenceDocName: file.name,
         referenceDocContent: content,
@@ -467,12 +544,12 @@ export default function App() {
       Swal.fire(
         'Đã tải tài liệu tham khảo',
         clipped
-          ? `Đã nạp "${file.name}" (nội dung dài nên hệ thống đã rút gọn để tối ưu xử lý).`
-          : `Đã nạp "${file.name}" và sẽ dùng làm tài liệu tham khảo khi lập dàn ý/viết bài.`,
+          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}, nội dung dài nên hệ thống đã rút gọn để tối ưu xử lý).`
+          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}) và sẽ dùng làm tài liệu tham khảo khi lập dàn ý/viết bài.`,
         'success',
       );
     } catch (error: any) {
-      Swal.fire('Không thể tải tài liệu', error.message || 'Vui lòng thử lại với tệp văn bản thuần.', 'error');
+      Swal.fire('Không thể tải tài liệu', error.message || 'Vui lòng thử lại với file PDF/Word hoặc tệp văn bản.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -486,7 +563,7 @@ export default function App() {
 
     setIsLoading(true);
     try {
-      const { content, clipped } = await readTextFromUploadedFile(file, MAX_TEMPLATE_DOC_CHARS);
+      const { content, clipped, sourceType } = await readUploadedFileContent(file, MAX_TEMPLATE_DOC_CHARS);
       updateInfoFields({
         templateDocName: file.name,
         templateDocContent: content,
@@ -495,12 +572,12 @@ export default function App() {
       Swal.fire(
         'Đã tải mẫu sáng kiến',
         clipped
-          ? `Đã nạp "${file.name}" (nội dung dài nên đã rút gọn). Hệ thống vẫn ưu tiên bám cấu trúc mẫu khi lập dàn ý và viết.`
-          : `Đã nạp "${file.name}". Từ bây giờ AI sẽ ưu tiên mẫu này, bám sát cấu trúc mục con (1.1, 1.2...).`,
+          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}, nội dung dài nên đã rút gọn). Hệ thống vẫn ưu tiên bám cấu trúc mẫu khi lập dàn ý và viết.`
+          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}). Từ bây giờ AI sẽ ưu tiên mẫu này, bám sát cấu trúc mục con (1.1, 1.2...).`,
         'success',
       );
     } catch (error: any) {
-      Swal.fire('Không thể tải mẫu sáng kiến', error.message || 'Vui lòng thử lại với tệp văn bản thuần.', 'error');
+      Swal.fire('Không thể tải mẫu sáng kiến', error.message || 'Vui lòng thử lại với file PDF/Word hoặc tệp văn bản.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -1246,7 +1323,7 @@ ${finalResult.content}`;
                 <div>
                   <p className="font-semibold text-slate-700 dark:text-slate-200">Tài liệu tham khảo</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    Dùng để bổ sung dẫn chứng, số liệu, bối cảnh thực tế.
+                    Ưu tiên PDF/Word, dùng để bổ sung dẫn chứng, số liệu, bối cảnh thực tế.
                   </p>
                 </div>
                 <BookOpen size={18} className="text-slate-400 flex-shrink-0" />
@@ -1296,7 +1373,7 @@ ${finalResult.content}`;
                 </div>
               ) : (
                 <p className="text-xs text-slate-400">
-                  Chưa có tài liệu. Hỗ trợ tệp văn bản: {SUPPORTED_TEXT_EXTENSIONS.map((ext) => `.${ext}`).join(', ')}.
+                  Chưa có tài liệu. Ưu tiên .pdf, .doc, .docx; ngoài ra hỗ trợ thêm: {SUPPORTED_TEXT_EXTENSIONS.map((ext) => `.${ext}`).join(', ')}.
                 </p>
               )}
             </div>
@@ -1306,7 +1383,7 @@ ${finalResult.content}`;
                 <div>
                   <p className="font-semibold text-emerald-700 dark:text-emerald-300">Mẫu sáng kiến (ưu tiên)</p>
                   <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80 mt-1">
-                    Khi có mẫu, AI sẽ bám sát đề mục và mục con như 1.1, 1.2.
+                    Ưu tiên PDF/Word. Khi có mẫu, AI sẽ bám sát đề mục và mục con như 1.1, 1.2.
                   </p>
                 </div>
                 <FileText size={18} className="text-emerald-500 flex-shrink-0" />
@@ -1356,7 +1433,7 @@ ${finalResult.content}`;
                 </div>
               ) : (
                 <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
-                  Chưa tải mẫu. Tải tệp mẫu để AI bám sát cấu trúc từng mục nhỏ khi viết.
+                  Chưa tải mẫu. Ưu tiên tải .pdf/.doc/.docx để AI trích xuất và bám sát cấu trúc từng mục nhỏ khi viết.
                 </p>
               )}
             </div>

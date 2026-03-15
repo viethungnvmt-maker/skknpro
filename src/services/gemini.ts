@@ -305,6 +305,73 @@ const shouldTryFallback = (errorText: string) => isRateLimitError(errorText)
   || isQuotaError(errorText)
   || isModelUnavailableError(errorText);
 
+export interface GeminiDocumentPayload {
+  fileName: string;
+  mimeType: string;
+  base64Data: string;
+}
+
+export async function extractDocumentTextWithGemini(
+  document: GeminiDocumentPayload,
+  modelIndex?: number,
+): Promise<string> {
+  const apiKey = localStorage.getItem('gemini_api_key');
+  const extractionPrompt = `
+Bạn là trợ lý trích xuất nội dung từ tài liệu giáo dục.
+
+Nhiệm vụ:
+- Đọc tài liệu đính kèm và trích xuất nội dung dạng văn bản sạch.
+- Ưu tiên giữ nguyên tiêu đề, đánh số đề mục và mục con (ví dụ: 1, 1.1, 1.2, 2.1...).
+- Nếu là bảng, chuyển về dạng văn bản Markdown dễ đọc.
+- Không thêm nhận xét, không tóm tắt, không viết lời mở đầu.
+- Chỉ trả về nội dung đã trích xuất.
+  `.trim();
+
+  const fallbackOrder = (() => {
+    const preferred = modelIndex === undefined ? getStoredModelIndex() : modelIndex;
+    const all = MODELS.map((_, index) => index);
+    return [preferred, ...all.filter((index) => index !== preferred)];
+  })();
+
+  let lastError = 'Không thể trích xuất nội dung tài liệu bằng AI.';
+
+  for (const currentModelIndex of fallbackOrder) {
+    const modelName = MODELS[currentModelIndex];
+
+    try {
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey ? { 'x-gemini-key': apiKey } : {}),
+        },
+        body: JSON.stringify({
+          prompt: extractionPrompt,
+          model: modelName,
+          maxTokens: 8192,
+          document,
+        }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      const text = String(payload?.text || '').trim();
+      if (!text) {
+        throw new Error('Model không trích xuất được nội dung từ tài liệu.');
+      }
+
+      return text;
+    } catch (error: any) {
+      lastError = error?.message || lastError;
+    }
+  }
+
+  throw new Error(lastError);
+}
+
 export async function callGeminiAI(
   prompt: string,
   modelIndex?: number,

@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     const prompt = String(body.prompt || '').trim();
     const model = String(body.model || DEFAULT_MODEL).trim() || DEFAULT_MODEL;
     const maxTokens = Number(body.maxTokens) || DEFAULT_MAX_OUTPUT_TOKENS;
+    const document = body.document && typeof body.document === 'object' ? body.document : null;
 
     if (!prompt) {
       return res.status(400).json({ error: 'Thieu prompt.' });
@@ -39,13 +40,30 @@ export default async function handler(req, res) {
       });
     }
 
+    const parts = [{ text: prompt }];
+    if (document) {
+      const mimeType = String(document.mimeType || '').trim();
+      const dataBase64 = String(document.base64Data || '').trim();
+
+      if (!mimeType || !dataBase64) {
+        return res.status(400).json({ error: 'Tai lieu dinh kem khong hop le.' });
+      }
+
+      parts.push({
+        inlineData: {
+          mimeType,
+          data: dataBase64,
+        },
+      });
+    }
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          contents: [{ role: 'user', parts }],
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: maxTokens,
