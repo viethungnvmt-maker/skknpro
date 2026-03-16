@@ -70,6 +70,86 @@ const SECTION_MAP: { [key: number]: string } = {
 const REVIEW_MAP: { [key: number]: number } = {};
 const SECTION_ORDER = Object.values(SECTION_MAP);
 
+type SidebarOutlineItem = {
+  id: string;
+  label: string;
+  desc?: string;
+  stepId?: number;
+  statusStepId?: number;
+  children?: SidebarOutlineItem[];
+};
+
+type SidebarOutlineGroup = {
+  id: string;
+  title: string;
+  desc?: string;
+  stepId?: number;
+  statusStepId?: number;
+  items?: SidebarOutlineItem[];
+};
+
+const SIDEBAR_OUTLINE: SidebarOutlineGroup[] = [
+  {
+    id: 'setup',
+    title: 'Chuẩn bị hồ sơ',
+    desc: 'Hoàn thiện thông tin trước khi viết theo khung SKKN.',
+    items: [
+      { id: 'step-0', label: 'Thông tin bắt buộc', desc: 'Thiết lập đề tài, môn học, lớp và yêu cầu nền.', stepId: 0 },
+      { id: 'step-1', label: 'Lập dàn ý', desc: 'Tạo khung nội dung bám sát mẫu sáng kiến.', stepId: 1 },
+    ],
+  },
+  {
+    id: 'section-i',
+    title: 'I. Đặt vấn đề',
+    items: [
+      { id: 'step-2', label: '1. Tính cấp thiết phải tiến hành sáng kiến', desc: 'Thuyết minh chi tiết bằng lời.', stepId: 2 },
+      { id: 'step-3', label: '2. Mục tiêu của đề tài, sáng kiến', stepId: 3 },
+      { id: 'step-4', label: '3. Thời gian, đối tượng, phạm vi nghiên cứu', stepId: 4 },
+    ],
+  },
+  {
+    id: 'section-ii',
+    title: 'II. Nội dung của sáng kiến',
+    items: [
+      { id: 'step-5', label: '1. Hiện trạng vấn đề', desc: 'Nêu rõ cách làm cũ, phân tích nhược điểm.', stepId: 5 },
+      {
+        id: 'step-6',
+        label: '2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề',
+        desc: 'Nêu rõ cách làm mới, tính sáng tạo, hiệu quả và cách triển khai.',
+        stepId: 6,
+      },
+      { id: 'step-7', label: '3. Kết quả sau khi áp dụng giải pháp sáng kiến tại đơn vị', stepId: 7 },
+      {
+        id: 'step-8',
+        label: '4. Hiệu quả của sáng kiến',
+        desc: 'Triển khai đủ ba ý nhỏ 4.1, 4.2, 4.3 trong cùng một mục.',
+        stepId: 8,
+        children: [
+          { id: 'step-8-1', label: '4.1. Hiệu quả về khoa học', statusStepId: 8 },
+          { id: 'step-8-2', label: '4.2. Hiệu quả về kinh tế', statusStepId: 8 },
+          { id: 'step-8-3', label: '4.3. Hiệu quả về xã hội', statusStepId: 8 },
+        ],
+      },
+      { id: 'step-9', label: '5. Tính khả thi', desc: 'Khả năng áp dụng vào thực tiễn công tác.', stepId: 9 },
+      { id: 'step-10', label: '6. Thời gian thực hiện đề tài, sáng kiến', stepId: 10 },
+      { id: 'step-11', label: '7. Kinh phí thực hiện đề tài, sáng kiến', stepId: 11 },
+    ],
+  },
+  {
+    id: 'section-iii',
+    title: 'III. Kiến nghị, đề xuất',
+    desc: 'Trình bày ngắn gọn, rõ ràng theo đúng mẫu biểu.',
+    stepId: 12,
+  },
+  {
+    id: 'finalize',
+    title: 'Hoàn thiện',
+    items: [
+      { id: 'step-13', label: 'Xuất SKKN', desc: 'Tổng hợp, rà soát và tải file hoàn chỉnh.', stepId: 13 },
+    ],
+  },
+];
+
 const serializeLengthPlans = (plans: ReturnType<typeof getAllSectionLengthPlans>) =>
   plans.reduce<Record<string, LockedLengthPlan>>((acc, { sectionName, ...plan }) => {
     acc[sectionName] = plan;
@@ -2178,48 +2258,139 @@ ${bodyHtml}
     return false;
   };
 
+  const getSidebarStatus = (stepId?: number, statusStepId?: number) => {
+    const resolvedStepId = statusStepId ?? stepId;
+    return resolvedStepId !== undefined ? isStepCompleted(resolvedStepId) : false;
+  };
+
+  const isSidebarItemActive = (item: SidebarOutlineItem): boolean => {
+    if (item.stepId !== undefined && data.currentStep === item.stepId) return true;
+    return item.children?.some(isSidebarItemActive) ?? false;
+  };
+
+  const isSidebarGroupActive = (group: SidebarOutlineGroup): boolean => {
+    if (group.stepId !== undefined && data.currentStep === group.stepId) return true;
+    return group.items?.some(isSidebarItemActive) ?? false;
+  };
+
+  const renderSidebarItems = (items: SidebarOutlineItem[], level = 0) => items.map((item) => {
+    const isActive = isSidebarItemActive(item);
+    const isCompleted = getSidebarStatus(item.stepId, item.statusStepId);
+    const isClickable = item.stepId !== undefined;
+
+    const content = (
+      <div className="flex items-start gap-2.5">
+        <div className="min-w-0 flex-1">
+          <span className={cn('sidebar-node-label', level > 0 && 'sidebar-node-label-sub')}>
+            {item.label}
+          </span>
+          {item.desc && (
+            <span className="sidebar-node-desc">{item.desc}</span>
+          )}
+        </div>
+        {isCompleted && (
+          <CheckCircle2 size={14} className="sidebar-node-status mt-0.5 flex-shrink-0" />
+        )}
+      </div>
+    );
+
+    return (
+      <div key={item.id} className={cn(level > 0 && 'sidebar-node-nested')}>
+        {isClickable ? (
+          <button
+            type="button"
+            onClick={() => goToStep(item.stepId!)}
+            className={cn(
+              'sidebar-node',
+              level > 0 && 'sidebar-node-sub',
+              isActive && 'is-active',
+              isCompleted && 'is-completed',
+            )}
+          >
+            {content}
+          </button>
+        ) : (
+          <div
+            className={cn(
+              'sidebar-node sidebar-node-static',
+              level > 0 && 'sidebar-node-sub',
+              isCompleted && 'is-completed',
+            )}
+          >
+            {content}
+          </div>
+        )}
+
+        {item.children?.length ? (
+          <div className="sidebar-children">
+            {renderSidebarItems(item.children, level + 1)}
+          </div>
+        ) : null}
+      </div>
+    );
+  });
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 sidebar flex flex-col z-20 flex-shrink-0">
+      <aside className="w-full md:w-[25rem] lg:w-[26rem] sidebar flex flex-col z-20 flex-shrink-0">
         {/* Logo */}
         <div className="p-5 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <Sparkles size={22} className="text-primary" />
-            <h1 className="font-bold text-lg text-primary">Viethung</h1>
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Sparkles size={22} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Mục lục SKKN</p>
+              <h1 className="mt-1 text-lg font-bold leading-snug text-primary break-words">
+                Vũ Thị Huệ - Giải pháp SKKN
+              </h1>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+                Khung nội dung bám sát biểu mẫu, hiển thị chi tiết tới 4.1, 4.2, 4.3 • build {APP_BUILD_TAG}
+              </p>
+            </div>
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Trợ lí viết SKKN thông minh • build {APP_BUILD_TAG}</p>
         </div>
 
         {/* Step Navigation */}
-        <nav className="flex-1 overflow-y-auto">
-          {STEPS.map((step) => {
-            const isActive = data.currentStep === step.id;
-            const completed = isStepCompleted(step.id);
+        <nav className="sidebar-scroll flex-1 overflow-y-auto">
+          {SIDEBAR_OUTLINE.map((group) => {
+            const groupCompleted = getSidebarStatus(group.stepId, group.statusStepId);
+            const groupActive = isSidebarGroupActive(group);
 
             return (
-              <button
-                key={step.id}
-                onClick={() => goToStep(step.id)}
-                className={cn(
-                  "step-item w-full text-left",
-                  isActive && "active",
-                  completed && "completed"
+              <section key={group.id} className="sidebar-panel">
+                {group.stepId !== undefined ? (
+                  <button
+                    type="button"
+                    onClick={() => goToStep(group.stepId!)}
+                    className={cn(
+                      'sidebar-group-title sidebar-group-title-button',
+                      groupActive && 'is-active',
+                      groupCompleted && 'is-completed',
+                    )}
+                  >
+                    <span className="min-w-0">{group.title}</span>
+                    {groupCompleted && (
+                      <CheckCircle2 size={15} className="sidebar-node-status flex-shrink-0" />
+                    )}
+                  </button>
+                ) : (
+                  <div className="sidebar-group-title">
+                    <span className="min-w-0">{group.title}</span>
+                  </div>
                 )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={cn(
-                    "text-sm",
-                    isActive ? "font-bold text-primary" : "font-medium text-slate-700 dark:text-slate-300"
-                  )}>
-                    {step.title}
-                  </span>
-                  {completed && (
-                    <CheckCircle2 size={14} className="step-check text-primary flex-shrink-0" />
-                  )}
-                </div>
-                <span className="text-[11px] text-slate-400 mt-0.5">{step.desc}</span>
-              </button>
+
+                {group.desc && (
+                  <p className="sidebar-group-desc">{group.desc}</p>
+                )}
+
+                {group.items?.length ? (
+                  <div className="sidebar-panel-body">
+                    {renderSidebarItems(group.items)}
+                  </div>
+                ) : null}
+              </section>
             );
           })}
         </nav>
@@ -2229,7 +2400,9 @@ ${bodyHtml}
           {data.info.title && (
             <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg mb-2">
               <p className="text-[10px] text-slate-400">Đề tài:</p>
-              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{data.info.title}</p>
+              <p className="text-xs font-medium leading-relaxed text-slate-600 dark:text-slate-300 whitespace-normal break-words">
+                {data.info.title}
+              </p>
             </div>
           )}
           <div className="flex gap-1">
