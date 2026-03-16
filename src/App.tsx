@@ -869,6 +869,56 @@ export default function App() {
     setData(prev => ({ ...prev, currentStep: stepId }));
   };
 
+  const getPreviousStepId = (stepId: number) => {
+    if (stepId <= 0) return null;
+    if (stepId === 13) return 12;
+    return stepId - 1;
+  };
+
+  const getPreviousStepLabel = (stepId: number) => {
+    if (stepId === 1) return 'Quay lại cài đặt nội dung';
+    if (stepId === 2) return 'Quay lại dàn ý';
+    if (stepId === 13) return 'Quay lại mục cuối';
+    return 'Quay lại mục trước';
+  };
+
+  const renderStepBackActions = (stepId: number) => {
+    const previousStepId = getPreviousStepId(stepId);
+    const showSetupShortcut = stepId >= 2;
+
+    if (previousStepId === null && !showSetupShortcut) return null;
+
+    return (
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 shadow-sm px-4 py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {previousStepId !== null && (
+            <button
+              type="button"
+              onClick={() => goToStep(previousStepId)}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              <ChevronLeft size={15} /> {getPreviousStepLabel(stepId)}
+            </button>
+          )}
+          {showSetupShortcut && (
+            <button
+              type="button"
+              onClick={() => goToStep(0)}
+              className="inline-flex items-center gap-2 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 px-4 py-2 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
+            >
+              <Layout size={15} /> Cài đặt nội dung
+            </button>
+          )}
+          {showSetupShortcut && hasLockedSession && (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Muốn sửa yêu cầu, hãy quay về bước này rồi bấm mở khóa phiên viết.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const generateOutline = async () => {
     if (!activeInfo.title) {
       Swal.fire('Lỗi', 'Vui lòng nhập tên đề tài!', 'warning');
@@ -1865,6 +1915,7 @@ ${finalResult.content}`;
         <h2 className="text-2xl font-bold">Lập Dàn Ý SKKN</h2>
         <p className="text-white/80 mt-1">Xây dựng khung sườn chi tiết cho Sáng kiến kinh nghiệm</p>
       </div>
+      {renderStepBackActions(1)}
       {(activeInfo.templateDocName || activeInfo.referenceDocName) && (
         <div className="info-box space-y-1">
           {activeInfo.templateDocName && <p>Ưu tiên mẫu sáng kiến: <strong>{activeInfo.templateDocName}</strong> (bám sát mục con như 1.1, 1.2 nếu có).</p>}
@@ -1916,6 +1967,7 @@ ${finalResult.content}`;
           <h2 className="text-2xl font-bold">{STEPS[stepId].title}</h2>
           <p className="text-white/80 mt-1">{STEPS[stepId].desc}</p>
         </div>
+        {renderStepBackActions(stepId)}
 
       <div className="content-card space-y-4">
         {(activeInfo.templateDocName || activeInfo.referenceDocName) && (
@@ -2384,6 +2436,7 @@ ${bodyHtml}
           <h2 className="text-2xl font-bold">Xuất SKKN</h2>
           <p className="text-white/80 mt-1">Tổng hợp và xuất file hoàn chỉnh</p>
         </div>
+        {renderStepBackActions(13)}
         <div className="content-card space-y-5">
           <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">📊 Tiến độ hoàn thành</h3>
           <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} /></div>
