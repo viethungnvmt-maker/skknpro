@@ -264,6 +264,213 @@ const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) 
   reader.readAsDataURL(file);
 });
 
+const ZIP_EOCD_SIGNATURE = 0x06054b50;
+const ZIP_CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
+const ZIP_LOCAL_FILE_SIGNATURE = 0x04034b50;
+const utf8Decoder = new TextDecoder('utf-8');
+
+type ZipEntry = {
+  name: string;
+  compressionMethod: number;
+  compressedSize: number;
+  localHeaderOffset: number;
+};
+
+const readUint16LE = (view: DataView, offset: number) => view.getUint16(offset, true);
+const readUint32LE = (view: DataView, offset: number) => view.getUint32(offset, true);
+
+const findZipEndOfCentralDirectory = (view: DataView) => {
+  for (let offset = Math.max(0, view.byteLength - 22); offset >= 0; offset -= 1) {
+    if (readUint32LE(view, offset) === ZIP_EOCD_SIGNATURE) {
+      return offset;
+    }
+  }
+
+  return -1;
+};
+
+const parseZipEntries = (buffer: ArrayBuffer): ZipEntry[] => {
+  const view = new DataView(buffer);
+  const eocdOffset = findZipEndOfCentralDirectory(view);
+
+  if (eocdOffset < 0) {
+    throw new Error('Không nhận diện được cấu trúc ZIP của file .docx.');
+  }
+
+  const entryCount = readUint16LE(view, eocdOffset + 10);
+  let directoryOffset = readUint32LE(view, eocdOffset + 16);
+  const entries: ZipEntry[] = [];
+
+  for (let index = 0; index < entryCount && directoryOffset + 46 <= view.byteLength; index += 1) {
+    if (readUint32LE(view, directoryOffset) !== ZIP_CENTRAL_DIRECTORY_SIGNATURE) {
+      break;
+    }
+
+    const compressionMethod = readUint16LE(view, directoryOffset + 10);
+    const compressedSize = readUint32LE(view, directoryOffset + 20);
+    const fileNameLength = readUint16LE(view, directoryOffset + 28);
+    const extraFieldLength = readUint16LE(view, directoryOffset + 30);
+    const commentLength = readUint16LE(view, directoryOffset + 32);
+    const localHeaderOffset = readUint32LE(view, directoryOffset + 42);
+    const fileNameBytes = new Uint8Array(buffer, directoryOffset + 46, fileNameLength);
+
+    entries.push({
+      name: utf8Decoder.decode(fileNameBytes),
+      compressionMethod,
+      compressedSize,
+      localHeaderOffset,
+    });
+
+    directoryOffset += 46 + fileNameLength + extraFieldLength + commentLength;
+  }
+
+  return entries;
+};
+
+const inflateRawZipEntry = async (compressedBytes: Uint8Array) => {
+  if (typeof DecompressionStream === 'undefined') {
+    throw new Error('Trình duyệt hiện tại chưa hỗ trợ đọc trực tiếp file .docx. Vui lòng đổi sang PDF hoặc .txt.');
+  }
+
+  const stream = new Blob([compressedBytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  const inflated = await new Response(stream).arrayBuffer();
+  return new Uint8Array(inflated);
+};
+
+const extractZipEntryBytes = async (buffer: ArrayBuffer, entry: ZipEntry) => {
+  const view = new DataView(buffer);
+  const localOffset = entry.localHeaderOffset;
+
+  if (readUint32LE(view, localOffset) !== ZIP_LOCAL_FILE_SIGNATURE) {
+    throw new Error(`Không thể đọc mục "${entry.name}" trong file .docx.`);
+  }
+
+  const fileNameLength = readUint16LE(view, localOffset + 26);
+  const extraFieldLength = readUint16LE(view, localOffset + 28);
+  const dataStart = localOffset + 30 + fileNameLength + extraFieldLength;
+  const compressedBytes = new Uint8Array(buffer.slice(dataStart, dataStart + entry.compressedSize));
+
+  if (entry.compressionMethod === 0) {
+    return compressedBytes;
+  }
+
+  if (entry.compressionMethod === 8) {
+    return inflateRawZipEntry(compressedBytes);
+  }
+
+  throw new Error(`File .docx dùng kiểu nén chưa hỗ trợ (method ${entry.compressionMethod}).`);
+};
+
+const getElementAttr = (element: Element | undefined, localName: string) => (
+  element?.getAttribute(`w:${localName}`)
+  || element?.getAttribute(localName)
+  || element?.getAttributeNS('*', localName)
+  || ''
+);
+
+const extractDocxInlineText = (node: Node): string => {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent || '';
+  }
+
+  if (!(node instanceof Element)) {
+    return '';
+  }
+
+  if (node.localName === 'tab') return '\t';
+  if (node.localName === 'br' || node.localName === 'cr') return '\n';
+
+  return Array.from(node.childNodes).map(extractDocxInlineText).join('');
+};
+
+const extractDocxParagraph = (paragraph: Element): string => {
+  const text = Array.from(paragraph.childNodes)
+    .map(extractDocxInlineText)
+    .join('')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+
+  if (!text) return '';
+
+  const style = getElementAttr(paragraph.getElementsByTagNameNS('*', 'pStyle')[0], 'val');
+  const hasNumbering = paragraph.getElementsByTagNameNS('*', 'numPr').length > 0;
+
+  if (hasNumbering && !/^[-*•\d]/.test(text) && !/^heading/i.test(style)) {
+    return `- ${text}`;
+  }
+
+  return text;
+};
+
+const extractDocxTable = (table: Element): string => {
+  const rows = Array.from(table.getElementsByTagNameNS('*', 'tr'))
+    .map((row) => Array.from(row.getElementsByTagNameNS('*', 'tc'))
+      .map((cell) => Array.from(cell.getElementsByTagNameNS('*', 'p'))
+        .map(extractDocxParagraph)
+        .filter(Boolean)
+        .join('<br>'))
+      .filter((cellText) => cellText.trim().length > 0))
+    .filter((cells) => cells.length > 0);
+
+  if (!rows.length) return '';
+
+  if (rows.length === 1) {
+    return `| ${rows[0].join(' | ')} |`;
+  }
+
+  const columnCount = rows[0].length;
+  const divider = `| ${Array.from({ length: columnCount }, () => '---').join(' | ')} |`;
+  const markdownRows = rows.map((cells) => `| ${cells.join(' | ')} |`);
+
+  return [markdownRows[0], divider, ...markdownRows.slice(1)].join('\n');
+};
+
+const extractTextFromDocxXml = (xmlText: string): string => {
+  const xml = new DOMParser().parseFromString(xmlText, 'application/xml');
+  if (xml.getElementsByTagName('parsererror').length > 0) {
+    throw new Error('Không phân tích được nội dung XML trong file .docx.');
+  }
+
+  const root = xml.getElementsByTagNameNS('*', 'body')[0] || xml.documentElement;
+  const blocks = Array.from(root.childNodes)
+    .filter((node): node is Element => node instanceof Element)
+    .map((node) => {
+      if (node.localName === 'p') return extractDocxParagraph(node);
+      if (node.localName === 'tbl') return extractDocxTable(node);
+      return '';
+    })
+    .filter(Boolean);
+
+  return blocks.join('\n\n');
+};
+
+const extractDocxTextLocally = async (file: File) => {
+  const buffer = await file.arrayBuffer();
+  const entries = parseZipEntries(buffer);
+  const primaryEntryNames = ['word/document.xml', 'word/footnotes.xml', 'word/endnotes.xml'];
+  const xmlEntries = primaryEntryNames
+    .map((name) => entries.find((entry) => entry.name === name))
+    .filter((entry): entry is ZipEntry => Boolean(entry));
+
+  if (!xmlEntries.length) {
+    throw new Error('Không tìm thấy nội dung chính trong file .docx.');
+  }
+
+  const extractedParts: string[] = [];
+  for (const entry of xmlEntries) {
+    const xmlBytes = await extractZipEntryBytes(buffer, entry);
+    const xmlText = utf8Decoder.decode(xmlBytes);
+    const extractedText = extractTextFromDocxXml(xmlText);
+    if (extractedText.trim()) {
+      extractedParts.push(extractedText.trim());
+    }
+  }
+
+  return extractedParts.join('\n\n');
+};
+
 const sanitizeUploadedText = (rawText: string) => rawText
   .replace(/\u0000/g, ' ')
   .replace(/\r\n/g, '\n')
@@ -292,6 +499,26 @@ const readUploadedFileContent = async (file: File, maxChars: number) => {
 
   if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
     throw new Error(`Tệp "${file.name}" vượt quá ${(MAX_UPLOAD_FILE_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB. Vui lòng nén hoặc chia nhỏ tệp.`);
+  }
+
+  if (extension === 'docx') {
+    const extracted = await extractDocxTextLocally(file);
+    const normalizedExtracted = sanitizeUploadedText(extracted);
+
+    if (!normalizedExtracted) {
+      throw new Error('Không trích xuất được nội dung từ file .docx. Vui lòng thử lưu lại file Word hoặc đổi sang PDF.');
+    }
+
+    const clipped = normalizedExtracted.length > maxChars;
+    const content = clipped
+      ? `${normalizedExtracted.slice(0, maxChars).trim()}\n\n[... nội dung đã được rút gọn để tối ưu xử lý ...]`
+      : normalizedExtracted;
+
+    return {
+      content,
+      clipped,
+      sourceType: 'doc' as const,
+    };
   }
 
   if (PREFERRED_DOC_EXTENSIONS.includes(extension)) {
@@ -504,32 +731,6 @@ export default function App() {
     return Math.max(1, minWords);
   };
 
-  const buildLengthFallbackContent = (
-    sectionName: string,
-    info: SKKNData['info'],
-    missingWords: number,
-  ) => {
-    const subject = info.subject || 'môn học';
-    const grade = info.grade || 'lớp học';
-    const school = info.school || 'đơn vị công tác';
-    const topic = info.title || 'đề tài';
-
-    const baseParagraphs = [
-      `Để bảo đảm phần "${sectionName}" phản ánh đúng yêu cầu của đề tài "${topic}", giáo viên xác định rõ mục tiêu theo ba lớp: mục tiêu kiến thức, mục tiêu năng lực và mục tiêu phẩm chất. Với đặc thù ${subject} ở ${grade} tại ${school}, mỗi mục tiêu đều gắn trực tiếp với biểu hiện quan sát được trong quá trình học tập, tránh nêu chung chung hoặc quá lý thuyết.`,
-      `Trong quá trình triển khai, mục tiêu được cụ thể hóa thành các chỉ báo theo từng giai đoạn thực hiện: trước khi áp dụng, trong khi áp dụng và sau khi áp dụng giải pháp. Ở mỗi giai đoạn, giáo viên ghi nhận mức độ tham gia của học sinh, chất lượng sản phẩm học tập, khả năng vận dụng kiến thức vào tình huống thực tế và mức độ hợp tác của nhóm. Các minh chứng này giúp việc đánh giá trở nên nhất quán và có căn cứ.`,
-      `Bên cạnh đó, mục tiêu của sáng kiến cũng cần bảo đảm tính khả thi tại đơn vị: phù hợp điều kiện cơ sở vật chất, phù hợp thời lượng dạy học, và có thể nhân rộng cho các lớp tương đương. Giáo viên xây dựng kế hoạch điều chỉnh theo phản hồi thực tế để giữ đúng mục tiêu cốt lõi, đồng thời bổ sung hoạt động hỗ trợ cho học sinh còn hạn chế, từ đó nâng dần hiệu quả thực hiện theo từng chu kỳ.`,
-    ];
-
-    let addition = baseParagraphs.join('\n\n');
-    const targetWords = Math.max(80, missingWords + 20);
-
-    while (estimateWordCount(addition) < targetWords) {
-      addition += `\n\nNgoài ra, giáo viên tiếp tục đối chiếu mục tiêu với kết quả định kỳ theo tuần, điều chỉnh nội dung và phương pháp tổ chức hoạt động để bảo đảm tiến độ và chất lượng đầu ra của học sinh.`;
-    }
-
-    return addition.trim();
-  };
-
   useEffect(() => {
     localStorage.setItem('skkn_data_v3', JSON.stringify(data));
   }, [data]);
@@ -625,8 +826,8 @@ export default function App() {
       Swal.fire(
         'Đã tải tài liệu tham khảo',
         clipped
-          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}, nội dung dài nên hệ thống đã rút gọn để tối ưu xử lý).`
-          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}) và sẽ dùng làm tài liệu tham khảo khi lập dàn ý/viết bài.`,
+          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}, nội dung dài nên hệ thống đã rút gọn để tối ưu xử lý).`
+          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}) và sẽ dùng làm tài liệu tham khảo khi lập dàn ý/viết bài.`,
         'success',
       );
     } catch (error: any) {
@@ -653,8 +854,8 @@ export default function App() {
       Swal.fire(
         'Đã tải mẫu sáng kiến',
         clipped
-          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}, nội dung dài nên đã rút gọn). Hệ thống vẫn ưu tiên bám cấu trúc mẫu khi lập dàn ý và viết.`
-          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}). Từ bây giờ AI sẽ ưu tiên mẫu này, bám sát cấu trúc mục con (1.1, 1.2...).`,
+          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}, nội dung dài nên đã rút gọn). Hệ thống vẫn ưu tiên bám cấu trúc mẫu khi lập dàn ý và viết.`
+          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}). Từ bây giờ AI sẽ ưu tiên mẫu này, bám sát cấu trúc mục con (1.1, 1.2...).`,
         'success',
       );
     } catch (error: any) {
@@ -874,22 +1075,6 @@ ${finalResult.content}`;
                 };
               }
             }
-          }
-        }
-
-        if (activePlan) {
-          const hardMinWords = getHardMinWords(activePlan);
-          if (finalResult.wordCount < hardMinWords) {
-            const missingWords = hardMinWords - finalResult.wordCount;
-            const fallbackAddition = buildLengthFallbackContent(sectionName, activeInfo, missingWords);
-            const mergedContent = `${finalResult.content.trim()}\n\n${fallbackAddition}`.trim();
-
-            finalResult = {
-              content: mergedContent,
-              wordCount: estimateWordCount(mergedContent),
-              adjusted: true,
-              plan: activePlan,
-            };
           }
         }
 
