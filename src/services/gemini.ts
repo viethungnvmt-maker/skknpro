@@ -538,6 +538,8 @@ export const PROMPTS = {
     - Không ghi số trang cho từng phần trong phần trả lời.
     - Không viết lời mở đầu hay bình luận thêm.
     - Mỗi phần gồm 3-5 ý chính ngắn gọn, rõ ràng.
+    - Riêng trong mục "II.2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề", triển khai tiểu mục "III. Các biện pháp thực hiện" với đúng 3 ý con: "1. Biện pháp 1", "2. Biện pháp 2", "3. Biện pháp 3".
+    - Không tạo "Biện pháp 4" hoặc "Biện pháp 5" trong dàn ý.
     - Trả về bằng Markdown.
   `;
   },
@@ -607,6 +609,7 @@ export const PROMPTS = {
     : ''}
 	    - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
 	    ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
+	    ${sectionName === 'II.2. Giải pháp thực hiện sáng kiến' ? '- Bắt buộc có tiểu mục "III. Các biện pháp thực hiện". Trong tiểu mục này chỉ được triển khai đúng 3 ý: "1. Biện pháp 1", "2. Biện pháp 2", "3. Biện pháp 3". AI phải tự đề xuất tên gọi cụ thể và nội dung phù hợp cho từng biện pháp theo đề tài thực tế; không được tạo Biện pháp 4 hoặc 5.' : ''}
 	    ${sectionName.includes('Hiệu quả') ? `- Bắt buộc chia rõ 3 mục con: 4.1. Hiệu quả về khoa học, 4.2. Hiệu quả về kinh tế, 4.3. Hiệu quả về xã hội.` : ''}
   `,
       maxTokens: plan?.maxTokens || 8192,
