@@ -70,6 +70,108 @@ const SECTION_MAP: { [key: number]: string } = {
 const REVIEW_MAP: { [key: number]: number } = {};
 const SECTION_ORDER = Object.values(SECTION_MAP);
 
+type SidebarOutlineItem = {
+  id: string;
+  marker?: string;
+  label: string;
+  page?: string;
+  stepId?: number;
+  statusStepId?: number;
+  matchStepIds?: number[];
+  variant?: 'major' | 'sub' | 'detail';
+};
+
+type SidebarOutlineGroup = {
+  id: string;
+  title: string;
+  items?: SidebarOutlineItem[];
+};
+
+const SIDEBAR_OUTLINE: SidebarOutlineGroup[] = [
+  {
+    id: 'section-a',
+    title: 'A - ĐẶT VẤN ĐỀ',
+    items: [
+      { id: 'a-1', marker: 'I.', label: 'LÍ DO CHỌN ĐỀ TÀI', page: '1', stepId: 2, variant: 'major' },
+      { id: 'a-2', marker: 'II.', label: 'MỤC ĐÍCH NGHIÊN CỨU', page: '1', stepId: 3, variant: 'major' },
+      { id: 'a-3', marker: 'III.', label: 'PHƯƠNG PHÁP, ĐỐI TƯỢNG, PHẠM VI NGHIÊN CỨU', page: '1', stepId: 4, variant: 'major' },
+    ],
+  },
+  {
+    id: 'section-b',
+    title: 'B - GIẢI QUYẾT VẤN ĐỀ',
+    items: [
+      { id: 'b-1', marker: 'I.', label: 'CƠ SỞ LÝ LUẬN', page: '2', stepId: 5, variant: 'major' },
+      { id: 'b-2', marker: 'II.', label: 'CƠ SỞ THỰC TIỄN', page: '2', stepId: 5, variant: 'major' },
+      { id: 'b-2-1', marker: '1', label: 'Thực trạng vấn đề', page: '2', stepId: 5, variant: 'sub' },
+      { id: 'b-2-2', marker: '2', label: 'Thuận lợi và khó khăn', page: '4', stepId: 5, variant: 'sub' },
+      { id: 'b-3', marker: 'III.', label: 'CÁC BIỆN PHÁP THỰC HIỆN', variant: 'major' },
+      {
+        id: 'b-3-1',
+        marker: '1',
+        label: 'Biện pháp 1: Lựa chọn các bài học có thể sử dụng phương pháp giáo dục STEM và xây dựng kế hoạch dạy học sao cho phù hợp với điều kiện thực tế.',
+        page: '5',
+        stepId: 6,
+        statusStepId: 6,
+        variant: 'detail',
+      },
+      {
+        id: 'b-3-2',
+        marker: '2',
+        label: 'Biện pháp 2: Nghiên cứu, lựa chọn hình thức giáo dục STEM phù hợp với bài học.',
+        page: '6',
+        stepId: 6,
+        statusStepId: 6,
+        variant: 'detail',
+      },
+      {
+        id: 'b-3-3',
+        marker: '3',
+        label: 'Biện pháp 3: Hướng dẫn học sinh chuẩn bị và nghiên cứu bài học theo định hướng giáo dục STEM',
+        page: '8',
+        stepId: 6,
+        statusStepId: 6,
+        variant: 'detail',
+      },
+      {
+        id: 'b-3-4',
+        marker: '4',
+        label: 'Biện pháp 4: Hướng dẫn học sinh qua hoạt động làm sản phẩm',
+        page: '10',
+        stepId: 6,
+        statusStepId: 6,
+        variant: 'detail',
+      },
+      {
+        id: 'b-3-5',
+        marker: '5',
+        label: 'Biện pháp 5: Góc trưng bày sản phẩm Stem.',
+        page: '11',
+        stepId: 6,
+        statusStepId: 6,
+        variant: 'detail',
+      },
+      { id: 'b-4', marker: 'IV', label: 'KẾT QUẢ', page: '13', stepId: 7, matchStepIds: [7, 8, 9, 10, 11], variant: 'major' },
+    ],
+  },
+  {
+    id: 'section-c',
+    title: 'C - KẾT LUẬN VÀ KHUYẾN NGHỊ',
+    items: [
+      { id: 'c-1', marker: 'I.', label: 'KẾT LUẬN', page: '14', stepId: 12, variant: 'major' },
+      { id: 'c-2', marker: 'II.', label: 'KHUYẾN NGHỊ', page: '15', stepId: 12, variant: 'major' },
+    ],
+  },
+  {
+    id: 'section-d',
+    title: 'D - DANH MỤC CÁC TÀI LIỆU THAM KHẢO',
+  },
+  {
+    id: 'section-e',
+    title: 'E - PHỤ LỤC',
+  },
+];
+
 const serializeLengthPlans = (plans: ReturnType<typeof getAllSectionLengthPlans>) =>
   plans.reduce<Record<string, LockedLengthPlan>>((acc, { sectionName, ...plan }) => {
     acc[sectionName] = plan;
@@ -2178,50 +2280,99 @@ ${bodyHtml}
     return false;
   };
 
+  const getSidebarStatus = (stepId?: number, statusStepId?: number) => {
+    const resolvedStepId = statusStepId ?? stepId;
+    return resolvedStepId !== undefined ? isStepCompleted(resolvedStepId) : false;
+  };
+
+  const isSidebarItemActive = (item: SidebarOutlineItem): boolean => (
+    Boolean(item.matchStepIds?.includes(data.currentStep) || (item.stepId !== undefined && data.currentStep === item.stepId))
+  );
+
+  const isSidebarGroupActive = (group: SidebarOutlineGroup): boolean => (
+    group.items?.some(isSidebarItemActive) ?? false
+  );
+
+  const renderSidebarItem = (item: SidebarOutlineItem) => {
+    const isActive = isSidebarItemActive(item);
+    const isCompleted = getSidebarStatus(item.stepId, item.statusStepId);
+    const isClickable = item.stepId !== undefined;
+    const rowClassName = cn(
+      'sidebar-outline-row',
+      item.variant && `sidebar-outline-row-${item.variant}`,
+      isActive && 'is-active',
+      isCompleted && 'is-completed',
+      !isClickable && 'is-static',
+    );
+
+    const content = (
+      <>
+        <div className="sidebar-outline-marker">{item.marker ?? ''}</div>
+        <div className="sidebar-outline-body">
+          <span
+            className={cn(
+              'sidebar-outline-label',
+              item.variant === 'sub' && 'is-sub',
+              item.variant === 'detail' && 'is-detail',
+            )}
+          >
+            {item.label}
+          </span>
+        </div>
+        <div className="sidebar-outline-page">{item.page ?? ''}</div>
+      </>
+    );
+
+    if (!isClickable) {
+      return (
+        <div key={item.id} className={rowClassName}>
+          {content}
+        </div>
+      );
+    }
+
+    return (
+      <button
+        key={item.id}
+        type="button"
+        onClick={() => goToStep(item.stepId!)}
+        className={rowClassName}
+      >
+        {content}
+      </button>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 sidebar flex flex-col z-20 flex-shrink-0">
-        {/* Logo */}
-        <div className="p-5 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <Sparkles size={22} className="text-primary" />
-            <h1 className="font-bold text-lg text-primary">Viethung</h1>
-          </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Trợ lí viết SKKN thông minh • build {APP_BUILD_TAG}</p>
+      <aside className="w-full md:w-[28rem] lg:w-[30rem] sidebar flex flex-col z-20 flex-shrink-0">
+        <div className="sidebar-doc-header">
+          <p className="sidebar-doc-kicker">MỤC LỤC NỘI DUNG</p>
+          <h1 className="sidebar-doc-title">
+            {data.info.title || 'Khung sáng kiến kinh nghiệm'}
+          </h1>
+          <p className="sidebar-doc-subtitle">
+            Bố cục hiển thị bám sát ảnh mẫu, giữ đủ các đề mục lớn và những mục con 1, 2, 3 để dễ theo dõi khi biên soạn.
+          </p>
         </div>
 
         {/* Step Navigation */}
-        <nav className="flex-1 overflow-y-auto">
-          {STEPS.map((step) => {
-            const isActive = data.currentStep === step.id;
-            const completed = isStepCompleted(step.id);
+        <nav className="sidebar-scroll flex-1 overflow-y-auto">
+          <div className="sidebar-outline-sheet">
+            {SIDEBAR_OUTLINE.map((group) => {
+              const groupActive = isSidebarGroupActive(group);
 
-            return (
-              <button
-                key={step.id}
-                onClick={() => goToStep(step.id)}
-                className={cn(
-                  "step-item w-full text-left",
-                  isActive && "active",
-                  completed && "completed"
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={cn(
-                    "text-sm",
-                    isActive ? "font-bold text-primary" : "font-medium text-slate-700 dark:text-slate-300"
-                  )}>
-                    {step.title}
-                  </span>
-                  {completed && (
-                    <CheckCircle2 size={14} className="step-check text-primary flex-shrink-0" />
-                  )}
-                </div>
-                <span className="text-[11px] text-slate-400 mt-0.5">{step.desc}</span>
-              </button>
-            );
-          })}
+              return (
+                <section key={group.id} className="sidebar-outline-section">
+                  <div className={cn('sidebar-outline-section-title', groupActive && 'is-active')}>
+                    {group.title}
+                  </div>
+                  {group.items?.map(renderSidebarItem)}
+                </section>
+              );
+            })}
+          </div>
         </nav>
 
         {/* Bottom of sidebar */}
@@ -2229,7 +2380,9 @@ ${bodyHtml}
           {data.info.title && (
             <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg mb-2">
               <p className="text-[10px] text-slate-400">Đề tài:</p>
-              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{data.info.title}</p>
+              <p className="text-xs font-medium leading-relaxed text-slate-600 dark:text-slate-300 whitespace-normal break-words">
+                {data.info.title}
+              </p>
             </div>
           )}
           <div className="flex gap-1">
