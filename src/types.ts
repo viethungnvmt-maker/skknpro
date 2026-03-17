@@ -34,6 +34,7 @@ export interface LockedLengthPlan {
 export interface SKKNData {
   info: SKKNInfo;
   outline: string;
+  outlineSourceName: string;
   sections: { [key: string]: string };
   currentStep: number;
   confirmedRequirements: boolean;
@@ -66,6 +67,7 @@ export const INITIAL_DATA: SKKNData = {
     templateDocContent: '',
   },
   outline: '',
+  outlineSourceName: '',
   sections: {},
   currentStep: 0,
   confirmedRequirements: false,

@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useRef } from 'react';
 import {
   FileText,
   Layout,
@@ -226,6 +227,7 @@ const SUPPORTED_TEXT_EXTENSIONS = ['txt', 'md', 'markdown', 'rtf', 'csv', 'json'
 const SUPPORTED_UPLOAD_EXTENSIONS = [...PREFERRED_DOC_EXTENSIONS, ...SUPPORTED_TEXT_EXTENSIONS];
 const UPLOAD_ACCEPT_ATTR = SUPPORTED_UPLOAD_EXTENSIONS.map((ext) => `.${ext}`).join(',');
 const MAX_UPLOAD_FILE_SIZE_BYTES = 3 * 1024 * 1024;
+const MAX_OUTLINE_DOC_CHARS = 18000;
 const MAX_REFERENCE_DOC_CHARS = 18000;
 const MAX_TEMPLATE_DOC_CHARS = 30000;
 
@@ -594,6 +596,7 @@ const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
 };
 
 export default function App() {
+  const outlineUploadInputRef = useRef<HTMLInputElement | null>(null);
   const [data, setData] = useState<SKKNData>(() => {
     // Try loading v3 data first
     const saved = localStorage.getItem('skkn_data_v3');
@@ -865,6 +868,55 @@ export default function App() {
     }
   };
 
+  const triggerOutlineUpload = () => {
+    outlineUploadInputRef.current?.click();
+  };
+
+  const handleUploadOutline = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    const hasWrittenSections = Object.values(data.sections).some((section) => section.trim().length > 0);
+    if (hasWrittenSections) {
+      const confirmation = await Swal.fire({
+        icon: 'warning',
+        title: 'Thay dàn ý hiện tại?',
+        text: 'Bạn đang có nội dung đã viết. Tải dàn ý mới sẽ thay phần dàn ý nhưng vẫn giữ nguyên các mục nội dung hiện có.',
+        showCancelButton: true,
+        confirmButtonText: 'Vẫn tải lên',
+        cancelButtonText: 'Hủy',
+      });
+
+      if (!confirmation.isConfirmed) {
+        return;
+      }
+    }
+
+    setIsLoading(true);
+    try {
+      const { content, clipped, sourceType } = await readUploadedFileContent(file, MAX_OUTLINE_DOC_CHARS);
+      setData((prev) => ({
+        ...prev,
+        outline: content,
+        outlineSourceName: file.name,
+        currentStep: 1,
+      }));
+
+      Swal.fire(
+        'Đã tải dàn ý',
+        clipped
+          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}). Nội dung dài nên hệ thống đã rút gọn trước khi đưa vào màn chỉnh sửa dàn ý.`
+          : `Đã nạp "${file.name}" và chuyển sang bước chỉnh sửa dàn ý.`,
+        'success',
+      );
+    } catch (error: any) {
+      Swal.fire('Không thể tải dàn ý', error.message || 'Vui lòng thử lại với file PDF/Word hoặc tệp văn bản.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const goToStep = (stepId: number) => {
     setData(prev => ({ ...prev, currentStep: stepId }));
   };
@@ -929,7 +981,7 @@ export default function App() {
       const prompt = PROMPTS.GENERATE_OUTLINE(activeInfo);
       const result = await callGeminiAI(prompt);
       if (result) {
-        setData(prev => ({ ...prev, outline: result }));
+        setData(prev => ({ ...prev, outline: result, outlineSourceName: '' }));
         Swal.fire('Thành công', 'Đã tạo dàn ý chi tiết bằng AI!', 'success');
       }
     } catch (error: any) {
@@ -1891,13 +1943,36 @@ ${finalResult.content}`;
           >
             <Sparkles size={18} /> AI Lập Dàn Ý Chi Tiết
           </button>
-          <button className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+          <button
+            onClick={triggerOutlineUpload}
+            disabled={isLoading}
+            className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <FileText size={18} /> Sử Dụng Dàn Ý Có Sẵn
           </button>
         </div>
+        {data.outline && (
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                {data.outlineSourceName ? `Đã nạp dàn ý từ: ${data.outlineSourceName}` : 'Đã có dàn ý trong phiên hiện tại'}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Bạn có thể mở bước dàn ý để chỉnh sửa, hoặc tải file khác để thay thế.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => goToStep(1)}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-semibold text-white dark:text-slate-900 hover:opacity-90 transition-opacity"
+            >
+              <Eye size={15} /> Mở dàn ý
+            </button>
+          </div>
+        )}
         <div className="info-box flex items-start gap-2">
           <Sparkles size={16} className="mt-0.5 flex-shrink-0" />
-          <p>Hệ thống AI sẽ tự động phân tích đề tài và tạo ra dàn ý chi tiết gồm 6 phần chuẩn Bộ GD&amp;ĐT. Bạn có thể chỉnh sửa lại sau khi tạo xong.</p>
+          <p>Hệ thống AI có thể tự phân tích đề tài để tạo dàn ý mới, hoặc bạn tải lên dàn ý sẵn có từ file PDF/Word/Markdown để chỉnh sửa và viết tiếp.</p>
         </div>
         <button
           onClick={() => { goToStep(1); generateOutline(); }}
@@ -1916,6 +1991,12 @@ ${finalResult.content}`;
         <p className="text-white/80 mt-1">Xây dựng khung sườn chi tiết cho Sáng kiến kinh nghiệm</p>
       </div>
       {renderStepBackActions(1)}
+      {data.outlineSourceName && (
+        <div className="info-box space-y-1">
+          <p>Đang dùng dàn ý tải lên từ <strong>{data.outlineSourceName}</strong>.</p>
+          <p className="text-xs opacity-80">Bạn có thể chỉnh sửa trực tiếp bên dưới hoặc tải file khác để thay thế.</p>
+        </div>
+      )}
       {(activeInfo.templateDocName || activeInfo.referenceDocName) && (
         <div className="info-box space-y-1">
           {activeInfo.templateDocName && <p>Ưu tiên mẫu sáng kiến: <strong>{activeInfo.templateDocName}</strong> (bám sát mục con như 1.1, 1.2 nếu có).</p>}
@@ -1929,12 +2010,13 @@ ${finalResult.content}`;
             <div className="dot bg-red-400" />
             <div className="dot bg-amber-400" />
             <div className="dot bg-green-400" />
-            <span className="ml-2 text-xs text-slate-500">📄 Bản thảo SKKN.docx</span>
+            <span className="ml-2 text-xs text-slate-500">📄 {data.outlineSourceName || 'Bản thảo SKKN.docx'}</span>
           </div>
           <div className="bg-white dark:bg-slate-800 p-6 rounded-b-xl border border-slate-100 dark:border-slate-700 min-h-[400px]">
             <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(data.outline) }} />
           </div>
           <div className="flex gap-3 flex-wrap">
+            <button onClick={triggerOutlineUpload} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"><Upload size={14} /> Tải dàn ý khác</button>
             <button onClick={generateOutline} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-primary-dark transition-colors"><Sparkles size={14} /> Tạo lại dàn ý</button>
             <button onClick={() => goToStep(2)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Tiếp tục viết nội dung <ChevronRight size={14} /></button>
           </div>
@@ -1948,9 +2030,12 @@ ${finalResult.content}`;
           <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"><Layout size={40} /></div>
           <div>
             <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">Chưa có dàn ý</p>
-            <p className="text-sm text-slate-400 mt-1">Nhấn nút bên dưới để AI tạo dàn ý chi tiết</p>
+            <p className="text-sm text-slate-400 mt-1">Bạn có thể tải file dàn ý lên hoặc nhấn nút bên dưới để AI tạo dàn ý chi tiết</p>
           </div>
-          <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '⏳ Đang tạo dàn ý...' : '🚀 Tạo dàn ý bằng AI'}</button>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button onClick={triggerOutlineUpload} disabled={isLoading} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><Upload size={15} /> Tải dàn ý lên</button>
+            <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '⏳ Đang tạo dàn ý...' : '🚀 Tạo dàn ý bằng AI'}</button>
+          </div>
         </div>
       )}
     </div>
@@ -2562,6 +2647,13 @@ ${bodyHtml}
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
+      <input
+        ref={outlineUploadInputRef}
+        type="file"
+        accept={UPLOAD_ACCEPT_ATTR}
+        onChange={handleUploadOutline}
+        className="hidden"
+      />
       {/* Sidebar */}
       <aside className="w-full md:w-[28rem] lg:w-[30rem] sidebar flex flex-col z-20 flex-shrink-0">
         <div className="sidebar-doc-header">
