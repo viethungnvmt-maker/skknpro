@@ -1,6 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useRef } from 'react';
 import {
   FileText,
   Layout,
@@ -70,87 +69,6 @@ const SECTION_MAP: { [key: number]: string } = {
 // Step 13 is export/review of all sections// Step 13 is export/review of all sections
 const REVIEW_MAP: { [key: number]: number } = {};
 const SECTION_ORDER = Object.values(SECTION_MAP);
-
-type SidebarOutlineItem = {
-  id: string;
-  marker?: string;
-  label: string;
-  page?: string;
-  stepId?: number;
-  statusStepId?: number;
-  matchStepIds?: number[];
-  variant?: 'major' | 'sub' | 'detail';
-};
-
-type SidebarOutlineGroup = {
-  id: string;
-  title: string;
-  items?: SidebarOutlineItem[];
-};
-
-const SIDEBAR_OUTLINE: SidebarOutlineGroup[] = [
-  {
-    id: 'section-a',
-    title: 'A - ĐẶT VẤN ĐỀ',
-    items: [
-      { id: 'a-1', marker: 'I.', label: 'LÍ DO CHỌN ĐỀ TÀI', page: '1', stepId: 2, variant: 'major' },
-      { id: 'a-2', marker: 'II.', label: 'MỤC ĐÍCH NGHIÊN CỨU', page: '1', stepId: 3, variant: 'major' },
-      { id: 'a-3', marker: 'III.', label: 'PHƯƠNG PHÁP, ĐỐI TƯỢNG, PHẠM VI NGHIÊN CỨU', page: '1', stepId: 4, variant: 'major' },
-    ],
-  },
-  {
-    id: 'section-b',
-    title: 'B - GIẢI QUYẾT VẤN ĐỀ',
-    items: [
-      { id: 'b-1', marker: 'I.', label: 'CƠ SỞ LÝ LUẬN', page: '2', stepId: 5, variant: 'major' },
-      { id: 'b-2', marker: 'II.', label: 'CƠ SỞ THỰC TIỄN', page: '2', stepId: 5, variant: 'major' },
-      { id: 'b-2-1', marker: '1', label: 'Thực trạng vấn đề', page: '2', stepId: 5, variant: 'sub' },
-      { id: 'b-2-2', marker: '2', label: 'Thuận lợi và khó khăn', page: '4', stepId: 5, variant: 'sub' },
-      { id: 'b-3', marker: 'III.', label: 'CÁC BIỆN PHÁP THỰC HIỆN', variant: 'major' },
-      {
-        id: 'b-3-1',
-        marker: '1',
-        label: 'Biện pháp 1',
-        stepId: 6,
-        statusStepId: 6,
-        variant: 'detail',
-      },
-      {
-        id: 'b-3-2',
-        marker: '2',
-        label: 'Biện pháp 2',
-        stepId: 6,
-        statusStepId: 6,
-        variant: 'detail',
-      },
-      {
-        id: 'b-3-3',
-        marker: '3',
-        label: 'Biện pháp 3',
-        stepId: 6,
-        statusStepId: 6,
-        variant: 'detail',
-      },
-      { id: 'b-4', marker: 'IV', label: 'KẾT QUẢ', page: '13', stepId: 7, matchStepIds: [7, 8, 9, 10, 11], variant: 'major' },
-    ],
-  },
-  {
-    id: 'section-c',
-    title: 'C - KẾT LUẬN VÀ KHUYẾN NGHỊ',
-    items: [
-      { id: 'c-1', marker: 'I.', label: 'KẾT LUẬN', page: '14', stepId: 12, variant: 'major' },
-      { id: 'c-2', marker: 'II.', label: 'KHUYẾN NGHỊ', page: '15', stepId: 12, variant: 'major' },
-    ],
-  },
-  {
-    id: 'section-d',
-    title: 'D - DANH MỤC CÁC TÀI LIỆU THAM KHẢO',
-  },
-  {
-    id: 'section-e',
-    title: 'E - PHỤ LỤC',
-  },
-];
 
 const serializeLengthPlans = (plans: ReturnType<typeof getAllSectionLengthPlans>) =>
   plans.reduce<Record<string, LockedLengthPlan>>((acc, { sectionName, ...plan }) => {
@@ -227,7 +145,6 @@ const SUPPORTED_TEXT_EXTENSIONS = ['txt', 'md', 'markdown', 'rtf', 'csv', 'json'
 const SUPPORTED_UPLOAD_EXTENSIONS = [...PREFERRED_DOC_EXTENSIONS, ...SUPPORTED_TEXT_EXTENSIONS];
 const UPLOAD_ACCEPT_ATTR = SUPPORTED_UPLOAD_EXTENSIONS.map((ext) => `.${ext}`).join(',');
 const MAX_UPLOAD_FILE_SIZE_BYTES = 3 * 1024 * 1024;
-const MAX_OUTLINE_DOC_CHARS = 18000;
 const MAX_REFERENCE_DOC_CHARS = 18000;
 const MAX_TEMPLATE_DOC_CHARS = 30000;
 
@@ -266,213 +183,6 @@ const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) 
   reader.readAsDataURL(file);
 });
 
-const ZIP_EOCD_SIGNATURE = 0x06054b50;
-const ZIP_CENTRAL_DIRECTORY_SIGNATURE = 0x02014b50;
-const ZIP_LOCAL_FILE_SIGNATURE = 0x04034b50;
-const utf8Decoder = new TextDecoder('utf-8');
-
-type ZipEntry = {
-  name: string;
-  compressionMethod: number;
-  compressedSize: number;
-  localHeaderOffset: number;
-};
-
-const readUint16LE = (view: DataView, offset: number) => view.getUint16(offset, true);
-const readUint32LE = (view: DataView, offset: number) => view.getUint32(offset, true);
-
-const findZipEndOfCentralDirectory = (view: DataView) => {
-  for (let offset = Math.max(0, view.byteLength - 22); offset >= 0; offset -= 1) {
-    if (readUint32LE(view, offset) === ZIP_EOCD_SIGNATURE) {
-      return offset;
-    }
-  }
-
-  return -1;
-};
-
-const parseZipEntries = (buffer: ArrayBuffer): ZipEntry[] => {
-  const view = new DataView(buffer);
-  const eocdOffset = findZipEndOfCentralDirectory(view);
-
-  if (eocdOffset < 0) {
-    throw new Error('Không nhận diện được cấu trúc ZIP của file .docx.');
-  }
-
-  const entryCount = readUint16LE(view, eocdOffset + 10);
-  let directoryOffset = readUint32LE(view, eocdOffset + 16);
-  const entries: ZipEntry[] = [];
-
-  for (let index = 0; index < entryCount && directoryOffset + 46 <= view.byteLength; index += 1) {
-    if (readUint32LE(view, directoryOffset) !== ZIP_CENTRAL_DIRECTORY_SIGNATURE) {
-      break;
-    }
-
-    const compressionMethod = readUint16LE(view, directoryOffset + 10);
-    const compressedSize = readUint32LE(view, directoryOffset + 20);
-    const fileNameLength = readUint16LE(view, directoryOffset + 28);
-    const extraFieldLength = readUint16LE(view, directoryOffset + 30);
-    const commentLength = readUint16LE(view, directoryOffset + 32);
-    const localHeaderOffset = readUint32LE(view, directoryOffset + 42);
-    const fileNameBytes = new Uint8Array(buffer, directoryOffset + 46, fileNameLength);
-
-    entries.push({
-      name: utf8Decoder.decode(fileNameBytes),
-      compressionMethod,
-      compressedSize,
-      localHeaderOffset,
-    });
-
-    directoryOffset += 46 + fileNameLength + extraFieldLength + commentLength;
-  }
-
-  return entries;
-};
-
-const inflateRawZipEntry = async (compressedBytes: Uint8Array) => {
-  if (typeof DecompressionStream === 'undefined') {
-    throw new Error('Trình duyệt hiện tại chưa hỗ trợ đọc trực tiếp file .docx. Vui lòng đổi sang PDF hoặc .txt.');
-  }
-
-  const stream = new Blob([compressedBytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-  const inflated = await new Response(stream).arrayBuffer();
-  return new Uint8Array(inflated);
-};
-
-const extractZipEntryBytes = async (buffer: ArrayBuffer, entry: ZipEntry) => {
-  const view = new DataView(buffer);
-  const localOffset = entry.localHeaderOffset;
-
-  if (readUint32LE(view, localOffset) !== ZIP_LOCAL_FILE_SIGNATURE) {
-    throw new Error(`Không thể đọc mục "${entry.name}" trong file .docx.`);
-  }
-
-  const fileNameLength = readUint16LE(view, localOffset + 26);
-  const extraFieldLength = readUint16LE(view, localOffset + 28);
-  const dataStart = localOffset + 30 + fileNameLength + extraFieldLength;
-  const compressedBytes = new Uint8Array(buffer.slice(dataStart, dataStart + entry.compressedSize));
-
-  if (entry.compressionMethod === 0) {
-    return compressedBytes;
-  }
-
-  if (entry.compressionMethod === 8) {
-    return inflateRawZipEntry(compressedBytes);
-  }
-
-  throw new Error(`File .docx dùng kiểu nén chưa hỗ trợ (method ${entry.compressionMethod}).`);
-};
-
-const getElementAttr = (element: Element | undefined, localName: string) => (
-  element?.getAttribute(`w:${localName}`)
-  || element?.getAttribute(localName)
-  || element?.getAttributeNS('*', localName)
-  || ''
-);
-
-const extractDocxInlineText = (node: Node): string => {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent || '';
-  }
-
-  if (!(node instanceof Element)) {
-    return '';
-  }
-
-  if (node.localName === 'tab') return '\t';
-  if (node.localName === 'br' || node.localName === 'cr') return '\n';
-
-  return Array.from(node.childNodes).map(extractDocxInlineText).join('');
-};
-
-const extractDocxParagraph = (paragraph: Element): string => {
-  const text = Array.from(paragraph.childNodes)
-    .map(extractDocxInlineText)
-    .join('')
-    .replace(/[ \t]+\n/g, '\n')
-    .replace(/\n[ \t]+/g, '\n')
-    .replace(/[ \t]{2,}/g, ' ')
-    .trim();
-
-  if (!text) return '';
-
-  const style = getElementAttr(paragraph.getElementsByTagNameNS('*', 'pStyle')[0], 'val');
-  const hasNumbering = paragraph.getElementsByTagNameNS('*', 'numPr').length > 0;
-
-  if (hasNumbering && !/^[-*•\d]/.test(text) && !/^heading/i.test(style)) {
-    return `- ${text}`;
-  }
-
-  return text;
-};
-
-const extractDocxTable = (table: Element): string => {
-  const rows = Array.from(table.getElementsByTagNameNS('*', 'tr'))
-    .map((row) => Array.from(row.getElementsByTagNameNS('*', 'tc'))
-      .map((cell) => Array.from(cell.getElementsByTagNameNS('*', 'p'))
-        .map(extractDocxParagraph)
-        .filter(Boolean)
-        .join('<br>'))
-      .filter((cellText) => cellText.trim().length > 0))
-    .filter((cells) => cells.length > 0);
-
-  if (!rows.length) return '';
-
-  if (rows.length === 1) {
-    return `| ${rows[0].join(' | ')} |`;
-  }
-
-  const columnCount = rows[0].length;
-  const divider = `| ${Array.from({ length: columnCount }, () => '---').join(' | ')} |`;
-  const markdownRows = rows.map((cells) => `| ${cells.join(' | ')} |`);
-
-  return [markdownRows[0], divider, ...markdownRows.slice(1)].join('\n');
-};
-
-const extractTextFromDocxXml = (xmlText: string): string => {
-  const xml = new DOMParser().parseFromString(xmlText, 'application/xml');
-  if (xml.getElementsByTagName('parsererror').length > 0) {
-    throw new Error('Không phân tích được nội dung XML trong file .docx.');
-  }
-
-  const root = xml.getElementsByTagNameNS('*', 'body')[0] || xml.documentElement;
-  const blocks = Array.from(root.childNodes)
-    .filter((node): node is Element => node instanceof Element)
-    .map((node) => {
-      if (node.localName === 'p') return extractDocxParagraph(node);
-      if (node.localName === 'tbl') return extractDocxTable(node);
-      return '';
-    })
-    .filter(Boolean);
-
-  return blocks.join('\n\n');
-};
-
-const extractDocxTextLocally = async (file: File) => {
-  const buffer = await file.arrayBuffer();
-  const entries = parseZipEntries(buffer);
-  const primaryEntryNames = ['word/document.xml', 'word/footnotes.xml', 'word/endnotes.xml'];
-  const xmlEntries = primaryEntryNames
-    .map((name) => entries.find((entry) => entry.name === name))
-    .filter((entry): entry is ZipEntry => Boolean(entry));
-
-  if (!xmlEntries.length) {
-    throw new Error('Không tìm thấy nội dung chính trong file .docx.');
-  }
-
-  const extractedParts: string[] = [];
-  for (const entry of xmlEntries) {
-    const xmlBytes = await extractZipEntryBytes(buffer, entry);
-    const xmlText = utf8Decoder.decode(xmlBytes);
-    const extractedText = extractTextFromDocxXml(xmlText);
-    if (extractedText.trim()) {
-      extractedParts.push(extractedText.trim());
-    }
-  }
-
-  return extractedParts.join('\n\n');
-};
-
 const sanitizeUploadedText = (rawText: string) => rawText
   .replace(/\u0000/g, ' ')
   .replace(/\r\n/g, '\n')
@@ -501,26 +211,6 @@ const readUploadedFileContent = async (file: File, maxChars: number) => {
 
   if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
     throw new Error(`Tệp "${file.name}" vượt quá ${(MAX_UPLOAD_FILE_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB. Vui lòng nén hoặc chia nhỏ tệp.`);
-  }
-
-  if (extension === 'docx') {
-    const extracted = await extractDocxTextLocally(file);
-    const normalizedExtracted = sanitizeUploadedText(extracted);
-
-    if (!normalizedExtracted) {
-      throw new Error('Không trích xuất được nội dung từ file .docx. Vui lòng thử lưu lại file Word hoặc đổi sang PDF.');
-    }
-
-    const clipped = normalizedExtracted.length > maxChars;
-    const content = clipped
-      ? `${normalizedExtracted.slice(0, maxChars).trim()}\n\n[... nội dung đã được rút gọn để tối ưu xử lý ...]`
-      : normalizedExtracted;
-
-    return {
-      content,
-      clipped,
-      sourceType: 'doc' as const,
-    };
   }
 
   if (PREFERRED_DOC_EXTENSIONS.includes(extension)) {
@@ -596,7 +286,6 @@ const normalizeLoadedData = (candidate: SKKNData): SKKNData => {
 };
 
 export default function App() {
-  const outlineUploadInputRef = useRef<HTMLInputElement | null>(null);
   const [data, setData] = useState<SKKNData>(() => {
     // Try loading v3 data first
     const saved = localStorage.getItem('skkn_data_v3');
@@ -734,6 +423,32 @@ export default function App() {
     return Math.max(1, minWords);
   };
 
+  const buildLengthFallbackContent = (
+    sectionName: string,
+    info: SKKNData['info'],
+    missingWords: number,
+  ) => {
+    const subject = info.subject || 'môn học';
+    const grade = info.grade || 'lớp học';
+    const school = info.school || 'đơn vị công tác';
+    const topic = info.title || 'đề tài';
+
+    const baseParagraphs = [
+      `Để bảo đảm phần "${sectionName}" phản ánh đúng yêu cầu của đề tài "${topic}", giáo viên xác định rõ mục tiêu theo ba lớp: mục tiêu kiến thức, mục tiêu năng lực và mục tiêu phẩm chất. Với đặc thù ${subject} ở ${grade} tại ${school}, mỗi mục tiêu đều gắn trực tiếp với biểu hiện quan sát được trong quá trình học tập, tránh nêu chung chung hoặc quá lý thuyết.`,
+      `Trong quá trình triển khai, mục tiêu được cụ thể hóa thành các chỉ báo theo từng giai đoạn thực hiện: trước khi áp dụng, trong khi áp dụng và sau khi áp dụng giải pháp. Ở mỗi giai đoạn, giáo viên ghi nhận mức độ tham gia của học sinh, chất lượng sản phẩm học tập, khả năng vận dụng kiến thức vào tình huống thực tế và mức độ hợp tác của nhóm. Các minh chứng này giúp việc đánh giá trở nên nhất quán và có căn cứ.`,
+      `Bên cạnh đó, mục tiêu của sáng kiến cũng cần bảo đảm tính khả thi tại đơn vị: phù hợp điều kiện cơ sở vật chất, phù hợp thời lượng dạy học, và có thể nhân rộng cho các lớp tương đương. Giáo viên xây dựng kế hoạch điều chỉnh theo phản hồi thực tế để giữ đúng mục tiêu cốt lõi, đồng thời bổ sung hoạt động hỗ trợ cho học sinh còn hạn chế, từ đó nâng dần hiệu quả thực hiện theo từng chu kỳ.`,
+    ];
+
+    let addition = baseParagraphs.join('\n\n');
+    const targetWords = Math.max(80, missingWords + 20);
+
+    while (estimateWordCount(addition) < targetWords) {
+      addition += `\n\nNgoài ra, giáo viên tiếp tục đối chiếu mục tiêu với kết quả định kỳ theo tuần, điều chỉnh nội dung và phương pháp tổ chức hoạt động để bảo đảm tiến độ và chất lượng đầu ra của học sinh.`;
+    }
+
+    return addition.trim();
+  };
+
   useEffect(() => {
     localStorage.setItem('skkn_data_v3', JSON.stringify(data));
   }, [data]);
@@ -829,8 +544,8 @@ export default function App() {
       Swal.fire(
         'Đã tải tài liệu tham khảo',
         clipped
-          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}, nội dung dài nên hệ thống đã rút gọn để tối ưu xử lý).`
-          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}) và sẽ dùng làm tài liệu tham khảo khi lập dàn ý/viết bài.`,
+          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}, nội dung dài nên hệ thống đã rút gọn để tối ưu xử lý).`
+          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}) và sẽ dùng làm tài liệu tham khảo khi lập dàn ý/viết bài.`,
         'success',
       );
     } catch (error: any) {
@@ -857,8 +572,8 @@ export default function App() {
       Swal.fire(
         'Đã tải mẫu sáng kiến',
         clipped
-          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}, nội dung dài nên đã rút gọn). Hệ thống vẫn ưu tiên bám cấu trúc mẫu khi lập dàn ý và viết.`
-          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}). Từ bây giờ AI sẽ ưu tiên mẫu này, bám sát cấu trúc mục con (1.1, 1.2...).`,
+          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}, nội dung dài nên đã rút gọn). Hệ thống vẫn ưu tiên bám cấu trúc mẫu khi lập dàn ý và viết.`
+          : `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word bằng AI' : 'file văn bản'}). Từ bây giờ AI sẽ ưu tiên mẫu này, bám sát cấu trúc mục con (1.1, 1.2...).`,
         'success',
       );
     } catch (error: any) {
@@ -868,107 +583,8 @@ export default function App() {
     }
   };
 
-  const triggerOutlineUpload = () => {
-    outlineUploadInputRef.current?.click();
-  };
-
-  const handleUploadOutline = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-
-    const hasWrittenSections = Object.values(data.sections).some((section) => section.trim().length > 0);
-    if (hasWrittenSections) {
-      const confirmation = await Swal.fire({
-        icon: 'warning',
-        title: 'Thay dàn ý hiện tại?',
-        text: 'Bạn đang có nội dung đã viết. Tải dàn ý mới sẽ thay phần dàn ý nhưng vẫn giữ nguyên các mục nội dung hiện có.',
-        showCancelButton: true,
-        confirmButtonText: 'Vẫn tải lên',
-        cancelButtonText: 'Hủy',
-      });
-
-      if (!confirmation.isConfirmed) {
-        return;
-      }
-    }
-
-    setIsLoading(true);
-    try {
-      const { content, clipped, sourceType } = await readUploadedFileContent(file, MAX_OUTLINE_DOC_CHARS);
-      setData((prev) => ({
-        ...prev,
-        outline: content,
-        outlineSourceName: file.name,
-        currentStep: 1,
-      }));
-
-      Swal.fire(
-        'Đã tải dàn ý',
-        clipped
-          ? `Đã nạp "${file.name}" (${sourceType === 'doc' ? 'trích từ PDF/Word' : 'file văn bản'}). Nội dung dài nên hệ thống đã rút gọn trước khi đưa vào màn chỉnh sửa dàn ý.`
-          : `Đã nạp "${file.name}" và chuyển sang bước chỉnh sửa dàn ý.`,
-        'success',
-      );
-    } catch (error: any) {
-      Swal.fire('Không thể tải dàn ý', error.message || 'Vui lòng thử lại với file PDF/Word hoặc tệp văn bản.', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const goToStep = (stepId: number) => {
     setData(prev => ({ ...prev, currentStep: stepId }));
-  };
-
-  const getPreviousStepId = (stepId: number) => {
-    if (stepId <= 0) return null;
-    if (stepId === 13) return 12;
-    return stepId - 1;
-  };
-
-  const getPreviousStepLabel = (stepId: number) => {
-    if (stepId === 1) return 'Quay lại cài đặt nội dung';
-    if (stepId === 2) return 'Quay lại dàn ý';
-    if (stepId === 13) return 'Quay lại mục cuối';
-    return 'Quay lại mục trước';
-  };
-
-  const renderStepBackActions = (stepId: number) => {
-    const previousStepId = getPreviousStepId(stepId);
-    const showSetupShortcut = stepId >= 2;
-
-    if (previousStepId === null && !showSetupShortcut) return null;
-
-    return (
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 shadow-sm px-4 py-3">
-        <div className="flex flex-wrap items-center gap-3">
-          {previousStepId !== null && (
-            <button
-              type="button"
-              onClick={() => goToStep(previousStepId)}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              <ChevronLeft size={15} /> {getPreviousStepLabel(stepId)}
-            </button>
-          )}
-          {showSetupShortcut && (
-            <button
-              type="button"
-              onClick={() => goToStep(0)}
-              className="inline-flex items-center gap-2 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 px-4 py-2 text-sm font-semibold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors"
-            >
-              <Layout size={15} /> Cài đặt nội dung
-            </button>
-          )}
-          {showSetupShortcut && hasLockedSession && (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Muốn sửa yêu cầu, hãy quay về bước này rồi bấm mở khóa phiên viết.
-            </p>
-          )}
-        </div>
-      </div>
-    );
   };
 
   const generateOutline = async () => {
@@ -981,7 +597,7 @@ export default function App() {
       const prompt = PROMPTS.GENERATE_OUTLINE(activeInfo);
       const result = await callGeminiAI(prompt);
       if (result) {
-        setData(prev => ({ ...prev, outline: result, outlineSourceName: '' }));
+        setData(prev => ({ ...prev, outline: result }));
         Swal.fire('Thành công', 'Đã tạo dàn ý chi tiết bằng AI!', 'success');
       }
     } catch (error: any) {
@@ -1177,6 +793,22 @@ ${finalResult.content}`;
                 };
               }
             }
+          }
+        }
+
+        if (activePlan) {
+          const hardMinWords = getHardMinWords(activePlan);
+          if (finalResult.wordCount < hardMinWords) {
+            const missingWords = hardMinWords - finalResult.wordCount;
+            const fallbackAddition = buildLengthFallbackContent(sectionName, activeInfo, missingWords);
+            const mergedContent = `${finalResult.content.trim()}\n\n${fallbackAddition}`.trim();
+
+            finalResult = {
+              content: mergedContent,
+              wordCount: estimateWordCount(mergedContent),
+              adjusted: true,
+              plan: activePlan,
+            };
           }
         }
 
@@ -1943,36 +1575,13 @@ ${finalResult.content}`;
           >
             <Sparkles size={18} /> AI Lập Dàn Ý Chi Tiết
           </button>
-          <button
-            onClick={triggerOutlineUpload}
-            disabled={isLoading}
-            className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
             <FileText size={18} /> Sử Dụng Dàn Ý Có Sẵn
           </button>
         </div>
-        {data.outline && (
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {data.outlineSourceName ? `Đã nạp dàn ý từ: ${data.outlineSourceName}` : 'Đã có dàn ý trong phiên hiện tại'}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Bạn có thể mở bước dàn ý để chỉnh sửa, hoặc tải file khác để thay thế.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => goToStep(1)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2 text-sm font-semibold text-white dark:text-slate-900 hover:opacity-90 transition-opacity"
-            >
-              <Eye size={15} /> Mở dàn ý
-            </button>
-          </div>
-        )}
         <div className="info-box flex items-start gap-2">
           <Sparkles size={16} className="mt-0.5 flex-shrink-0" />
-          <p>Hệ thống AI có thể tự phân tích đề tài để tạo dàn ý mới, hoặc bạn tải lên dàn ý sẵn có từ file PDF/Word/Markdown để chỉnh sửa và viết tiếp.</p>
+          <p>Hệ thống AI sẽ tự động phân tích đề tài và tạo ra dàn ý chi tiết gồm 6 phần chuẩn Bộ GD&amp;ĐT. Bạn có thể chỉnh sửa lại sau khi tạo xong.</p>
         </div>
         <button
           onClick={() => { goToStep(1); generateOutline(); }}
@@ -1990,13 +1599,6 @@ ${finalResult.content}`;
         <h2 className="text-2xl font-bold">Lập Dàn Ý SKKN</h2>
         <p className="text-white/80 mt-1">Xây dựng khung sườn chi tiết cho Sáng kiến kinh nghiệm</p>
       </div>
-      {renderStepBackActions(1)}
-      {data.outlineSourceName && (
-        <div className="info-box space-y-1">
-          <p>Đang dùng dàn ý tải lên từ <strong>{data.outlineSourceName}</strong>.</p>
-          <p className="text-xs opacity-80">Bạn có thể chỉnh sửa trực tiếp bên dưới hoặc tải file khác để thay thế.</p>
-        </div>
-      )}
       {(activeInfo.templateDocName || activeInfo.referenceDocName) && (
         <div className="info-box space-y-1">
           {activeInfo.templateDocName && <p>Ưu tiên mẫu sáng kiến: <strong>{activeInfo.templateDocName}</strong> (bám sát mục con như 1.1, 1.2 nếu có).</p>}
@@ -2010,13 +1612,12 @@ ${finalResult.content}`;
             <div className="dot bg-red-400" />
             <div className="dot bg-amber-400" />
             <div className="dot bg-green-400" />
-            <span className="ml-2 text-xs text-slate-500">📄 {data.outlineSourceName || 'Bản thảo SKKN.docx'}</span>
+            <span className="ml-2 text-xs text-slate-500">📄 Bản thảo SKKN.docx</span>
           </div>
           <div className="bg-white dark:bg-slate-800 p-6 rounded-b-xl border border-slate-100 dark:border-slate-700 min-h-[400px]">
             <div className="markdown-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(data.outline) }} />
           </div>
           <div className="flex gap-3 flex-wrap">
-            <button onClick={triggerOutlineUpload} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"><Upload size={14} /> Tải dàn ý khác</button>
             <button onClick={generateOutline} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-50 hover:bg-primary-dark transition-colors"><Sparkles size={14} /> Tạo lại dàn ý</button>
             <button onClick={() => goToStep(2)} className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors">Tiếp tục viết nội dung <ChevronRight size={14} /></button>
           </div>
@@ -2030,12 +1631,9 @@ ${finalResult.content}`;
           <div className="w-20 h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"><Layout size={40} /></div>
           <div>
             <p className="font-semibold text-slate-600 dark:text-slate-300 text-lg">Chưa có dàn ý</p>
-            <p className="text-sm text-slate-400 mt-1">Bạn có thể tải file dàn ý lên hoặc nhấn nút bên dưới để AI tạo dàn ý chi tiết</p>
+            <p className="text-sm text-slate-400 mt-1">Nhấn nút bên dưới để AI tạo dàn ý chi tiết</p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button onClick={triggerOutlineUpload} disabled={isLoading} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><Upload size={15} /> Tải dàn ý lên</button>
-            <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '⏳ Đang tạo dàn ý...' : '🚀 Tạo dàn ý bằng AI'}</button>
-          </div>
+          <button onClick={generateOutline} disabled={isLoading || !data.info.title} className="btn-primary max-w-sm disabled:opacity-50 disabled:cursor-not-allowed">{isLoading ? '⏳ Đang tạo dàn ý...' : '🚀 Tạo dàn ý bằng AI'}</button>
         </div>
       )}
     </div>
@@ -2052,7 +1650,6 @@ ${finalResult.content}`;
           <h2 className="text-2xl font-bold">{STEPS[stepId].title}</h2>
           <p className="text-white/80 mt-1">{STEPS[stepId].desc}</p>
         </div>
-        {renderStepBackActions(stepId)}
 
       <div className="content-card space-y-4">
         {(activeInfo.templateDocName || activeInfo.referenceDocName) && (
@@ -2521,7 +2118,6 @@ ${bodyHtml}
           <h2 className="text-2xl font-bold">Xuất SKKN</h2>
           <p className="text-white/80 mt-1">Tổng hợp và xuất file hoàn chỉnh</p>
         </div>
-        {renderStepBackActions(13)}
         <div className="content-card space-y-5">
           <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">📊 Tiến độ hoàn thành</h3>
           <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} /></div>
@@ -2582,106 +2178,50 @@ ${bodyHtml}
     return false;
   };
 
-  const getSidebarStatus = (stepId?: number, statusStepId?: number) => {
-    const resolvedStepId = statusStepId ?? stepId;
-    return resolvedStepId !== undefined ? isStepCompleted(resolvedStepId) : false;
-  };
-
-  const isSidebarItemActive = (item: SidebarOutlineItem): boolean => (
-    Boolean(item.matchStepIds?.includes(data.currentStep) || (item.stepId !== undefined && data.currentStep === item.stepId))
-  );
-
-  const isSidebarGroupActive = (group: SidebarOutlineGroup): boolean => (
-    group.items?.some(isSidebarItemActive) ?? false
-  );
-
-  const renderSidebarItem = (item: SidebarOutlineItem) => {
-    const isActive = isSidebarItemActive(item);
-    const isCompleted = getSidebarStatus(item.stepId, item.statusStepId);
-    const isClickable = item.stepId !== undefined;
-    const rowClassName = cn(
-      'sidebar-outline-row',
-      item.variant && `sidebar-outline-row-${item.variant}`,
-      isActive && 'is-active',
-      isCompleted && 'is-completed',
-      !isClickable && 'is-static',
-    );
-
-    const content = (
-      <>
-        <div className="sidebar-outline-marker">{item.marker ?? ''}</div>
-        <div className="sidebar-outline-body">
-          <span
-            className={cn(
-              'sidebar-outline-label',
-              item.variant === 'sub' && 'is-sub',
-              item.variant === 'detail' && 'is-detail',
-            )}
-          >
-            {item.label}
-          </span>
-        </div>
-        <div className="sidebar-outline-page">{item.page ?? ''}</div>
-      </>
-    );
-
-    if (!isClickable) {
-      return (
-        <div key={item.id} className={rowClassName}>
-          {content}
-        </div>
-      );
-    }
-
-    return (
-      <button
-        key={item.id}
-        type="button"
-        onClick={() => goToStep(item.stepId!)}
-        className={rowClassName}
-      >
-        {content}
-      </button>
-    );
-  };
-
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      <input
-        ref={outlineUploadInputRef}
-        type="file"
-        accept={UPLOAD_ACCEPT_ATTR}
-        onChange={handleUploadOutline}
-        className="hidden"
-      />
       {/* Sidebar */}
-      <aside className="w-full md:w-[28rem] lg:w-[30rem] sidebar flex flex-col z-20 flex-shrink-0">
-        <div className="sidebar-doc-header">
-          <p className="sidebar-doc-kicker">MỤC LỤC NỘI DUNG</p>
-          <h1 className="sidebar-doc-title">
-            {data.info.title || 'Khung sáng kiến kinh nghiệm'}
-          </h1>
-          <p className="sidebar-doc-subtitle">
-            Bố cục hiển thị bám sát ảnh mẫu, giữ đủ các đề mục lớn và những mục con 1, 2, 3 để dễ theo dõi khi biên soạn.
-          </p>
+      <aside className="w-full md:w-64 sidebar flex flex-col z-20 flex-shrink-0">
+        {/* Logo */}
+        <div className="p-5 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <Sparkles size={22} className="text-primary" />
+            <h1 className="font-bold text-lg text-primary">Viethung</h1>
+          </div>
+          <p className="text-[11px] text-slate-400 mt-0.5">Trợ lí viết SKKN thông minh • build {APP_BUILD_TAG}</p>
         </div>
 
         {/* Step Navigation */}
-        <nav className="sidebar-scroll flex-1 overflow-y-auto">
-          <div className="sidebar-outline-sheet">
-            {SIDEBAR_OUTLINE.map((group) => {
-              const groupActive = isSidebarGroupActive(group);
+        <nav className="flex-1 overflow-y-auto">
+          {STEPS.map((step) => {
+            const isActive = data.currentStep === step.id;
+            const completed = isStepCompleted(step.id);
 
-              return (
-                <section key={group.id} className="sidebar-outline-section">
-                  <div className={cn('sidebar-outline-section-title', groupActive && 'is-active')}>
-                    {group.title}
-                  </div>
-                  {group.items?.map(renderSidebarItem)}
-                </section>
-              );
-            })}
-          </div>
+            return (
+              <button
+                key={step.id}
+                onClick={() => goToStep(step.id)}
+                className={cn(
+                  "step-item w-full text-left",
+                  isActive && "active",
+                  completed && "completed"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className={cn(
+                    "text-sm",
+                    isActive ? "font-bold text-primary" : "font-medium text-slate-700 dark:text-slate-300"
+                  )}>
+                    {step.title}
+                  </span>
+                  {completed && (
+                    <CheckCircle2 size={14} className="step-check text-primary flex-shrink-0" />
+                  )}
+                </div>
+                <span className="text-[11px] text-slate-400 mt-0.5">{step.desc}</span>
+              </button>
+            );
+          })}
         </nav>
 
         {/* Bottom of sidebar */}
@@ -2689,9 +2229,7 @@ ${bodyHtml}
           {data.info.title && (
             <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg mb-2">
               <p className="text-[10px] text-slate-400">Đề tài:</p>
-              <p className="text-xs font-medium leading-relaxed text-slate-600 dark:text-slate-300 whitespace-normal break-words">
-                {data.info.title}
-              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium truncate">{data.info.title}</p>
             </div>
           )}
           <div className="flex gap-1">

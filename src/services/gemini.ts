@@ -23,106 +23,6 @@ const SECTION_LENGTH_WEIGHTS: Record<string, number> = {
 
 const SECTION_NAMES = Object.keys(SECTION_LENGTH_WEIGHTS);
 
-type PromptInfo = {
-  title?: string;
-  subject?: string;
-  grade?: string;
-  level?: string;
-  school?: string;
-  location?: string;
-  facilities?: string;
-  textbook?: string;
-  target?: string;
-  duration?: string;
-  techUsed?: string;
-  focus?: string;
-  customRequirements?: string;
-  pageLimit?: string;
-  extraExamples?: boolean;
-  extraTables?: boolean;
-  referenceDocName?: string;
-  referenceDocContent?: string;
-  templateDocName?: string;
-  templateDocContent?: string;
-};
-
-const normalizePromptValue = (value?: string) => String(value || '').trim();
-
-const inferSubjectFromTitle = (title: string) => {
-  const normalized = title.toLowerCase();
-  if (normalized.includes('giáo dục thể chất') || normalized.includes('the chat')) return 'Giáo dục thể chất';
-  return '';
-};
-
-const inferGradeFromTitle = (title: string) => {
-  const match = title.match(/lớp\s*(\d+)/i);
-  return match ? `Lớp ${match[1]}` : '';
-};
-
-const resolvePromptContext = (info: PromptInfo) => {
-  const title = normalizePromptValue(info.title);
-  const subject = normalizePromptValue(info.subject) || inferSubjectFromTitle(title) || 'Chưa xác định';
-  const grade = normalizePromptValue(info.grade) || inferGradeFromTitle(title) || 'Chưa xác định';
-  const level = normalizePromptValue(info.level) || 'Chưa xác định';
-  const school = normalizePromptValue(info.school);
-  const location = normalizePromptValue(info.location);
-  const facilities = normalizePromptValue(info.facilities);
-  const textbook = normalizePromptValue(info.textbook);
-  const target = normalizePromptValue(info.target);
-  const duration = normalizePromptValue(info.duration);
-  const techUsed = normalizePromptValue(info.techUsed);
-  const focus = normalizePromptValue(info.focus);
-  const customRequirements = normalizePromptValue(info.customRequirements);
-
-  return {
-    title,
-    subject,
-    grade,
-    level,
-    school,
-    location,
-    facilities,
-    textbook,
-    target,
-    duration,
-    techUsed,
-    focus,
-    customRequirements,
-    schoolLabel: school || 'không nêu tên trường cụ thể',
-    locationLabel: location || 'không nêu địa điểm cụ thể',
-    facilitiesLabel: facilities || 'điều kiện cơ sở vật chất phổ biến của nhà trường tiểu học',
-    targetLabel: target || `học sinh ${grade !== 'Chưa xác định' ? grade.toLowerCase() : 'tiểu học'}`,
-  };
-};
-
-const buildTopicSpecificGuidance = (info: PromptInfo, sectionName?: string) => {
-  const title = normalizePromptValue(info.title).toLowerCase();
-  const subject = normalizePromptValue(info.subject).toLowerCase();
-  const normalized = `${title} ${subject}`;
-  const guidance: string[] = [];
-
-  const isPhysicalEducation = normalized.includes('giáo dục thể chất') || normalized.includes('the chat');
-  const isStem = normalized.includes('stem');
-  const isProjectBased = normalized.includes('dự án') || normalized.includes('du an') || normalized.includes('học tập nhỏ');
-
-  if (isPhysicalEducation && isStem && isProjectBased) {
-    guidance.push('- Bám rất sát đề tài: tích hợp giáo dục STEM vào dạy học môn Giáo dục thể chất lớp 5 thông qua các dự án học tập nhỏ.');
-    guidance.push('- Nội dung phải xoay quanh các hoạt động đặc trưng của môn Giáo dục thể chất: vận động, trò chơi vận động, rèn luyện thể lực, an toàn khi tập luyện, hợp tác nhóm.');
-    guidance.push('- Khi nêu ví dụ, ưu tiên các dự án học tập nhỏ phù hợp học sinh lớp 5 như thiết kế dụng cụ tập luyện đơn giản, phiếu theo dõi vận động, thử thách đo thời gian/quãng đường/nhịp tim, góc hướng dẫn bài tập an toàn.');
-    guidance.push('- Không kéo nội dung sang robot, lập trình, thí nghiệm hóa học, mạch điện hoặc mô hình STEM xa rời môn Giáo dục thể chất nếu đề tài không yêu cầu.');
-  }
-
-  if (sectionName?.includes('Tính cấp thiết')) {
-    guidance.push('- Ở mục tính cấp thiết, tập trung phân tích vì sao cần đổi mới dạy học Giáo dục thể chất lớp 5 theo hướng STEM và dự án học tập nhỏ; không biến mục này thành phần mục tiêu hoặc biện pháp.');
-  }
-
-  if (sectionName === 'II.2. Giải pháp thực hiện sáng kiến') {
-    guidance.push('- Mỗi biện pháp phải mô tả rõ cách tổ chức trong tiết Giáo dục thể chất lớp 5, sản phẩm học tập nhỏ của học sinh và cách đánh giá kết quả thực hiện.');
-  }
-
-  return guidance;
-};
-
 export interface SectionLengthPlan {
   sectionName: string;
   totalPages: number;
@@ -567,8 +467,6 @@ export async function callGeminiAI(
 
 export const PROMPTS = {
   GENERATE_OUTLINE: (info: any) => {
-    const context = resolvePromptContext(info);
-    const topicSpecificGuidance = buildTopicSpecificGuidance(info);
     const referenceBlock = info.referenceDocContent
       ? `
     === TÀI LIỆU THAM KHẢO NGƯỜI DÙNG CUNG CẤP (${info.referenceDocName || 'không rõ tên'}) ===
@@ -612,22 +510,22 @@ export const PROMPTS = {
 
     return `
     Bạn là một chuyên gia giáo dục Việt Nam. Hãy lập một dàn ý chi tiết cho Sáng kiến kinh nghiệm (SKKN) với các thông tin sau:
-    - Tên đề tài: ${context.title}
-    - Môn học: ${context.subject}
-    - Khối lớp: ${context.grade}
-    - Cấp học: ${context.level}
-    - Tên trường: ${context.schoolLabel}
-    - Địa điểm: ${context.locationLabel}
-    - Điều kiện CSVC: ${context.facilitiesLabel}
-    - Sách giáo khoa: ${context.textbook || 'Chưa xác định'}
-    - Đối tượng nghiên cứu: ${context.targetLabel}
-    - Thời gian: ${context.duration || 'Chưa xác định'}
-    - Ứng dụng AI/Công nghệ: ${context.techUsed || 'Chưa xác định'}
-    - Đặc thù đề tài: ${context.focus || 'Chưa xác định'}
+    - Tên đề tài: ${info.title}
+    - Môn học: ${info.subject || 'Chưa xác định'}
+    - Khối lớp: ${info.grade || 'Chưa xác định'}
+    - Cấp học: ${info.level || 'Chưa xác định'}
+    - Tên trường: ${info.school || 'Chưa xác định'}
+    - Địa điểm: ${info.location || 'Chưa xác định'}
+    - Điều kiện CSVC: ${info.facilities || 'Chưa xác định'}
+    - Sách giáo khoa: ${info.textbook || 'Chưa xác định'}
+    - Đối tượng nghiên cứu: ${info.target || 'Chưa xác định'}
+    - Thời gian: ${info.duration || 'Chưa xác định'}
+    - Ứng dụng AI/Công nghệ: ${info.techUsed || 'Chưa xác định'}
+    - Đặc thù đề tài: ${info.focus || 'Chưa xác định'}
     ${info.pageLimit ? `- Tổng độ dài mục tiêu: khoảng ${info.pageLimit} trang A4` : ''}
     ${info.extraExamples ? '- Yêu cầu thêm nhiều bài toán thực tế, ví dụ minh họa' : ''}
     ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
-    ${context.customRequirements ? `- Yêu cầu bổ sung: ${context.customRequirements}` : ''}
+    ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
     ${info.templateDocName ? `- Mẫu sáng kiến ưu tiên: ${info.templateDocName}` : ''}
     ${info.referenceDocName ? `- Tài liệu tham khảo bổ sung: ${info.referenceDocName}` : ''}
 
@@ -640,18 +538,11 @@ export const PROMPTS = {
     - Không ghi số trang cho từng phần trong phần trả lời.
     - Không viết lời mở đầu hay bình luận thêm.
     - Mỗi phần gồm 3-5 ý chính ngắn gọn, rõ ràng.
-    - Nếu người dùng chưa cung cấp tên trường/địa điểm cụ thể thì tuyệt đối không tự bịa tên riêng như tên trường, địa danh, lớp học mẫu.
-    - Nếu tài liệu tham khảo đính kèm có chi tiết không khớp với đề tài hiện tại, chỉ dùng phần phù hợp và bỏ qua tên riêng/nội dung lệch chủ đề.
-    ${topicSpecificGuidance.join('\n    ')}
-    - Riêng trong mục "II.2. Giải pháp thực hiện sáng kiến để giải quyết vấn đề", triển khai tiểu mục "III. Các biện pháp thực hiện" với đúng 3 ý con: "1. Biện pháp 1", "2. Biện pháp 2", "3. Biện pháp 3".
-    - Không tạo "Biện pháp 4" hoặc "Biện pháp 5" trong dàn ý.
     - Trả về bằng Markdown.
   `;
   },
 
   WRITE_SECTION: (sectionName: string, outline: string, info: any, planOverride?: SectionLengthPlan | null) => {
-    const context = resolvePromptContext(info);
-    const topicSpecificGuidance = buildTopicSpecificGuidance(info, sectionName);
     const plan = planOverride || getSectionLengthPlan(sectionName, info.pageLimit);
     const referenceBlock = info.referenceDocContent
       ? `
@@ -690,14 +581,14 @@ export const PROMPTS = {
 
 	    Hãy viết nội dung cho phần: "${sectionName}".
 	    Thông tin chung:
-    - Tên đề tài: ${context.title}
-    - Môn học: ${context.subject}
-    - Khối lớp: ${context.grade}
-    - Tên trường: ${context.schoolLabel}
-    - Địa điểm: ${context.locationLabel}
+    - Tên đề tài: ${info.title}
+    - Môn học: ${info.subject || 'Chưa xác định'}
+    - Khối lớp: ${info.grade || 'Chưa xác định'}
+    - Tên trường: ${info.school || 'Chưa xác định'}
+    - Địa điểm: ${info.location || 'Chưa xác định'}
     ${info.extraExamples ? '- Yêu cầu thêm nhiều ví dụ minh họa thực tế' : ''}
     ${info.extraTables ? '- Yêu cầu bổ sung bảng biểu, số liệu thống kê' : ''}
-    ${context.customRequirements ? `- Yêu cầu bổ sung: ${context.customRequirements}` : ''}
+    ${info.customRequirements ? `- Yêu cầu bổ sung: ${info.customRequirements}` : ''}
 
     Yêu cầu:
     - Không viết lời dẫn nhập kiểu "Dưới đây là...", "Phần này trình bày...".
@@ -705,8 +596,6 @@ export const PROMPTS = {
 	    - Văn phong sư phạm, trang trọng, cụ thể, có chi tiết thực tế lớp học khi phù hợp.
 	    - Nếu có bảng biểu thì điền đầy đủ số liệu hợp lý, không để ô trống.
 	    - Không sử dụng LaTeX.
-	    - Nếu người dùng chưa cung cấp tên trường hoặc địa điểm cụ thể thì dùng cách gọi chung như "tại đơn vị", "ở lớp 5", không được tự bịa tên riêng.
-	    - Nếu tài liệu tham khảo đính kèm có chi tiết không khớp với đề tài hiện tại, chỉ dùng phần phù hợp và bỏ qua tên riêng/nội dung lệch chủ đề.
 	    ${info.templateDocContent
     ? '- BẮT BUỘC bám sát cấu trúc mẫu sáng kiến người dùng đã tải lên, kể cả các mục con như 1.1, 1.2 nếu có liên quan tới phần đang viết.'
     : ''}
@@ -716,10 +605,8 @@ export const PROMPTS = {
 	    ${info.referenceDocContent
     ? '- Khi có dữ liệu trong tài liệu tham khảo đính kèm, ưu tiên dùng làm căn cứ minh họa phù hợp.'
     : ''}
-	    ${topicSpecificGuidance.join('\n\t    ')}
 	    - Trả về đúng nội dung cuối cùng bằng Markdown, không kèm giải thích.
 	    ${plan ? `- Mục tiêu độ dài: khoảng ${plan.targetWords} từ, chấp nhận trong khoảng ${plan.minWords}-${plan.maxWords} từ. - BẮT BUỘC không được dưới ${plan.minWords} từ; nếu còn ngắn phải tự viết tiếp cho đủ.` : '- Viết chi tiết, đầy đủ, không tóm tắt.'}
-	    ${sectionName === 'II.2. Giải pháp thực hiện sáng kiến' ? '- Bắt buộc có tiểu mục "III. Các biện pháp thực hiện". Trong tiểu mục này chỉ được triển khai đúng 3 ý: "1. Biện pháp 1", "2. Biện pháp 2", "3. Biện pháp 3". AI phải tự đề xuất tên gọi cụ thể và nội dung phù hợp cho từng biện pháp theo đề tài thực tế; không được tạo Biện pháp 4 hoặc 5.' : ''}
 	    ${sectionName.includes('Hiệu quả') ? `- Bắt buộc chia rõ 3 mục con: 4.1. Hiệu quả về khoa học, 4.2. Hiệu quả về kinh tế, 4.3. Hiệu quả về xã hội.` : ''}
   `,
       maxTokens: plan?.maxTokens || 8192,
@@ -732,15 +619,11 @@ export const PROMPTS = {
     info: any,
     plan: SectionLengthPlan,
     mode: 'shorten' | 'expand',
-  ) => {
-    const context = resolvePromptContext(info);
-    const topicSpecificGuidance = buildTopicSpecificGuidance(info, sectionName);
-
-    return `
+  ) => `
     Bạn đang biên tập lại một mục trong SKKN để khớp đúng độ dài đã phân bổ.
 
     Thông tin cố định:
-    - Tên đề tài: ${context.title}
+    - Tên đề tài: ${info.title}
     - Phần cần chỉnh: ${sectionName}
     - Tổng độ dài toàn bài: khoảng ${plan.totalPages} trang A4
     - Mục này chỉ được chiếm khoảng ${plan.targetPagesLabel} trang
@@ -754,14 +637,10 @@ export const PROMPTS = {
     - Nếu còn dài hơn ${plan.maxWords} từ thì tiếp tục rút gọn cho đến khi đạt yêu cầu.
     - Không thêm lời giải thích về việc chỉnh sửa.
     - Chỉ trả về phiên bản nội dung cuối cùng bằng Markdown.
-    - Không được tự bịa tên trường, địa điểm hoặc lớp mẫu nếu người dùng chưa cung cấp.
-    - Nếu tài liệu tham khảo đính kèm chứa chi tiết không khớp đề tài hiện tại, phải bỏ qua.
-    ${topicSpecificGuidance.join('\n    ')}
 
     Nội dung hiện tại:
     ${content}
-  `;
-  },
+  `,
   ANALYZE_TITLE: (title: string, subject?: string) => `
     Bạn là chuyên gia đánh giá tên đề tài Sáng kiến kinh nghiệm (SKKN) ở Việt Nam.
 
