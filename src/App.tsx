@@ -432,21 +432,138 @@ export default function App() {
     const grade = info.grade || 'lớp học';
     const school = info.school || 'đơn vị công tác';
     const topic = info.title || 'đề tài';
+    const target = info.target || `học sinh ${grade}`;
+    const duration = info.duration || 'thời gian triển khai của năm học';
+    const focus = info.focus || 'nâng cao chất lượng dạy học và sự chủ động của học sinh';
+    const facilities = info.facilities || 'điều kiện cơ sở vật chất hiện có';
+    const techUsed = info.techUsed || 'các công cụ hỗ trợ dạy học phù hợp';
+    const textbook = info.textbook || `học liệu ${subject}`;
 
-    const baseParagraphs = [
-      `Để bảo đảm phần "${sectionName}" phản ánh đúng yêu cầu của đề tài "${topic}", giáo viên xác định rõ mục tiêu theo ba lớp: mục tiêu kiến thức, mục tiêu năng lực và mục tiêu phẩm chất. Với đặc thù ${subject} ở ${grade} tại ${school}, mỗi mục tiêu đều gắn trực tiếp với biểu hiện quan sát được trong quá trình học tập, tránh nêu chung chung hoặc quá lý thuyết.`,
-      `Trong quá trình triển khai, mục tiêu được cụ thể hóa thành các chỉ báo theo từng giai đoạn thực hiện: trước khi áp dụng, trong khi áp dụng và sau khi áp dụng giải pháp. Ở mỗi giai đoạn, giáo viên ghi nhận mức độ tham gia của học sinh, chất lượng sản phẩm học tập, khả năng vận dụng kiến thức vào tình huống thực tế và mức độ hợp tác của nhóm. Các minh chứng này giúp việc đánh giá trở nên nhất quán và có căn cứ.`,
-      `Bên cạnh đó, mục tiêu của sáng kiến cũng cần bảo đảm tính khả thi tại đơn vị: phù hợp điều kiện cơ sở vật chất, phù hợp thời lượng dạy học, và có thể nhân rộng cho các lớp tương đương. Giáo viên xây dựng kế hoạch điều chỉnh theo phản hồi thực tế để giữ đúng mục tiêu cốt lõi, đồng thời bổ sung hoạt động hỗ trợ cho học sinh còn hạn chế, từ đó nâng dần hiệu quả thực hiện theo từng chu kỳ.`,
-    ];
+    const sectionSpecificParagraphs = (() => {
+      if (sectionName.includes('Tính cấp thiết')) {
+        return [
+          `Trong bối cảnh đổi mới giáo dục hiện nay, việc triển khai ${topic} là cần thiết vì yêu cầu dạy học không chỉ dừng ở truyền thụ kiến thức mà còn phải phát triển năng lực và phẩm chất cho ${target}. Thực tiễn giảng dạy ${subject} ở ${school} cho thấy nếu vẫn duy trì cách tổ chức quen thuộc thì khó tạo được sự tham gia tích cực, khó đáp ứng đúng định hướng của chương trình và khó giải quyết triệt để những hạn chế đang tồn tại.`,
+          `Bên cạnh yêu cầu từ chương trình, nhu cầu xuất phát từ thực tế lớp học cũng rất rõ. Với đặc điểm ${grade}, học sinh cần được tham gia vào những hoạt động có tính trải nghiệm, có nhiệm vụ cụ thể và có cơ hội hợp tác để hình thành kỹ năng bền vững. Đây cũng là cơ sở để sáng kiến hướng vào ${focus}, thay vì chỉ dừng ở các biện pháp mang tính ngắn hạn hoặc xử lý tình huống riêng lẻ.`,
+          `Điều kiện thực hiện tại đơn vị như ${facilities} cùng với nguồn học liệu từ ${textbook} cho phép giáo viên tổ chức và kiểm chứng giải pháp một cách khả thi. Vì vậy, việc nghiên cứu và áp dụng sáng kiến không chỉ có ý nghĩa trước mắt đối với lớp học hiện tại mà còn có thể tạo ra kinh nghiệm dùng chung cho tổ chuyên môn trong những năm học tiếp theo.`,
+        ];
+      }
 
-    let addition = baseParagraphs.join('\n\n');
+      if (sectionName.includes('Mục tiêu')) {
+        return [
+          `Mục tiêu của sáng kiến được xác định theo ba phương diện gắn bó chặt chẽ với nhau: kiến thức, năng lực và phẩm chất. Trên phương diện kiến thức, học sinh cần nắm vững các nội dung trọng tâm của ${subject}, hiểu đúng yêu cầu của bài học và biết vận dụng vào những nhiệm vụ học tập phù hợp với ${grade}. Việc xác định mục tiêu theo hướng này giúp giáo viên tránh tình trạng dạy học dàn trải hoặc đặt yêu cầu quá chung chung.`,
+          `Trên phương diện năng lực, sáng kiến hướng tới việc hình thành cho ${target} khả năng tham gia chủ động vào hoạt động học tập, biết hợp tác, biết xử lý nhiệm vụ và biết tự điều chỉnh trong quá trình thực hiện. Những biểu hiện này được theo dõi thông qua mức độ tham gia, chất lượng sản phẩm, khả năng hoàn thành nhiệm vụ và sự tiến bộ của học sinh qua từng giai đoạn triển khai tại ${school}.`,
+          `Trên phương diện phẩm chất, mục tiêu không chỉ dừng ở kết quả học tập mà còn chú trọng rèn tính trách nhiệm, tinh thần đoàn kết, sự tự tin và ý thức vượt khó của học sinh. Đây là những yếu tố có ý nghĩa lâu dài, phù hợp với đặc trưng của ${subject} và gắn trực tiếp với định hướng ${focus}. Khi ba nhóm mục tiêu được xác định rõ ràng và có tiêu chí quan sát cụ thể, sáng kiến sẽ có cơ sở vững chắc để tổ chức, đánh giá và điều chỉnh trong suốt ${duration}.`,
+        ];
+      }
+
+      if (sectionName.includes('Thời gian, đối tượng, phạm vi')) {
+        return [
+          `Sáng kiến được triển khai trong ${duration}, bảo đảm đủ thời gian cho các bước khảo sát ban đầu, tổ chức giải pháp, theo dõi quá trình thực hiện và đánh giá kết quả cuối giai đoạn. Việc bố trí thời gian theo tiến trình như vậy giúp dữ liệu thu được có tính liên tục, tránh đánh giá cảm tính hoặc chỉ dựa vào một thời điểm đơn lẻ.`,
+          `Đối tượng nghiên cứu trực tiếp là ${target}. Đây là nhóm học sinh phù hợp để kiểm chứng tác động của sáng kiến vì có sự gắn kết chặt chẽ với nội dung giảng dạy ${subject}, đồng thời phản ánh khá rõ những thuận lợi và khó khăn thường gặp trong thực tiễn giảng dạy tại ${school}.`,
+          `Phạm vi nghiên cứu tập trung vào các hoạt động dạy học, kiểm tra mức độ tham gia, kết quả học tập và những thay đổi về thái độ, kỹ năng liên quan đến ${focus}. Sáng kiến không mở rộng sang những yếu tố ngoài khả năng tác động trực tiếp của giáo viên, nhờ đó bảo đảm tính tập trung, tính khả thi và độ tin cậy của quá trình đánh giá.`,
+        ];
+      }
+
+      if (sectionName.includes('Hiện trạng')) {
+        return [
+          `Qua theo dõi thực tế trước khi áp dụng sáng kiến, việc dạy học ${subject} ở ${school} vẫn còn một số hạn chế nhất định. Một bộ phận ${target} tham gia chưa tích cực, khả năng hợp tác và tự giác trong quá trình thực hiện nhiệm vụ còn chưa đồng đều, dẫn tới hiệu quả giờ học chưa thật sự bền vững.`,
+          `Nguyên nhân của thực trạng này đến từ nhiều phía: cách tổ chức hoạt động đôi khi chưa tạo được động lực đủ mạnh, học liệu và phương tiện dù có ${facilities} nhưng chưa được khai thác thật linh hoạt, đồng thời nội dung học tập từ ${textbook} khi đưa vào lớp học vẫn cần thêm hình thức triển khai phù hợp để tăng trải nghiệm cho học sinh.`,
+          `Ngoài ra, việc đánh giá trước đây chủ yếu chú ý tới kết quả cuối cùng mà chưa theo dõi đầy đủ tiến trình tham gia, mức độ hợp tác và sự tiến bộ của từng học sinh. Điều này khiến giáo viên khó nhận diện chính xác nhóm học sinh cần hỗ trợ và cũng là lý do cần có một giải pháp mới để tác động rõ hơn tới ${focus}.`,
+        ];
+      }
+
+      if (sectionName.includes('Giải pháp')) {
+        return [
+          `Giải pháp được tổ chức theo hướng tăng cường hoạt động thực hành, giao nhiệm vụ rõ ràng và tạo cơ hội để học sinh phối hợp với nhau trong từng bước thực hiện. Giáo viên giữ vai trò thiết kế tiến trình, hướng dẫn tiêu chí và quan sát mức độ tham gia của ${target}, từ đó điều chỉnh nhịp độ cũng như cách hỗ trợ cho phù hợp.`,
+          `Trong quá trình triển khai, các nguồn lực hiện có như ${facilities} và ${techUsed} được sử dụng để làm phong phú cách tổ chức bài học, minh họa nội dung trọng tâm và hỗ trợ việc phản hồi kịp thời. Giải pháp không tách rời nội dung của ${textbook} mà bám sát yêu cầu bài học, đồng thời bổ sung những hình thức tổ chức phù hợp với đặc trưng ${subject}.`,
+          `Điểm cốt lõi của giải pháp là biến học sinh từ vị trí tiếp nhận sang vị trí tham gia tích cực vào quá trình học tập. Qua đó, giáo viên không chỉ tác động tới kết quả trước mắt mà còn hình thành được thói quen hợp tác, tinh thần trách nhiệm và khả năng tự hoàn thiện của học sinh trong suốt quá trình thực hiện sáng kiến.`,
+        ];
+      }
+
+      if (sectionName.includes('Kết quả')) {
+        return [
+          `Sau khi áp dụng sáng kiến, mức độ tham gia của ${target} có chuyển biến rõ rệt. Học sinh chủ động hơn trong việc thực hiện nhiệm vụ, biết phối hợp với bạn và thể hiện tinh thần trách nhiệm tốt hơn so với giai đoạn đầu. Sự chuyển biến này không chỉ thể hiện qua quan sát của giáo viên mà còn qua chất lượng sản phẩm học tập và tiến độ hoàn thành nhiệm vụ.`,
+          `Kết quả học tập được cải thiện theo hướng ổn định hơn, đặc biệt ở những tiêu chí gắn với ${focus}. Nhiều học sinh trước đây còn e dè hoặc thiếu kiên trì đã bắt đầu tích cực hơn, mạnh dạn hơn và có ý thức tự điều chỉnh trong quá trình học. Điều này cho thấy giải pháp đã tác động đúng vào những khó khăn cốt lõi của lớp học.`,
+          `Một kết quả quan trọng khác là bầu không khí học tập tại ${school} trở nên tích cực hơn ở những tiết học có áp dụng sáng kiến. Học sinh cảm thấy hứng thú, giáo viên thuận lợi hơn trong việc tổ chức lớp, còn việc đánh giá cũng có thêm nhiều minh chứng thực tế để khẳng định hiệu quả của giải pháp.`,
+        ];
+      }
+
+      if (sectionName.includes('Hiệu quả')) {
+        return [
+          `Xét về hiệu quả khoa học, sáng kiến góp phần làm rõ cách tổ chức dạy học phù hợp với đặc trưng ${subject}, đồng thời cung cấp thêm cơ sở thực tiễn cho việc lựa chọn hình thức dạy học hướng vào phát triển năng lực và phẩm chất học sinh. Những kết quả quan sát được cho thấy giải pháp có tính logic, có căn cứ và có thể tiếp tục hoàn thiện trong phạm vi chuyên môn.`,
+          `Xét về hiệu quả kinh tế, sáng kiến tận dụng chủ yếu các điều kiện sẵn có như ${facilities} và học liệu đang sử dụng, vì vậy không làm phát sinh chi phí lớn nhưng vẫn tạo được chuyển biến tích cực. Việc sử dụng hợp lý nguồn lực hiện có giúp giáo viên chủ động triển khai mà không phụ thuộc vào các điều kiện quá đặc biệt.`,
+          `Xét về hiệu quả xã hội, sáng kiến tạo ra môi trường học tập tích cực hơn, góp phần củng cố tinh thần hợp tác, tính trách nhiệm và sự tự tin của học sinh. Tác động này không chỉ dừng ở phạm vi một lớp học mà còn có thể lan tỏa trong tổ chuyên môn, hỗ trợ nhà trường trong việc nâng cao chất lượng giáo dục toàn diện.`,
+        ];
+      }
+
+      if (sectionName.includes('Tính khả thi')) {
+        return [
+          `Sáng kiến có tính khả thi vì được xây dựng trên nền tảng điều kiện thực tế của ${school}, không đòi hỏi cơ sở vật chất vượt quá khả năng hiện có và có thể triển khai trong khung thời gian của năm học. Việc tổ chức thực hiện chủ yếu dựa vào sự chủ động của giáo viên cùng sự phối hợp của học sinh trong các hoạt động học tập.`,
+          `Bên cạnh đó, giải pháp phù hợp với trình độ nhận thức của ${target} và bám sát nội dung ${textbook}, nên giáo viên có thể đưa vào quá trình dạy học mà không gây xáo trộn lớn về kế hoạch chuyên môn. Những bước triển khai cũng đủ rõ để đồng nghiệp tham khảo, điều chỉnh và áp dụng ở những lớp có đặc điểm tương đương.`,
+          `Tính khả thi còn thể hiện ở chỗ sáng kiến cho phép điều chỉnh linh hoạt theo thực tế lớp học. Nếu số lượng học sinh, điều kiện phương tiện hoặc mức độ tiếp nhận của học sinh thay đổi, giáo viên vẫn có thể sắp xếp lại cách tổ chức mà không làm mất đi mục tiêu cốt lõi của giải pháp.`,
+        ];
+      }
+
+      if (sectionName.includes('Thời gian thực hiện')) {
+        return [
+          `Thời gian thực hiện sáng kiến được bố trí theo các giai đoạn rõ ràng, bắt đầu từ khâu khảo sát thực trạng, xây dựng kế hoạch, tổ chức áp dụng, theo dõi quá trình và tổng hợp kết quả. Cách phân chia này giúp giáo viên chủ động về tiến độ và thuận lợi trong việc kiểm tra mức độ hoàn thành của từng bước.`,
+          `Trong từng giai đoạn, nhiệm vụ cụ thể được xác định gắn với mục tiêu của sáng kiến. Giai đoạn đầu tập trung thu thập thông tin ban đầu; giai đoạn giữa chú trọng triển khai giải pháp và theo dõi phản hồi; giai đoạn cuối tổng hợp minh chứng, đánh giá hiệu quả và rút kinh nghiệm để hoàn thiện sáng kiến.`,
+          `Việc xác định thời gian thực hiện theo lộ trình như vậy phù hợp với ${duration}, bảo đảm sáng kiến có đủ độ sâu để kiểm chứng, đồng thời không gây áp lực quá lớn cho giáo viên hay học sinh trong quá trình triển khai tại đơn vị.`,
+        ];
+      }
+
+      if (sectionName.includes('Kinh phí')) {
+        return [
+          `Kinh phí thực hiện sáng kiến không lớn vì phần lớn hoạt động được triển khai dựa trên nguồn lực sẵn có của nhà trường và giáo viên. Những phương tiện như ${facilities} đã đáp ứng được các yêu cầu cơ bản, do đó không phát sinh nhu cầu đầu tư đáng kể ngoài phạm vi thông thường.`,
+          `Trong trường hợp cần bổ sung một số học liệu hoặc phương tiện hỗ trợ nhỏ lẻ, giáo viên có thể tận dụng vật liệu dễ tìm, tài nguyên số miễn phí hoặc nguồn học liệu dùng chung của tổ chuyên môn. Cách làm này giúp sáng kiến vừa tiết kiệm, vừa dễ áp dụng ở nhiều điều kiện khác nhau.`,
+          `Việc sử dụng kinh phí theo hướng hợp lý và tiết kiệm cũng là một yếu tố làm tăng giá trị thực tiễn của sáng kiến. Khi hiệu quả đạt được lớn hơn nhiều so với chi phí bỏ ra, sáng kiến sẽ có thêm cơ sở để được duy trì và nhân rộng trong nhà trường.`,
+        ];
+      }
+
+      if (sectionName.includes('Kiến nghị')) {
+        return [
+          `Để sáng kiến được phát huy hiệu quả bền vững, cần có sự phối hợp đồng bộ giữa giáo viên, tổ chuyên môn và nhà trường trong quá trình triển khai. Nhà trường nên tạo điều kiện về thời gian, học liệu và sinh hoạt chuyên môn để giáo viên có thể chia sẻ kinh nghiệm, điều chỉnh giải pháp và thống nhất cách thực hiện.`,
+          `Đối với tổ chuyên môn, việc thường xuyên trao đổi, dự giờ và góp ý sẽ giúp sáng kiến tiếp tục được hoàn thiện trên cơ sở thực tiễn dạy học. Khi có thêm sự phản hồi từ đồng nghiệp, các biện pháp được áp dụng sẽ sát hơn với từng nhóm đối tượng học sinh và từng điều kiện cụ thể.`,
+          `Về phía giáo viên, cần tiếp tục theo dõi sự tiến bộ của học sinh, cập nhật cách tổ chức hoạt động và chủ động điều chỉnh giải pháp để đáp ứng yêu cầu đổi mới dạy học. Đây cũng là cơ sở để sáng kiến không chỉ dừng ở phạm vi áp dụng thử nghiệm mà từng bước được mở rộng trong thực tế giáo dục.`,
+        ];
+      }
+
+      return [
+        `Nội dung của sáng kiến tiếp tục được cụ thể hóa gắn với điều kiện dạy học ${subject} ở ${school}, bảo đảm mọi biện pháp đều hướng tới ${focus} và phù hợp với đặc điểm của ${target}.`,
+        `Trong quá trình triển khai, giáo viên theo dõi sát mức độ tham gia, chất lượng thực hiện nhiệm vụ và sự tiến bộ của học sinh để điều chỉnh giải pháp cho phù hợp với thực tế lớp học.`,
+        `Những minh chứng thu được trong ${duration} là cơ sở quan trọng để đánh giá mức độ hiệu quả, tính khả thi và khả năng nhân rộng của sáng kiến trong phạm vi nhà trường.`,
+      ];
+    })();
+
+    let addition = sectionSpecificParagraphs.join('\n\n');
     const targetWords = Math.max(80, missingWords + 20);
+    const extensionPool = [
+      `Giáo viên tiếp tục đối chiếu kết quả theo từng giai đoạn để bảo đảm nội dung triển khai luôn bám đúng mục tiêu đã đặt ra và phù hợp với thực tế lớp học.`,
+      `Việc bổ sung minh chứng quan sát, sản phẩm học tập và phản hồi của học sinh giúp cho phần trình bày có cơ sở thực tiễn rõ ràng hơn, tránh nhận định cảm tính.`,
+      `Trên cơ sở đó, sáng kiến không chỉ phản ánh kết quả trước mắt mà còn cho thấy khả năng duy trì và điều chỉnh trong các giai đoạn tiếp theo.`,
+    ];
+    let extensionIndex = 0;
 
     while (estimateWordCount(addition) < targetWords) {
-      addition += `\n\nNgoài ra, giáo viên tiếp tục đối chiếu mục tiêu với kết quả định kỳ theo tuần, điều chỉnh nội dung và phương pháp tổ chức hoạt động để bảo đảm tiến độ và chất lượng đầu ra của học sinh.`;
+      addition += `\n\n${extensionPool[extensionIndex % extensionPool.length]}`;
+      extensionIndex += 1;
     }
 
     return addition.trim();
+  };
+
+  const cleanupMechanicalLengthPadding = (content: string) => {
+    const sectionLabels = Object.values(SECTION_MAP)
+      .map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+
+    return content
+      .replace(
+        new RegExp(`Để bảo đảm phần "(?:${sectionLabels})" phản ánh đúng yêu cầu của đề tài "[^"]+",\\s*`, 'g'),
+        '',
+      )
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
   };
 
   useEffect(() => {
@@ -457,6 +574,18 @@ export default function App() {
     document.documentElement.classList.toggle('dark', isDarkMode);
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
+
+  useEffect(() => {
+    setData((prev) => {
+      const cleanedSections = Object.entries(prev.sections).reduce<Record<string, string>>((acc, [name, content]) => {
+        acc[name] = cleanupMechanicalLengthPadding(content);
+        return acc;
+      }, {});
+
+      const changed = Object.keys(cleanedSections).some((name) => cleanedSections[name] !== prev.sections[name]);
+      return changed ? { ...prev, sections: cleanedSections } : prev;
+    });
+  }, [data.sections]);
 
   useEffect(() => {
     // @ts-ignore
@@ -801,7 +930,9 @@ ${finalResult.content}`;
           if (finalResult.wordCount < hardMinWords) {
             const missingWords = hardMinWords - finalResult.wordCount;
             const fallbackAddition = buildLengthFallbackContent(sectionName, activeInfo, missingWords);
-            const mergedContent = `${finalResult.content.trim()}\n\n${fallbackAddition}`.trim();
+            const mergedContent = cleanupMechanicalLengthPadding(
+              `${finalResult.content.trim()}\n\n${fallbackAddition}`.trim(),
+            );
 
             finalResult = {
               content: mergedContent,
@@ -811,6 +942,13 @@ ${finalResult.content}`;
             };
           }
         }
+
+        const cleanedFinalContent = cleanupMechanicalLengthPadding(finalResult.content);
+        finalResult = {
+          ...finalResult,
+          content: cleanedFinalContent,
+          wordCount: estimateWordCount(cleanedFinalContent),
+        };
 
         setData(prev => ({
           ...prev,
