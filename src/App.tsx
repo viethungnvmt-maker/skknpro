@@ -27,7 +27,10 @@ import {
   Pencil,
   School,
   GraduationCap,
-  Upload
+  Upload,
+  Lock,
+  LogOut,
+  User,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { marked } from 'marked';
@@ -35,6 +38,13 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import { INITIAL_DATA, type LockedLengthPlan, type SKKNData, STEPS } from './types';
+import {
+  ACTIVE_LOGIN_USER_STORAGE_KEY,
+  authenticateUser,
+  findUserByUsername,
+  loadLoginUsers,
+  type AppLoginUser,
+} from './auth';
 import {
   GEMINI_MODEL_SWITCH_EVENT,
   callGeminiAI,
@@ -345,6 +355,13 @@ export default function App() {
     }
     return INITIAL_DATA;
   });
+  const [loginUsers] = useState<AppLoginUser[]>(() => loadLoginUsers());
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [currentUser, setCurrentUser] = useState<AppLoginUser | null>(() => {
+    const savedUsername = localStorage.getItem(ACTIVE_LOGIN_USER_STORAGE_KEY) || '';
+    return savedUsername ? findUserByUsername(savedUsername, loadLoginUsers()) : null;
+  });
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
   const [selectedModel, setSelectedModel] = useState(() => parseInt(localStorage.getItem('gemini_model_index') || localStorage.getItem('ai_model_index') || '0'));
@@ -569,6 +586,15 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('skkn_data_v3', JSON.stringify(data));
   }, [data]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem(ACTIVE_LOGIN_USER_STORAGE_KEY, currentUser.username);
+      return;
+    }
+
+    localStorage.removeItem(ACTIVE_LOGIN_USER_STORAGE_KEY);
+  }, [currentUser]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
@@ -1004,6 +1030,39 @@ ${finalResult.content}`;
     localStorage.setItem('ai_model_index', String(selectedModel));
     setShowSettings(false);
     Swal.fire('Đã lưu', 'Cấu hình đã được cập nhật!', 'success');
+  };
+
+  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const matchedUser = authenticateUser(loginUsername, loginPassword, loginUsers);
+    if (!matchedUser) {
+      Swal.fire('Đăng nhập thất bại', 'Tên đăng nhập hoặc mật khẩu chưa đúng.', 'error');
+      return;
+    }
+
+    setCurrentUser(matchedUser);
+    setLoginUsername('');
+    setLoginPassword('');
+    Swal.fire({
+      icon: 'success',
+      title: 'Đăng nhập thành công',
+      text: `Xin chào ${matchedUser.fullName || matchedUser.username}!`,
+      timer: 1200,
+      showConfirmButton: false,
+    });
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setShowSettings(false);
+    setLoginPassword('');
+    Swal.fire({
+      icon: 'success',
+      title: 'Đã đăng xuất',
+      timer: 900,
+      showConfirmButton: false,
+    });
   };
   const exportPDF = () => {
     const element = document.getElementById('preview-content');
@@ -2063,7 +2122,7 @@ ${finalResult.content}`;
   const exportMarkdown = async () => {
     setIsLoading(true);
     try {
-      const { sections } = await normalizeDraftForExport(true);
+      const sections = { ...data.sections };
       const referencesMarkdown = buildReferencesSectionMarkdown(sections);
       const allContent = [
         ...SECTION_ORDER.map((sectionName) => sections[sectionName] || ''),
@@ -2077,7 +2136,7 @@ ${finalResult.content}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error: any) {
-      Swal.fire('Lỗi', error.message || 'Không thể chuẩn hóa và xuất Markdown.', 'error');
+      Swal.fire('Lỗi', error.message || 'Không thể xuất Markdown.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -2087,7 +2146,7 @@ ${finalResult.content}`;
   const exportToDocx = async () => {
     setIsLoading(true);
     try {
-      const { sections: exportSections } = await normalizeDraftForExport(true);
+      const exportSections = { ...data.sections };
       const referencesMarkdown = buildReferencesSectionMarkdown(exportSections);
       const referencesBodyHtml = renderMarkdown(
         referencesMarkdown.replace(/^##\s*IV\.\s*Tài liệu tham khảo\s*$/im, '').trim(),
@@ -2233,7 +2292,7 @@ ${bodyHtml}
       a.click();
       URL.revokeObjectURL(url);
     } catch (error: any) {
-      Swal.fire('Lỗi', error.message || 'Không thể chuẩn hóa và xuất file Word.', 'error');
+      Swal.fire('Lỗi', error.message || 'Không thể xuất file Word.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -2281,7 +2340,7 @@ ${bodyHtml}
                 <p className="font-semibold">Chuẩn hóa tổng độ dài trước khi xuất</p>
                 <p>Tổng hiện tại khoảng {draftLengthMetrics.totalActualWords} từ (~{draftLengthMetrics.totalActualPages} trang), mục tiêu khoảng {draftLengthMetrics.totalTargetWords} từ (~{draftLengthMetrics.totalTargetPages} trang).</p>
                 <p>{draftDeltaLabel}</p>
-                <p className="text-xs opacity-80">Khi bấm xuất file, app sẽ tự cân lại một vài mục lớn nếu tổng độ dài còn lệch nhiều.</p>
+                <p className="text-xs opacity-80">Nếu cần, hãy bấm "Chuẩn hóa toàn bài" trước. Hai nút tải file bên dưới sẽ xuất đúng bản hiện tại và không gọi AI nữa.</p>
               </div>
             )}
             <div className="flex flex-wrap gap-3">
@@ -2316,6 +2375,67 @@ ${bodyHtml}
     return false;
   };
 
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_35%),linear-gradient(180deg,_#eef6ff_0%,_#dbeafe_100%)] px-4 py-8">
+        <div className="mx-auto flex min-h-screen max-w-5xl items-center justify-center">
+          <div className="w-full max-w-md overflow-hidden rounded-[32px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(2,132,199,0.18)]">
+            <div className="bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 px-8 py-10 text-center text-white">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/20">
+                <Lock size={34} />
+              </div>
+              <h1 className="text-3xl font-black leading-tight">Gia Lâm - SKKN PRO 2026</h1>
+              <p className="mt-3 text-sm font-medium text-white/85">Đăng nhập để sử dụng ứng dụng</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-5 px-6 py-7 md:px-8">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">Tên đăng nhập</label>
+                <div className="relative">
+                  <User size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={loginUsername}
+                    onChange={(event) => setLoginUsername(event.target.value)}
+                    placeholder="Nhập tên đăng nhập"
+                    className="form-input-icon"
+                    autoComplete="username"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-600">Mật khẩu</label>
+                <div className="relative">
+                  <Lock size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="password"
+                    value={loginPassword}
+                    onChange={(event) => setLoginPassword(event.target.value)}
+                    placeholder="Nhập mật khẩu"
+                    className="form-input-icon"
+                    autoComplete="current-password"
+                  />
+                </div>
+              </div>
+
+              <p className="text-sm text-slate-400">Dữ liệu đăng nhập đang được lưu trong danh sách nội bộ của ứng dụng.</p>
+
+              <button type="submit" className="btn-primary">
+                Đăng nhập
+              </button>
+            </form>
+
+            <div className="border-t border-slate-100 bg-slate-50 px-6 py-4 text-center text-xs text-slate-500 md:px-8">
+              <p>Danh sách tài khoản mặc định đã lưu: {loginUsers.map((user) => user.username).join(', ')}</p>
+              <p className="mt-1">Phiên bản đăng nhập nội bộ dành cho Gia Lâm - SKKN PRO 2026</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Sidebar */}
@@ -2324,7 +2444,7 @@ ${bodyHtml}
         <div className="p-5 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <Sparkles size={22} className="text-primary" />
-            <h1 className="font-bold text-lg text-primary">Viethung</h1>
+            <h1 className="font-bold text-sm leading-tight text-primary">Gia Lâm - SKKN PRO 2026</h1>
           </div>
           <p className="text-[11px] text-slate-400 mt-0.5">Trợ lí viết SKKN thông minh • build {APP_BUILD_TAG}</p>
         </div>
@@ -2395,6 +2515,10 @@ ${bodyHtml}
         {/* Top bar */}
         <header className="h-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 flex items-center justify-end px-4 sticky top-0 z-10">
           <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+              <User size={14} />
+              <span>{currentUser.fullName || currentUser.username}</span>
+            </div>
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
@@ -2406,6 +2530,12 @@ ${bodyHtml}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
               <Settings size={14} /> Cài đặt API Key
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+            >
+              <LogOut size={14} /> Đăng xuất
             </button>
           </div>
         </header>
