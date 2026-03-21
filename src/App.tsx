@@ -31,6 +31,7 @@ import {
   Lock,
   LogOut,
   User,
+  Gem,
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { marked } from 'marked';
@@ -2425,11 +2426,6 @@ ${bodyHtml}
                 Đăng nhập
               </button>
             </form>
-
-            <div className="border-t border-slate-100 bg-slate-50 px-6 py-4 text-center text-xs text-slate-500 md:px-8">
-              <p>Danh sách tài khoản mặc định đã lưu: {loginUsers.map((user) => user.username).join(', ')}</p>
-              <p className="mt-1">Phiên bản đăng nhập nội bộ dành cho Gia Lâm - SKKN PRO 2026</p>
-            </div>
           </div>
         </div>
       </div>
@@ -2515,6 +2511,10 @@ ${bodyHtml}
         {/* Top bar */}
         <header className="h-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 flex items-center justify-end px-4 sticky top-0 z-10">
           <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2 rounded-xl border border-amber-700/50 bg-[#4f3a05] px-3 py-1.5 text-xs font-bold text-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <Gem size={14} className="text-amber-300" />
+              <span>VIP đã kích hoạt</span>
+            </div>
             <div className="hidden sm:flex items-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
               <User size={14} />
               <span>{currentUser.fullName || currentUser.username}</span>
